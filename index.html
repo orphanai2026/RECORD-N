@@ -182,7 +182,7 @@
       <div><h1>مِعيار الناي</h1><p>مسجل النغمات الشرقية الدقيقة وفق A440</p></div>
     </div>
     <div class="version-stack">
-      <span class="badge"><strong>v0.5.0</strong> إصدار تجريبي</span>
+      <span class="badge"><strong>v0.5.1</strong> إصدار تجريبي</span>
       <span class="badge gold"><strong>2026-08-02</strong> تاريخ الإصدار</span>
     </div>
   </header>
@@ -237,6 +237,7 @@
           <span>عزل الضوضاء: <em id="noiseSuppressionStatus">—</em></span>
           <span>الرفع التلقائي: <em id="agcStatus">—</em></span>
           <span>العينات: <em id="sampleRateStatus">—</em></span>
+          <span>محرك التسجيل: <em id="recorderEngineStatus">—</em></span>
         </div>
       </div>
       <div class="helper">عزل الضوضاء المستخدم داخل الأداة يؤثر على قرار قبول النغمة فقط، ولا يغير عينات التسجيل الصوتي.</div>
@@ -304,7 +305,7 @@
 
   <footer class="footer">
     <span><strong>© 2026 محمد الزهراني.</strong> جميع الحقوق محفوظة.</span>
-    <span>الإصدار <strong>v0.5.0</strong> · تاريخ البناء والإصدار: <strong>2026-08-02</strong></span>
+    <span>الإصدار <strong>v0.5.1</strong> · تاريخ البناء والإصدار: <strong>2026-08-02</strong></span>
   </footer>
 </main>
 
@@ -314,7 +315,7 @@
 
   const APP = {
     name: "مِعيار الناي",
-    version: "0.5.0",
+    version: "0.5.1",
     buildDate: "2026-08-02",
     owner: "محمد الزهراني",
     dbName: "NeyMeyarDB",
@@ -385,6 +386,7 @@
     ns:$("noiseSuppressionStatus"),
     agc:$("agcStatus"),
     sr:$("sampleRateStatus"),
+    recorderEngine:$("recorderEngineStatus"),
     orb:$("beatOrb"),
     beat:$("beatNumber"),
     beatDots:$("beatDots"),
@@ -434,6 +436,10 @@
   let capture = null;
   let playbackUrl = null;
   let lamePromise = null;
+
+  // نسخة مدمجة تُستخدم تلقائيًا إذا لم يجد المتصفح الملف الخارجي.
+  const EMBEDDED_WORKLET_SOURCE = "class NeyRecorderProcessor extends AudioWorkletProcessor {\n  constructor(){\n    super();\n\n    this.preRollLength = Math.max(1,Math.round(sampleRate*0.25));\n    this.preRoll = new Float32Array(this.preRollLength);\n    this.preRollWrite = 0;\n    this.preRollFilled = 0;\n    this.capture = null;\n\n    this.port.onmessage = event => {\n      const data = event.data || {};\n\n      if (data.type === \"start\"){\n        this.startCapture(data.id,data.totalSamples);\n        return;\n      }\n\n      if (data.type === \"abort\"){\n        if (!this.capture || !data.id || data.id === this.capture.id){\n          this.capture = null;\n        }\n      }\n    };\n  }\n\n  orderedPreRoll(maxLength){\n    const available = Math.min(this.preRollFilled,maxLength);\n    if (available <= 0) return new Float32Array(0);\n\n    const output = new Float32Array(available);\n    const start =\n      (this.preRollWrite-available+this.preRollLength)%this.preRollLength;\n\n    for (let index=0;index<available;index++){\n      output[index] = this.preRoll[(start+index)%this.preRollLength];\n    }\n\n    return output;\n  }\n\n  startCapture(id,totalSamples){\n    const total = Math.max(1,Math.round(Number(totalSamples)||1));\n    const samples = new Float32Array(total);\n    const pre = this.orderedPreRoll(total);\n\n    samples.set(pre,0);\n    this.capture = {\n      id,\n      samples,\n      offset:pre.length,\n      total\n    };\n\n    this.port.postMessage({\n      type:\"started\",\n      id,\n      preRollSamples:pre.length,\n      totalSamples:total\n    });\n\n    if (this.capture.offset >= this.capture.total){\n      this.finishCapture();\n    }\n  }\n\n  writePreRoll(input){\n    for (let index=0;index<input.length;index++){\n      this.preRoll[this.preRollWrite] = input[index];\n      this.preRollWrite = (this.preRollWrite+1)%this.preRollLength;\n      this.preRollFilled = Math.min(\n        this.preRollLength,\n        this.preRollFilled+1\n      );\n    }\n  }\n\n  appendCapture(input){\n    if (!this.capture) return;\n\n    const remaining = this.capture.total-this.capture.offset;\n    if (remaining <= 0){\n      this.finishCapture();\n      return;\n    }\n\n    const count = Math.min(remaining,input.length);\n    this.capture.samples.set(\n      input.subarray(0,count),\n      this.capture.offset\n    );\n    this.capture.offset += count;\n\n    if (this.capture.offset >= this.capture.total){\n      this.finishCapture();\n    }\n  }\n\n  finishCapture(){\n    if (!this.capture) return;\n\n    const completed = this.capture;\n    this.capture = null;\n    const buffer = completed.samples.buffer;\n\n    this.port.postMessage({\n      type:\"complete\",\n      id:completed.id,\n      samples:buffer\n    },[buffer]);\n  }\n\n  process(inputs,outputs){\n    const input = inputs[0]?.[0];\n    const output = outputs[0]?.[0];\n\n    if (output) output.fill(0);\n\n    if (input && input.length){\n      // Capture first, then update pre-roll. This preserves exact continuity\n      // between the stored pre-roll and the next render quantum.\n      this.appendCapture(input);\n      this.writePreRoll(input);\n    }\n\n    return true;\n  }\n}\n\nregisterProcessor(\"ney-recorder\",NeyRecorderProcessor);\n";
+  let recorderEngineMode = "غير مهيأ";
 
   const clamp = (value,min,max) => Math.min(max,Math.max(min,value));
   const mean = values => values.length ? values.reduce((sum,value)=>sum+value,0)/values.length : 0;
@@ -669,6 +675,96 @@
     }
   }
 
+
+  function runtimeDescription(){
+    const protocol = location.protocol || "unknown";
+    const secure = window.isSecureContext ? "secure" : "not-secure";
+    return `${protocol} · ${secure}`;
+  }
+
+  function readableError(error){
+    if (!error) return "خطأ غير معروف";
+    const name = error.name ? `${error.name}: ` : "";
+    return `${name}${error.message || String(error)}`;
+  }
+
+  async function loadRecorderWorklet(){
+    if (!ctx?.audioWorklet){
+      throw new Error(
+        `AudioWorklet غير متاح في السياق الحالي (${runtimeDescription()}).`
+      );
+    }
+
+    const externalUrl = new URL(
+      "./audio-recorder-worklet.js?v=0.5.1",
+      document.baseURI
+    ).href;
+
+    let externalError = null;
+
+    try{
+      await ctx.audioWorklet.addModule(externalUrl);
+      recorderEngineMode = "external";
+      ui.recorderEngine.textContent = "خارجي ✓";
+      return;
+    }catch(error){
+      externalError = error;
+      console.warn("External AudioWorklet failed:", externalUrl, error);
+    }
+
+    const blob = new Blob(
+      [EMBEDDED_WORKLET_SOURCE],
+      {type:"text/javascript"}
+    );
+    const blobUrl = URL.createObjectURL(blob);
+
+    try{
+      await ctx.audioWorklet.addModule(blobUrl);
+      recorderEngineMode = "embedded";
+      ui.recorderEngine.textContent = "مدمج ✓";
+      showMessage(
+        "تم تشغيل محرك التسجيل من النسخة المدمجة لأن ملف AudioWorklet الخارجي لم يُحمّل."
+      );
+    }catch(embeddedError){
+      console.error("Embedded AudioWorklet failed:", embeddedError);
+      throw new Error(
+        `فشل الملف الخارجي: ${readableError(externalError)} | ` +
+        `وفشلت النسخة المدمجة: ${readableError(embeddedError)}`
+      );
+    }finally{
+      URL.revokeObjectURL(blobUrl);
+    }
+  }
+
+  function recorderFailureMessage(error){
+    const details = readableError(error);
+
+    if (error?.name === "NotAllowedError"){
+      return "تم رفض إذن الميكروفون. اسمح للموقع باستخدام الميكروفون من إعدادات المتصفح.";
+    }
+
+    if (!window.isSecureContext){
+      return (
+        `الصفحة ليست في سياق آمن (${runtimeDescription()}). ` +
+        `افتح رابط الموقع المنشور الذي يبدأ بـ https://، وليس ملف HTML من مدير الملفات. ` +
+        `التفاصيل: ${details}`
+      );
+    }
+
+    if (!ctx?.audioWorklet){
+      return (
+        `AudioWorklet غير متاح في هذه الصفحة. ` +
+        `استخدم Chrome أو Safari حديثًا وافتح رابط GitHub Pages أو الاستضافة مباشرة. ` +
+        `التفاصيل: ${details}`
+      );
+    }
+
+    return (
+      `تعذر تشغيل محرك التسجيل. السياق: ${runtimeDescription()}. ` +
+      `التفاصيل التقنية: ${details}`
+    );
+  }
+
   function handleRecorderMessage(event){
     const data = event.data || {};
     if (!capture || data.id !== capture.id) return;
@@ -710,11 +806,7 @@
       ctx = new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
       await ctx.resume();
 
-      if (!ctx.audioWorklet){
-        throw new Error("AudioWorklet غير مدعوم في هذا المتصفح");
-      }
-
-      await ctx.audioWorklet.addModule("audio-recorder-worklet.js");
+      await loadRecorderWorklet();
 
       source = ctx.createMediaStreamSource(stream);
       analyser = ctx.createAnalyser();
@@ -734,6 +826,15 @@
       silentGain.gain.value = 0;
 
       recorderNode.port.onmessage = handleRecorderMessage;
+      recorderNode.addEventListener("processorerror",event=>{
+        console.error("AudioWorklet processor error:",event);
+        ui.recorderEngine.textContent = "تعطل ✗";
+        showMessage(
+          "تعطل معالج التسجيل. أوقف الميكروفون ثم أعد تشغيله.",
+          true
+        );
+        abortCapture("تعطل معالج التسجيل");
+      });
 
       source.connect(analyser);
       source.connect(recorderNode);
@@ -750,11 +851,16 @@
       analysisLoop();
     }catch(error){
       console.error(error);
-      const text = error?.name === "NotAllowedError"
-        ? "تم رفض إذن الميكروفون. اسمح به من إعدادات المتصفح."
-        : "تعذر تشغيل مسجل الصوت الآمن. افتح الصفحة عبر HTTPS واستخدم Chrome أو Safari حديثًا.";
-      showMessage(text,true);
+      ui.recorderEngine.textContent = "لم يعمل ✗";
+      showMessage(recorderFailureMessage(error),true);
       stream?.getTracks().forEach(track=>track.stop());
+      try{await ctx?.close()}catch(_){}
+      stream = null;
+      ctx = null;
+      source = null;
+      analyser = null;
+      recorderNode = null;
+      silentGain = null;
     }
   }
 
@@ -785,6 +891,7 @@
     ui.mic.className = "button primary";
     ui.calibrate.disabled = true;
     ui.arm.disabled = true;
+    ui.recorderEngine.textContent = "متوقف";
     ui.cancel.disabled = true;
     ui.status.textContent = "تم إيقاف الميكروفون.";
     ui.recStatus.textContent = "شغّل الميكروفون ثم جهّز التسجيل.";

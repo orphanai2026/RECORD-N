@@ -1,0 +1,10 @@
+{
+  "product": "مِعيار الناي",
+  "englishName": "Ney Meyar",
+  "version": "0.5.1",
+  "status": "beta",
+  "releaseDate": "2026-08-02",
+  "fix": "AudioWorklet external loading with embedded fallback and detailed diagnostics",
+  "copyrightOwner": "محمد الزهراني",
+  "copyright": "© 2026 محمد الزهراني. جميع الحقوق محفوظة."
+}
