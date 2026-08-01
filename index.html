@@ -130,6 +130,8 @@
     .beat-dots{display:flex;direction:ltr;gap:8px;margin-top:14px}
     .beat-dot{width:100%;max-width:54px;height:12px;border-radius:999px;border:1px solid var(--line);background:#061a20;transition:background .1s ease,transform .1s ease}
     .beat-dot.active{transform:translateY(-2px);background:var(--accent);box-shadow:0 0 16px rgba(85,217,199,.35)}
+    .beat-dot.half{max-width:28px;background:linear-gradient(90deg,var(--accent) 50%,#061a20 50%)}
+    .note-value-box{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:15px;background:rgba(4,22,27,.48)}
     .beat-status{min-height:48px;margin-top:13px;color:var(--muted);font-size:.84rem;line-height:1.7}
     .library{margin-top:16px;padding:22px}
     .library-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -180,7 +182,7 @@
       <div><h1>مِعيار الناي</h1><p>مسجل النغمات الشرقية الدقيقة وفق A440</p></div>
     </div>
     <div class="version-stack">
-      <span class="badge"><strong>v0.4.0</strong> إصدار تجريبي</span>
+      <span class="badge"><strong>v0.5.0</strong> إصدار تجريبي</span>
       <span class="badge gold"><strong>2026-08-02</strong> تاريخ الإصدار</span>
     </div>
   </header>
@@ -244,18 +246,38 @@
   <section class="card recorder-card">
     <div class="recorder-grid">
       <div class="recorder-copy">
-        <h2>علامة روند كاملة — 4 عدّات</h2>
-        <p>العداد مرئي وصامت. يبدأ التسجيل تلقائيًا عند اعتماد نغمة واضحة، وتُحسب المدة من عدد عينات الصوت لضمان أربع عدّات فعلية.</p>
+        <h2 id="noteValueHeading">روند — 4 عدّات</h2>
+        <p>
+          اختر القيمة الزمنية المطلوبة. يبدأ التسجيل تلقائيًا عند اعتماد نغمة واضحة،
+          ويُلتقط الصوت داخل مسار الصوت الحقيقي بواسطة AudioWorklet لمنع انقطاع الكتل والطقطقة الرقمية.
+        </p>
+
+        <div class="note-value-box">
+          <label>
+            القيمة الزمنية الموسيقية
+            <select id="noteValueSelect">
+              <option value="whole" selected>روند · Whole note · 4 عدّات</option>
+              <option value="half">بلانش · Half note · عدّتان</option>
+              <option value="quarter">نوار · Quarter note · عدّة واحدة</option>
+              <option value="eighth">كروش · Eighth note · نصف عدّة</option>
+            </select>
+          </label>
+        </div>
+
         <div class="recorder-actions">
           <button id="armButton" class="button gold" type="button" disabled>تجهيز تسجيل النغمة</button>
           <button id="cancelButton" class="button danger" type="button" disabled>إلغاء</button>
         </div>
       </div>
+
       <div class="metronome">
         <div id="beatOrb" class="beat-orb"><span id="beatNumber" class="beat-number">—</span></div>
         <div>
-          <div class="beat-heading"><strong>العداد المرئي الصامت</strong><span id="durationLabel" class="silent-chip">4.00 ثانية عند 60 BPM</span></div>
-          <div class="beat-dots" aria-hidden="true"><span class="beat-dot" data-beat="1"></span><span class="beat-dot" data-beat="2"></span><span class="beat-dot" data-beat="3"></span><span class="beat-dot" data-beat="4"></span></div>
+          <div class="beat-heading">
+            <strong>العداد المرئي الصامت</strong>
+            <span id="durationLabel" class="silent-chip">روند · 4.00 ثانية عند 60 BPM</span>
+          </div>
+          <div id="beatDots" class="beat-dots" aria-hidden="true"></div>
           <div id="recordingStatus" class="beat-status">شغّل الميكروفون ثم جهّز التسجيل.</div>
         </div>
       </div>
@@ -272,6 +294,7 @@
         </label>
         <button id="exportSelectedButton" class="button secondary mini" type="button" disabled>تصدير المحدد</button>
         <button id="exportAllButton" class="button primary mini" type="button" disabled>تصدير الكل</button>
+        <button id="clearAllButton" class="button danger mini" type="button" disabled>مسح القائمة بالكامل</button>
       </div>
     </div>
     <div id="recordingsList" class="recordings"></div>
@@ -281,340 +304,1422 @@
 
   <footer class="footer">
     <span><strong>© 2026 محمد الزهراني.</strong> جميع الحقوق محفوظة.</span>
-    <span>الإصدار <strong>v0.4.0</strong> · تاريخ البناء والإصدار: <strong>2026-08-02</strong></span>
+    <span>الإصدار <strong>v0.5.0</strong> · تاريخ البناء والإصدار: <strong>2026-08-02</strong></span>
   </footer>
 </main>
 
 <script>
 (() => {
   "use strict";
-  const APP={name:"مِعيار الناي",version:"0.4.0",buildDate:"2026-08-02",owner:"محمد الزهراني",dbName:"NeyMeyarDB",dbVersion:1,storeName:"recordings"};
 
-  const N24=[
-    ["C","دو","طبيعية"],["C half-sharp","دو نصف دييز","ربع تون"],["C♯ / D♭","دو دييز / ري بيمول","نصف تون"],["D half-flat","ري نصف بيمول","ربع تون"],
-    ["D","ري","طبيعية"],["D half-sharp","ري نصف دييز","ربع تون"],["D♯ / E♭","ري دييز / مي بيمول","نصف تون"],["E half-flat","مي نصف بيمول","ربع تون"],
-    ["E","مي","طبيعية"],["F half-flat","فا نصف بيمول","ربع تون"],["F","فا","طبيعية"],["F half-sharp","فا نصف دييز","ربع تون"],
-    ["F♯ / G♭","فا دييز / صول بيمول","نصف تون"],["G half-flat","صول نصف بيمول","ربع تون"],["G","صول","طبيعية"],["G half-sharp","صول نصف دييز","ربع تون"],
-    ["G♯ / A♭","صول دييز / لا بيمول","نصف تون"],["A half-flat","لا نصف بيمول","ربع تون"],["A","لا","طبيعية"],["A half-sharp","لا نصف دييز","ربع تون"],
-    ["A♯ / B♭","لا دييز / سي بيمول","نصف تون"],["B half-flat","سي نصف بيمول","ربع تون"],["B","سي","طبيعية"],["B half-sharp","سي نصف دييز","ربع تون"]
-  ];
-  const N12=[
-    ["C","دو","طبيعية"],["C♯ / D♭","دو دييز / ري بيمول","نصف تون"],["D","ري","طبيعية"],["D♯ / E♭","ري دييز / مي بيمول","نصف تون"],
-    ["E","مي","طبيعية"],["F","فا","طبيعية"],["F♯ / G♭","فا دييز / صول بيمول","نصف تون"],["G","صول","طبيعية"],
-    ["G♯ / A♭","صول دييز / لا بيمول","نصف تون"],["A","لا","طبيعية"],["A♯ / B♭","لا دييز / سي بيمول","نصف تون"],["B","سي","طبيعية"]
-  ];
-
-  const $=id=>document.getElementById(id);
-  const ui={
-    message:$("message"),mic:$("micButton"),calibrate:$("calibrateButton"),arm:$("armButton"),cancel:$("cancelButton"),
-    division:$("divisionSelect"),a4:$("a4Input"),bpm:$("bpmInput"),tolerance:$("toleranceSelect"),
-    status:$("detectorStatus"),en:$("englishNote"),ar:$("arabicNote"),subtitle:$("noteSubtitle"),
-    freq:$("frequencyValue"),target:$("targetValue"),cents:$("centsValue"),snr:$("snrValue"),needle:$("needle"),
-    qdot:$("qualityDot"),qtext:$("qualityText"),noiseCheck:$("noiseCheck"),clarityCheck:$("clarityCheck"),
-    stabilityCheck:$("stabilityCheck"),continuityCheck:$("continuityCheck"),echo:$("echoStatus"),
-    ns:$("noiseSuppressionStatus"),agc:$("agcStatus"),sr:$("sampleRateStatus"),orb:$("beatOrb"),
-    beat:$("beatNumber"),duration:$("durationLabel"),recStatus:$("recordingStatus"),
-    list:$("recordingsList"),empty:$("emptyLibrary"),selectAll:$("selectAllCheckbox"),bulk:$("bulkFormat"),
-    exportSelected:$("exportSelectedButton"),exportAll:$("exportAllButton"),
-    player:$("playerBar"),playerName:$("playerName"),audio:$("audioPlayer"),closePlayer:$("closePlayerButton")
+  const APP = {
+    name: "مِعيار الناي",
+    version: "0.5.0",
+    buildDate: "2026-08-02",
+    owner: "محمد الزهراني",
+    dbName: "NeyMeyarDB",
+    dbVersion: 1,
+    storeName: "recordings"
   };
 
-  let db=null,records=[],selected=new Set();
-  let stream=null,ctx=null,source=null,analyser=null,processor=null,silent=null,raf=null,listening=false;
-  let calibrating=false,calEnd=0,calLevels=[],noiseFloor=.002,noiseGate=.009;
-  let recent=[],candidate=null,candidateSince=0,lastValid=0,current=null;
-  let armed=false,capture=null,finalizeQueued=false;
-  let preRoll=null,preIndex=0,preFilled=0,playUrl=null,lamePromise=null;
+  const NOTE_VALUES = {
+    whole:   { key:"whole",   ar:"روند",   en:"Whole note",   beats:4,   countText:"4 عدّات" },
+    half:    { key:"half",    ar:"بلانش",  en:"Half note",    beats:2,   countText:"عدّتان" },
+    quarter: { key:"quarter", ar:"نوار",   en:"Quarter note", beats:1,   countText:"عدّة واحدة" },
+    eighth:  { key:"eighth",  ar:"كروش",   en:"Eighth note",  beats:0.5, countText:"نصف عدّة" }
+  };
 
-  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-  const mean=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:0;
-  const median=a=>{if(!a.length)return 0;const b=[...a].sort((x,y)=>x-y),m=Math.floor(b.length/2);return b.length%2?b[m]:(b[m-1]+b[m])/2};
-  const std=a=>{if(a.length<2)return Infinity;const m=mean(a);return Math.sqrt(mean(a.map(v=>(v-m)**2)))};
-  const rms=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/a.length);
-  const peak=a=>a.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
+  const N24 = [
+    ["C","دو","طبيعية"],["C half-sharp","دو نصف دييز","ربع تون"],
+    ["C♯ / D♭","دو دييز / ري بيمول","نصف تون"],["D half-flat","ري نصف بيمول","ربع تون"],
+    ["D","ري","طبيعية"],["D half-sharp","ري نصف دييز","ربع تون"],
+    ["D♯ / E♭","ري دييز / مي بيمول","نصف تون"],["E half-flat","مي نصف بيمول","ربع تون"],
+    ["E","مي","طبيعية"],["F half-flat","فا نصف بيمول","ربع تون"],
+    ["F","فا","طبيعية"],["F half-sharp","فا نصف دييز","ربع تون"],
+    ["F♯ / G♭","فا دييز / صول بيمول","نصف تون"],["G half-flat","صول نصف بيمول","ربع تون"],
+    ["G","صول","طبيعية"],["G half-sharp","صول نصف دييز","ربع تون"],
+    ["G♯ / A♭","صول دييز / لا بيمول","نصف تون"],["A half-flat","لا نصف بيمول","ربع تون"],
+    ["A","لا","طبيعية"],["A half-sharp","لا نصف دييز","ربع تون"],
+    ["A♯ / B♭","لا دييز / سي بيمول","نصف تون"],["B half-flat","سي نصف بيمول","ربع تون"],
+    ["B","سي","طبيعية"],["B half-sharp","سي نصف دييز","ربع تون"]
+  ];
 
-  function msg(text,error=false){ui.message.textContent=text;ui.message.className="message show"+(error?" error":"")}
-  function clearMsg(){ui.message.className="message";ui.message.textContent=""}
-  function division(){return Number(ui.division.value)===12?12:24}
-  function a4(){const v=Number(ui.a4.value);return Number.isFinite(v)?clamp(v,400,480):440}
-  function bpm(){const v=Math.round(Number(ui.bpm.value));return Number.isFinite(v)?clamp(v,30,180):60}
-  function tolerance(){return Number(ui.tolerance.value)||12}
-  function duration(){return 240/bpm()}
-  function updateDuration(){ui.bpm.value=String(bpm());ui.duration.textContent=`${duration().toFixed(2)} ثانية عند ${bpm()} BPM`}
+  const N12 = [
+    ["C","دو","طبيعية"],["C♯ / D♭","دو دييز / ري بيمول","نصف تون"],
+    ["D","ري","طبيعية"],["D♯ / E♭","ري دييز / مي بيمول","نصف تون"],
+    ["E","مي","طبيعية"],["F","فا","طبيعية"],
+    ["F♯ / G♭","فا دييز / صول بيمول","نصف تون"],["G","صول","طبيعية"],
+    ["G♯ / A♭","صول دييز / لا بيمول","نصف تون"],["A","لا","طبيعية"],
+    ["A♯ / B♭","لا دييز / سي بيمول","نصف تون"],["B","سي","طبيعية"]
+  ];
+
+  const $ = id => document.getElementById(id);
+  const ui = {
+    message:$("message"),
+    mic:$("micButton"),
+    calibrate:$("calibrateButton"),
+    arm:$("armButton"),
+    cancel:$("cancelButton"),
+    division:$("divisionSelect"),
+    a4:$("a4Input"),
+    bpm:$("bpmInput"),
+    tolerance:$("toleranceSelect"),
+    noteValue:$("noteValueSelect"),
+    noteValueHeading:$("noteValueHeading"),
+    status:$("detectorStatus"),
+    en:$("englishNote"),
+    ar:$("arabicNote"),
+    subtitle:$("noteSubtitle"),
+    freq:$("frequencyValue"),
+    target:$("targetValue"),
+    cents:$("centsValue"),
+    snr:$("snrValue"),
+    needle:$("needle"),
+    qdot:$("qualityDot"),
+    qtext:$("qualityText"),
+    noiseCheck:$("noiseCheck"),
+    clarityCheck:$("clarityCheck"),
+    stabilityCheck:$("stabilityCheck"),
+    continuityCheck:$("continuityCheck"),
+    echo:$("echoStatus"),
+    ns:$("noiseSuppressionStatus"),
+    agc:$("agcStatus"),
+    sr:$("sampleRateStatus"),
+    orb:$("beatOrb"),
+    beat:$("beatNumber"),
+    beatDots:$("beatDots"),
+    duration:$("durationLabel"),
+    recStatus:$("recordingStatus"),
+    list:$("recordingsList"),
+    empty:$("emptyLibrary"),
+    selectAll:$("selectAllCheckbox"),
+    bulk:$("bulkFormat"),
+    exportSelected:$("exportSelectedButton"),
+    exportAll:$("exportAllButton"),
+    clearAll:$("clearAllButton"),
+    player:$("playerBar"),
+    playerName:$("playerName"),
+    audio:$("audioPlayer"),
+    closePlayer:$("closePlayerButton")
+  };
+
+  let db = null;
+  let records = [];
+  let selected = new Set();
+
+  let stream = null;
+  let ctx = null;
+  let source = null;
+  let analyser = null;
+  let recorderNode = null;
+  let silentGain = null;
+  let raf = null;
+  let listening = false;
+  let lastAnalysisAt = 0;
+
+  let calibrating = false;
+  let calibrationEnd = 0;
+  let calibrationLevels = [];
+  let noiseFloor = 0.002;
+  let noiseGate = 0.009;
+
+  let recentPitch = [];
+  let analysisHistory = [];
+  let candidateStep = null;
+  let candidateSince = 0;
+  let lastValidAt = 0;
+  let currentReading = null;
+
+  let armed = false;
+  let capture = null;
+  let playbackUrl = null;
+  let lamePromise = null;
+
+  const clamp = (value,min,max) => Math.min(max,Math.max(min,value));
+  const mean = values => values.length ? values.reduce((sum,value)=>sum+value,0)/values.length : 0;
+  const median = values => {
+    if (!values.length) return 0;
+    const sorted = [...values].sort((a,b)=>a-b);
+    const middle = Math.floor(sorted.length/2);
+    return sorted.length%2 ? sorted[middle] : (sorted[middle-1]+sorted[middle])/2;
+  };
+  const std = values => {
+    if (values.length < 2) return 0;
+    const average = mean(values);
+    return Math.sqrt(mean(values.map(value=>(value-average)**2)));
+  };
+  const rms = samples => Math.sqrt(samples.reduce((sum,value)=>sum+value*value,0)/samples.length);
+  const peak = samples => samples.reduce((maximum,value)=>Math.max(maximum,Math.abs(value)),0);
+
+  function showMessage(text,isError=false){
+    ui.message.textContent = text;
+    ui.message.className = "message show" + (isError ? " error" : "");
+  }
+
+  function clearMessage(){
+    ui.message.className = "message";
+    ui.message.textContent = "";
+  }
+
+  function division(){
+    return Number(ui.division.value) === 12 ? 12 : 24;
+  }
+
+  function a4(){
+    const value = Number(ui.a4.value);
+    return Number.isFinite(value) ? clamp(value,400,480) : 440;
+  }
+
+  function bpm(){
+    const value = Math.round(Number(ui.bpm.value));
+    return Number.isFinite(value) ? clamp(value,30,180) : 60;
+  }
+
+  function tolerance(){
+    return Number(ui.tolerance.value) || 12;
+  }
+
+  function selectedNoteValue(){
+    return NOTE_VALUES[ui.noteValue.value] || NOTE_VALUES.whole;
+  }
+
+  function durationSeconds(){
+    return (60/bpm()) * selectedNoteValue().beats;
+  }
 
   function quality(text,level){
-    ui.qtext.textContent=text;
-    ui.qdot.style.background=level==="good"?"var(--good)":level==="warn"?"var(--warn)":"var(--bad)";
-  }
-  function check(el,state,text){
-    el.classList.remove("pass","fail");
-    if(state===true)el.classList.add("pass");
-    if(state===false)el.classList.add("fail");
-    el.querySelector("small").textContent=text;
-  }
-  function resetChecks(){[ui.noiseCheck,ui.clarityCheck,ui.stabilityCheck,ui.continuityCheck].forEach(e=>check(e,null,"بانتظار النغمة"))}
-  function resetDetector(){
-    current=null;recent=[];candidate=null;candidateSince=0;
-    ui.en.textContent="—";ui.ar.textContent="—";ui.subtitle.textContent="لا توجد نغمة ملتقطة";
-    ui.freq.textContent="0.00 Hz";ui.target.textContent="—";ui.cents.textContent="0 سنت";ui.snr.textContent="—";ui.needle.style.left="50%";
-    quality("بانتظار نغمة واضحة","bad");resetChecks()
+    ui.qtext.textContent = text;
+    ui.qdot.style.background =
+      level === "good" ? "var(--good)" :
+      level === "warn" ? "var(--warn)" : "var(--bad)";
   }
 
-  function noteFromFrequency(f){
-    const div=division(),ref=a4(),step=Math.round(div*Math.log2(f/ref)),target=ref*Math.pow(2,step/div),cents=1200*Math.log2(f/target);
-    const fromC4=(div===24?18:9)+step,pitch=((fromC4%div)+div)%div,octave=4+Math.floor(fromC4/div),n=(div===24?N24:N12)[pitch];
-    return{division:div,step,target,cents,english:`${n[0]}${octave}`,arabic:`${n[1]} ${octave}`,type:n[2]}
+  function setCheck(element,state,text){
+    element.classList.remove("pass","fail");
+    if (state === true) element.classList.add("pass");
+    if (state === false) element.classList.add("fail");
+    element.querySelector("small").textContent = text;
+  }
+
+  function resetChecks(){
+    [ui.noiseCheck,ui.clarityCheck,ui.stabilityCheck,ui.continuityCheck]
+      .forEach(element=>setCheck(element,null,"بانتظار النغمة"));
+  }
+
+  function resetDetector(){
+    currentReading = null;
+    recentPitch = [];
+    analysisHistory = [];
+    candidateStep = null;
+    candidateSince = 0;
+    ui.en.textContent = "—";
+    ui.ar.textContent = "—";
+    ui.subtitle.textContent = "لا توجد نغمة ملتقطة";
+    ui.freq.textContent = "0.00 Hz";
+    ui.target.textContent = "—";
+    ui.cents.textContent = "0 سنت";
+    ui.snr.textContent = "—";
+    ui.needle.style.left = "50%";
+    quality("بانتظار نغمة واضحة","bad");
+    resetChecks();
+  }
+
+  function renderBeatDots(){
+    const noteValue = selectedNoteValue();
+    const segmentCount = Math.max(1,Math.ceil(noteValue.beats));
+    ui.beatDots.innerHTML = "";
+
+    for (let index=0;index<segmentCount;index++){
+      const dot = document.createElement("span");
+      dot.className = "beat-dot";
+      dot.dataset.beat = String(index+1);
+      if (noteValue.beats < 1) dot.classList.add("half");
+      ui.beatDots.appendChild(dot);
+    }
+  }
+
+  function updateDuration(){
+    const value = selectedNoteValue();
+    ui.bpm.value = String(bpm());
+    ui.noteValueHeading.textContent = `${value.ar} — ${value.countText}`;
+    ui.duration.textContent = `${value.ar} · ${durationSeconds().toFixed(3)} ثانية عند ${bpm()} BPM`;
+    renderBeatDots();
+    resetBeat();
+  }
+
+  function noteFromFrequency(frequency){
+    const div = division();
+    const reference = a4();
+    const step = Math.round(div*Math.log2(frequency/reference));
+    const target = reference*Math.pow(2,step/div);
+    const cents = 1200*Math.log2(frequency/target);
+    const fromC4 = (div === 24 ? 18 : 9) + step;
+    const pitchClass = ((fromC4%div)+div)%div;
+    const octave = 4 + Math.floor(fromC4/div);
+    const item = (div === 24 ? N24 : N12)[pitchClass];
+
+    return {
+      division:div,
+      step,
+      target,
+      cents,
+      english:`${item[0]}${octave}`,
+      arabic:`${item[1]} ${octave}`,
+      type:item[2]
+    };
   }
 
   function yin(buffer,sampleRate){
-    const minF=65,maxF=1600,threshold=.11,minTau=Math.floor(sampleRate/maxF),maxTau=Math.min(Math.floor(sampleRate/minF),Math.floor(buffer.length/2));
-    const d=new Float32Array(maxTau+1);
-    for(let tau=1;tau<=maxTau;tau++){let s=0;for(let i=0;i<maxTau;i++){const x=buffer[i]-buffer[i+tau];s+=x*x}d[tau]=s}
-    d[0]=1;let run=0;
-    for(let tau=1;tau<=maxTau;tau++){run+=d[tau];d[tau]=run===0?1:d[tau]*tau/run}
-    let est=-1;
-    for(let tau=minTau;tau<=maxTau;tau++){if(d[tau]<threshold){while(tau+1<=maxTau&&d[tau+1]<d[tau])tau++;est=tau;break}}
-    if(est===-1){let best=minTau;for(let tau=minTau+1;tau<=maxTau;tau++)if(d[tau]<d[best])best=tau;if(d[best]>.2)return null;est=best}
-    const p=est>1?est-1:est,n=est+1<=maxTau?est+1:est,s0=d[p],s1=d[est],s2=d[n],den=2*(2*s1-s2-s0);
-    let refined=est;if(den!==0)refined+=(s2-s0)/den;
-    return{frequency:sampleRate/refined,clarity:clamp(1-d[est],0,1)}
-  }
+    const minFrequency = 65;
+    const maxFrequency = 1600;
+    const threshold = 0.11;
+    const minTau = Math.floor(sampleRate/maxFrequency);
+    const maxTau = Math.min(Math.floor(sampleRate/minFrequency),Math.floor(buffer.length/2));
+    const difference = new Float32Array(maxTau+1);
 
-  function initPreRoll(sampleRate){preRoll=new Float32Array(Math.round(sampleRate*.22));preIndex=0;preFilled=0}
-  function pushPre(samples){if(!preRoll)return;for(const v of samples){preRoll[preIndex]=v;preIndex=(preIndex+1)%preRoll.length;preFilled=Math.min(preRoll.length,preFilled+1)}}
-  function readPre(){
-    if(!preRoll||!preFilled)return new Float32Array(0);
-    const out=new Float32Array(preFilled),start=(preIndex-preFilled+preRoll.length)%preRoll.length;
-    for(let i=0;i<preFilled;i++)out[i]=preRoll[(start+i)%preRoll.length];
-    return out
+    for (let tau=1;tau<=maxTau;tau++){
+      let total = 0;
+      for (let index=0;index<maxTau;index++){
+        const delta = buffer[index]-buffer[index+tau];
+        total += delta*delta;
+      }
+      difference[tau] = total;
+    }
+
+    difference[0] = 1;
+    let running = 0;
+    for (let tau=1;tau<=maxTau;tau++){
+      running += difference[tau];
+      difference[tau] = running === 0 ? 1 : difference[tau]*tau/running;
+    }
+
+    let estimate = -1;
+    for (let tau=minTau;tau<=maxTau;tau++){
+      if (difference[tau] < threshold){
+        while (tau+1<=maxTau && difference[tau+1] < difference[tau]) tau++;
+        estimate = tau;
+        break;
+      }
+    }
+
+    if (estimate === -1){
+      let best = minTau;
+      for (let tau=minTau+1;tau<=maxTau;tau++){
+        if (difference[tau] < difference[best]) best = tau;
+      }
+      if (difference[best] > 0.2) return null;
+      estimate = best;
+    }
+
+    const previous = estimate > 1 ? estimate-1 : estimate;
+    const next = estimate+1 <= maxTau ? estimate+1 : estimate;
+    const s0 = difference[previous];
+    const s1 = difference[estimate];
+    const s2 = difference[next];
+    const denominator = 2*(2*s1-s2-s0);
+    let refined = estimate;
+    if (denominator !== 0) refined += (s2-s0)/denominator;
+
+    return {
+      frequency:sampleRate/refined,
+      clarity:clamp(1-difference[estimate],0,1)
+    };
   }
 
   function beginCalibration(){
-    if(!listening)return;
-    abort("إعادة معايرة المكان");calibrating=true;calLevels=[];calEnd=performance.now()+2200;
-    ui.status.textContent="معايرة ضوضاء المكان… ابقَ صامتًا لمدة ثانيتين.";quality("جارٍ قياس الضوضاء","warn")
+    if (!listening) return;
+    abortCapture("إعادة معايرة المكان");
+    calibrating = true;
+    calibrationLevels = [];
+    calibrationEnd = performance.now()+2200;
+    ui.status.textContent = "معايرة ضوضاء المكان… ابقَ صامتًا لمدة ثانيتين.";
+    quality("جارٍ قياس الضوضاء","warn");
   }
+
   function finishCalibration(){
-    calibrating=false;const sorted=[...calLevels].sort((a,b)=>a-b),base=sorted[Math.floor((sorted.length-1)*.8)]||.002;
-    noiseFloor=Math.max(.0012,base);noiseGate=Math.max(.0055,noiseFloor*3.4);
-    ui.status.textContent="اكتملت المعايرة. اعزف نغمة منفردة وواضحة.";quality("جاهز للالتقاط","warn")
+    calibrating = false;
+    const sorted = [...calibrationLevels].sort((x,y)=>x-y);
+    const base = sorted[Math.floor((sorted.length-1)*0.8)] || 0.002;
+    noiseFloor = Math.max(0.0012,base);
+    noiseGate = Math.max(0.0055,noiseFloor*3.4);
+    ui.status.textContent = "اكتملت المعايرة. اعزف نغمة منفردة وواضحة.";
+    quality("جاهز للالتقاط","warn");
   }
-  const settingLabel=v=>v===false?"متوقف ✓":v===true?"يعمل ⚠":"غير معروف";
+
+  const settingLabel = value =>
+    value === false ? "متوقف ✓" :
+    value === true ? "يعمل ⚠" : "غير معروف";
+
   function showSettings(track){
-    const s=track.getSettings?track.getSettings():{};
-    ui.echo.textContent=settingLabel(s.echoCancellation);ui.ns.textContent=settingLabel(s.noiseSuppression);ui.agc.textContent=settingLabel(s.autoGainControl);
-    ui.sr.textContent=`${s.sampleRate||ctx.sampleRate} Hz`;
-    if(s.echoCancellation===true||s.noiseSuppression===true||s.autoGainControl===true)
-      msg("تنبيه: الجهاز أبقى معالجة داخلية للميكروفون مفعلة رغم طلب تعطيلها.",true)
+    const settings = track.getSettings ? track.getSettings() : {};
+    ui.echo.textContent = settingLabel(settings.echoCancellation);
+    ui.ns.textContent = settingLabel(settings.noiseSuppression);
+    ui.agc.textContent = settingLabel(settings.autoGainControl);
+    ui.sr.textContent = `${settings.sampleRate || ctx.sampleRate} Hz`;
+
+    if (
+      settings.echoCancellation === true ||
+      settings.noiseSuppression === true ||
+      settings.autoGainControl === true
+    ){
+      showMessage(
+        "تنبيه: الجهاز أبقى معالجة داخلية للميكروفون مفعّلة رغم طلب تعطيلها.",
+        true
+      );
+    }
+  }
+
+  function handleRecorderMessage(event){
+    const data = event.data || {};
+    if (!capture || data.id !== capture.id) return;
+
+    if (data.type === "started"){
+      capture.preRollSamples = data.preRollSamples || 0;
+      capture.visualStartMs =
+        performance.now() - (capture.preRollSamples/capture.sampleRate)*1000;
+      return;
+    }
+
+    if (data.type === "complete"){
+      capture.samples = new Float32Array(data.samples);
+      finalizeCapture();
+    }
   }
 
   async function startMic(){
-    clearMsg();
-    if(!navigator.mediaDevices?.getUserMedia){msg("المتصفح لا يدعم الميكروفون الحديث. استخدم HTTPS ومتصفحًا حديثًا.",true);return}
+    clearMessage();
+
+    if (!navigator.mediaDevices?.getUserMedia){
+      showMessage("المتصفح لا يدعم الميكروفون الحديث. استخدم HTTPS ومتصفحًا حديثًا.",true);
+      return;
+    }
+
     try{
-      stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-      const track=stream.getAudioTracks()[0];if("contentHint"in track)track.contentHint="music";
-      ctx=new(window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});await ctx.resume();
-      source=ctx.createMediaStreamSource(stream);analyser=ctx.createAnalyser();analyser.fftSize=4096;analyser.smoothingTimeConstant=0;
-      processor=ctx.createScriptProcessor(2048,1,1);silent=ctx.createGain();silent.gain.value=0;
-      source.connect(analyser);source.connect(processor);processor.connect(silent);silent.connect(ctx.destination);
-      initPreRoll(ctx.sampleRate);
-      processor.onaudioprocess=e=>{
-        const input=new Float32Array(e.inputBuffer.getChannelData(0));pushPre(input);
-        if(!capture?.active)return;
-        const remaining=capture.total-capture.count;if(remaining<=0)return;
-        const part=input.length<=remaining?input:input.subarray(0,remaining);
-        capture.chunks.push(new Float32Array(part));capture.count+=part.length;
-        if(capture.count>=capture.total&&!finalizeQueued){finalizeQueued=true;setTimeout(()=>{finalizeQueued=false;finalizeCapture()},0)}
-      };
-      listening=true;ui.mic.textContent="إيقاف الميكروفون";ui.mic.className="button danger";ui.calibrate.disabled=false;ui.arm.disabled=false;
-      showSettings(track);beginCalibration();loop()
-    }catch(e){msg(e?.name==="NotAllowedError"?"تم رفض إذن الميكروفون. اسمح به من إعدادات المتصفح.":"تعذر تشغيل الميكروفون. افتح الصفحة عبر HTTPS أو localhost.",true)}
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio:{
+          channelCount:1,
+          echoCancellation:false,
+          noiseSuppression:false,
+          autoGainControl:false
+        }
+      });
+
+      const track = stream.getAudioTracks()[0];
+      if ("contentHint" in track) track.contentHint = "music";
+
+      ctx = new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
+      await ctx.resume();
+
+      if (!ctx.audioWorklet){
+        throw new Error("AudioWorklet غير مدعوم في هذا المتصفح");
+      }
+
+      await ctx.audioWorklet.addModule("audio-recorder-worklet.js");
+
+      source = ctx.createMediaStreamSource(stream);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 4096;
+      analyser.smoothingTimeConstant = 0;
+
+      recorderNode = new AudioWorkletNode(ctx,"ney-recorder",{
+        numberOfInputs:1,
+        numberOfOutputs:1,
+        outputChannelCount:[1],
+        channelCount:1,
+        channelCountMode:"explicit",
+        channelInterpretation:"discrete"
+      });
+
+      silentGain = ctx.createGain();
+      silentGain.gain.value = 0;
+
+      recorderNode.port.onmessage = handleRecorderMessage;
+
+      source.connect(analyser);
+      source.connect(recorderNode);
+      recorderNode.connect(silentGain);
+      silentGain.connect(ctx.destination);
+
+      listening = true;
+      ui.mic.textContent = "إيقاف الميكروفون";
+      ui.mic.className = "button danger";
+      ui.calibrate.disabled = false;
+      ui.arm.disabled = false;
+      showSettings(track);
+      beginCalibration();
+      analysisLoop();
+    }catch(error){
+      console.error(error);
+      const text = error?.name === "NotAllowedError"
+        ? "تم رفض إذن الميكروفون. اسمح به من إعدادات المتصفح."
+        : "تعذر تشغيل مسجل الصوت الآمن. افتح الصفحة عبر HTTPS واستخدم Chrome أو Safari حديثًا.";
+      showMessage(text,true);
+      stream?.getTracks().forEach(track=>track.stop());
+    }
   }
 
   async function stopMic(){
-    abort("تم إيقاف الميكروفون");armed=false;listening=false;calibrating=false;if(raf)cancelAnimationFrame(raf);
-    try{source?.disconnect()}catch(_){}try{processor?.disconnect()}catch(_){}try{silent?.disconnect()}catch(_){}
-    if(processor)processor.onaudioprocess=null;stream?.getTracks().forEach(t=>t.stop());try{await ctx?.close()}catch(_){}
-    stream=ctx=source=analyser=processor=silent=null;
-    ui.mic.textContent="تشغيل الميكروفون";ui.mic.className="button primary";ui.calibrate.disabled=true;ui.arm.disabled=true;ui.cancel.disabled=true;
-    ui.status.textContent="تم إيقاف الميكروفون.";ui.recStatus.textContent="شغّل الميكروفون ثم جهّز التسجيل.";resetDetector();resetBeat()
+    abortCapture("تم إيقاف الميكروفون");
+    armed = false;
+    listening = false;
+    calibrating = false;
+
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+
+    try{source?.disconnect()}catch(_){}
+    try{recorderNode?.disconnect()}catch(_){}
+    try{silentGain?.disconnect()}catch(_){}
+
+    stream?.getTracks().forEach(track=>track.stop());
+    try{await ctx?.close()}catch(_){}
+
+    stream = null;
+    ctx = null;
+    source = null;
+    analyser = null;
+    recorderNode = null;
+    silentGain = null;
+
+    ui.mic.textContent = "تشغيل الميكروفون";
+    ui.mic.className = "button primary";
+    ui.calibrate.disabled = true;
+    ui.arm.disabled = true;
+    ui.cancel.disabled = true;
+    ui.status.textContent = "تم إيقاف الميكروفون.";
+    ui.recStatus.textContent = "شغّل الميكروفون ثم جهّز التسجيل.";
+    resetDetector();
+    resetBeat();
   }
 
-  function display(r){
-    current=r;ui.en.textContent=r.english;ui.ar.textContent=r.arabic;ui.subtitle.textContent=`${r.type} · ${r.division}-TET`;
-    ui.freq.textContent=`${r.frequency.toFixed(2)} Hz`;ui.target.textContent=`${r.target.toFixed(2)} Hz`;
-    ui.cents.textContent=`${r.cents>0?"+":""}${r.cents.toFixed(1)} سنت`;ui.snr.textContent=`${r.snr.toFixed(1)} dB`;
-    const range=r.division===24?25:50;ui.needle.style.left=`${50+clamp(r.cents,-range,range)/range*50}%`
+  function displayReading(reading){
+    currentReading = reading;
+    ui.en.textContent = reading.english;
+    ui.ar.textContent = reading.arabic;
+    ui.subtitle.textContent = `${reading.type} · ${reading.division}-TET`;
+    ui.freq.textContent = `${reading.frequency.toFixed(2)} Hz`;
+    ui.target.textContent = `${reading.target.toFixed(2)} Hz`;
+    ui.cents.textContent = `${reading.cents>0?"+":""}${reading.cents.toFixed(1)} سنت`;
+    ui.snr.textContent = `${reading.snr.toFixed(1)} dB`;
+
+    const range = reading.division === 24 ? 25 : 50;
+    ui.needle.style.left =
+      `${50 + clamp(reading.cents,-range,range)/range*50}%`;
   }
 
-  function assess(r){
-    const snrPass=r.snr>=15,clarityPass=r.clarity>=.87,pitchPass=Math.abs(r.cents)<=tolerance(),clipPass=r.peak<.985;
-    const cents=recent.filter(x=>performance.now()-x.time<=700&&x.step===r.step).map(x=>x.cents),dev=std(cents),stable=cents.length>=5&&dev<=6.5;
-    check(ui.noiseCheck,snrPass,snrPass?`${r.snr.toFixed(1)} dB`:"قريبة من الضوضاء");
-    check(ui.clarityCheck,clarityPass&&clipPass,!clipPass?"الصوت مشبع":clarityPass?`${Math.round(r.clarity*100)}%`:"غير واضحة");
-    check(ui.stabilityCheck,stable,stable?`تذبذب ${dev.toFixed(1)} سنت`:"ثبّت النفَس");
-    check(ui.continuityCheck,pitchPass,pitchPass?`داخل ±${tolerance()} سنت`:"خارج الهامش");
-    return{valid:snrPass&&clarityPass&&pitchPass&&clipPass,stable}
+  function assess(reading){
+    const snrPass = reading.snr >= 15;
+    const clarityPass = reading.clarity >= 0.87;
+    const pitchPass = Math.abs(reading.cents) <= tolerance();
+    const clippingPass = reading.peak < 0.985;
+
+    const centsWindow = recentPitch
+      .filter(frame=>performance.now()-frame.time<=700 && frame.step===reading.step)
+      .map(frame=>frame.cents);
+
+    const deviation = std(centsWindow);
+    const stable = centsWindow.length >= 5 && deviation <= 6.5;
+
+    setCheck(ui.noiseCheck,snrPass,snrPass?`${reading.snr.toFixed(1)} dB`:"قريبة من الضوضاء");
+    setCheck(
+      ui.clarityCheck,
+      clarityPass&&clippingPass,
+      !clippingPass ? "الصوت مشبع" :
+      clarityPass ? `${Math.round(reading.clarity*100)}%` : "غير واضحة"
+    );
+    setCheck(ui.stabilityCheck,stable,stable?`تذبذب ${deviation.toFixed(1)} سنت`:"ثبّت النفَس");
+    setCheck(ui.continuityCheck,pitchPass,pitchPass?`داخل ±${tolerance()} سنت`:"خارج الهامش");
+
+    return {
+      valid:snrPass&&clarityPass&&pitchPass&&clippingPass,
+      stable,
+      deviation
+    };
   }
 
-  function loop(){
-    if(!listening||!analyser||!ctx)return;
-    const now=performance.now(),data=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(data);const level=rms(data);
-    if(calibrating){calLevels.push(level);if(now>=calEnd)finishCalibration();raf=requestAnimationFrame(loop);return}
-    if(level<noiseGate){
-      if(capture?.active)captureFrame(null,false,"انقطاع الصوت");candidate=null;candidateSince=0;
-      if(now-lastValid>220){ui.status.textContent="لا توجد نغمة واضحة أعلى من ضوضاء المكان.";quality("الصوت ضعيف أو متوقف","bad");check(ui.noiseCheck,false,"تحت بوابة الضوضاء");check(ui.continuityCheck,false,"منقطعة")}
-      updateBeat();raf=requestAnimationFrame(loop);return
+  function pushAnalysisHistory(frame){
+    analysisHistory.push(frame);
+    analysisHistory = analysisHistory.filter(item=>performance.now()-item.time<=400);
+  }
+
+  function analysisLoop(){
+    if (!listening || !analyser || !ctx) return;
+
+    const now = performance.now();
+    updateBeat();
+
+    if (now-lastAnalysisAt < 48){
+      raf = requestAnimationFrame(analysisLoop);
+      return;
     }
-    const p=yin(data,ctx.sampleRate);
-    if(!p||p.frequency<65||p.frequency>1600){if(capture?.active)captureFrame(null,false,"فقدان التردد الأساسي");quality("حاول نغمة أنقى","bad");updateBeat();raf=requestAnimationFrame(loop);return}
-    const n=noteFromFrequency(p.frequency),snr=20*Math.log10(Math.max(level,1e-7)/Math.max(noiseFloor,1e-7));
-    const r={...n,frequency:p.frequency,clarity:p.clarity,snr,peak:peak(data)};
-    recent.push({time:now,step:r.step,cents:r.cents,frequency:r.frequency});recent=recent.filter(x=>now-x.time<=1800);display(r);
-    const q=assess(r);
-    if(q.valid){
-      lastValid=now;if(candidate!==r.step){candidate=r.step;candidateSince=now}
-      if(q.stable&&now-candidateSince>=170){ui.status.textContent="النغمة واضحة وثابتة.";quality("صالحة للتسجيل","good");if(armed&&!capture?.active)startCapture(r)}
-      else{ui.status.textContent="استمر لحظة حتى يثبت التردد.";quality("جارٍ التثبيت","warn")}
-    }else{candidate=null;candidateSince=0;ui.status.textContent="لم تُعتمد النغمة بعد.";quality("صحّح الضبط وثبّت الصوت","warn")}
-    if(capture?.active)captureFrame(r,q.valid&&r.step===capture.note.step,r.step===capture.note.step?"":"تغير اسم النغمة");
-    updateBeat();raf=requestAnimationFrame(loop)
+    lastAnalysisAt = now;
+
+    const data = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(data);
+    const level = rms(data);
+
+    if (calibrating){
+      calibrationLevels.push(level);
+      if (now >= calibrationEnd) finishCalibration();
+      raf = requestAnimationFrame(analysisLoop);
+      return;
+    }
+
+    if (level < noiseGate){
+      pushAnalysisHistory({time:now,valid:false});
+      if (capture?.active) captureFrame(null,false,"انقطاع الصوت");
+      candidateStep = null;
+      candidateSince = 0;
+
+      if (now-lastValidAt > 220){
+        ui.status.textContent = "لا توجد نغمة واضحة أعلى من ضوضاء المكان.";
+        quality("الصوت ضعيف أو متوقف","bad");
+        setCheck(ui.noiseCheck,false,"تحت بوابة الضوضاء");
+        setCheck(ui.continuityCheck,false,"منقطعة");
+      }
+
+      raf = requestAnimationFrame(analysisLoop);
+      return;
+    }
+
+    const pitch = yin(data,ctx.sampleRate);
+    if (!pitch || pitch.frequency<65 || pitch.frequency>1600){
+      pushAnalysisHistory({time:now,valid:false});
+      if (capture?.active) captureFrame(null,false,"فقدان التردد الأساسي");
+      quality("حاول نغمة أنقى","bad");
+      raf = requestAnimationFrame(analysisLoop);
+      return;
+    }
+
+    const note = noteFromFrequency(pitch.frequency);
+    const signalToNoise =
+      20*Math.log10(Math.max(level,1e-7)/Math.max(noiseFloor,1e-7));
+
+    const reading = {
+      ...note,
+      frequency:pitch.frequency,
+      clarity:pitch.clarity,
+      snr:signalToNoise,
+      peak:peak(data)
+    };
+
+    recentPitch.push({
+      time:now,
+      step:reading.step,
+      cents:reading.cents,
+      frequency:reading.frequency
+    });
+    recentPitch = recentPitch.filter(frame=>now-frame.time<=1800);
+
+    displayReading(reading);
+    const result = assess(reading);
+
+    pushAnalysisHistory({
+      time:now,
+      valid:result.valid,
+      step:reading.step,
+      cents:reading.cents,
+      clarity:reading.clarity,
+      snr:reading.snr,
+      peak:reading.peak,
+      frequency:reading.frequency
+    });
+
+    if (result.valid){
+      lastValidAt = now;
+
+      if (candidateStep !== reading.step){
+        candidateStep = reading.step;
+        candidateSince = now;
+      }
+
+      if (result.stable && now-candidateSince>=170){
+        ui.status.textContent = "النغمة واضحة وثابتة.";
+        quality("صالحة للتسجيل","good");
+        if (armed && !capture?.active) startCapture(reading);
+      }else{
+        ui.status.textContent = "استمر لحظة حتى يثبت التردد.";
+        quality("جارٍ التثبيت","warn");
+      }
+    }else{
+      candidateStep = null;
+      candidateSince = 0;
+      ui.status.textContent = "لم تُعتمد النغمة بعد.";
+      quality("صحّح الضبط وثبّت الصوت","warn");
+    }
+
+    if (capture?.active){
+      const sameNote = reading.step === capture.note.step;
+      captureFrame(
+        reading,
+        result.valid && sameNote,
+        sameNote ? "" : "تغيّر اسم النغمة"
+      );
+    }
+
+    raf = requestAnimationFrame(analysisLoop);
   }
 
-  function arm(){
-    if(!listening||calibrating)return;armed=true;ui.arm.disabled=true;ui.cancel.disabled=false;
-    ui.recStatus.textContent="جاهز… اعزف الآن. سيبدأ التسجيل تلقائيًا من بداية النغمة المقبولة.";resetBeat();ui.beat.textContent="جاهز"
+  function armRecording(){
+    if (!listening || calibrating) return;
+    armed = true;
+    ui.arm.disabled = true;
+    ui.cancel.disabled = false;
+    const value = selectedNoteValue();
+    ui.recStatus.textContent =
+      `جاهز لتسجيل ${value.ar}. اعزف الآن؛ يبدأ الالتقاط تلقائيًا عند اعتماد النغمة.`;
+    resetBeat();
+    ui.beat.textContent = "جاهز";
   }
 
-  function startCapture(r){
-    const pre=readPre(),total=Math.round(ctx.sampleRate*duration()),initial=pre.length>total?pre.subarray(pre.length-total):pre;
-    capture={active:true,id:crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`,note:{...r},bpm:bpm(),seconds:duration(),sampleRate:ctx.sampleRate,total,count:initial.length,chunks:initial.length?[new Float32Array(initial)]:[],createdAt:new Date().toISOString(),frames:[],invalidSince:null,maxGap:0};
-    armed=false;ui.arm.disabled=true;ui.cancel.disabled=false;ui.recStatus.textContent=`يسجل الآن: ${r.english} — استمر أربع عدّات كاملة.`;quality("التسجيل جارٍ","good")
+  function startCapture(reading){
+    const value = {...selectedNoteValue()};
+    const totalSamples = Math.max(1,Math.round(ctx.sampleRate*durationSeconds()));
+    const id = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+    const now = performance.now();
+
+    const seededFrames = analysisHistory
+      .filter(frame=>now-frame.time<=280)
+      .map(frame=>({...frame}));
+
+    capture = {
+      active:true,
+      id,
+      note:{...reading},
+      noteValue:value,
+      bpm:bpm(),
+      seconds:durationSeconds(),
+      sampleRate:ctx.sampleRate,
+      totalSamples,
+      preRollSamples:0,
+      visualStartMs:now,
+      createdAt:new Date().toISOString(),
+      frames:seededFrames,
+      invalidSince:null,
+      maxGap:0,
+      samples:null
+    };
+
+    armed = false;
+    ui.arm.disabled = true;
+    ui.cancel.disabled = false;
+    ui.recStatus.textContent =
+      `يسجل الآن: ${reading.english} · ${value.ar} · ${value.countText}.`;
+    quality("التسجيل جارٍ داخل AudioWorklet","good");
+
+    recorderNode.port.postMessage({
+      type:"start",
+      id,
+      totalSamples
+    });
   }
 
-  function captureFrame(r,valid,reason){
-    if(!capture?.active)return;const now=performance.now();
-    capture.frames.push({valid,time:now,cents:r?.cents??null,clarity:r?.clarity??0,snr:r?.snr??0,peak:r?.peak??0,frequency:r?.frequency??null});
-    if(valid){if(capture.invalidSince!==null)capture.maxGap=Math.max(capture.maxGap,now-capture.invalidSince);capture.invalidSince=null}
-    else{if(capture.invalidSince===null)capture.invalidSince=now;const gap=now-capture.invalidSince;capture.maxGap=Math.max(capture.maxGap,gap);if(gap>280)abort(reason||"فقدان الوضوح")}
+  function captureFrame(reading,isValid,reason){
+    if (!capture?.active) return;
+    const now = performance.now();
+
+    capture.frames.push({
+      valid:isValid,
+      time:now,
+      cents:reading?.cents ?? null,
+      clarity:reading?.clarity ?? 0,
+      snr:reading?.snr ?? 0,
+      peak:reading?.peak ?? 0,
+      frequency:reading?.frequency ?? null
+    });
+
+    if (isValid){
+      if (capture.invalidSince !== null){
+        capture.maxGap = Math.max(capture.maxGap,now-capture.invalidSince);
+      }
+      capture.invalidSince = null;
+      return;
+    }
+
+    if (capture.invalidSince === null) capture.invalidSince = now;
+    const gap = now-capture.invalidSince;
+    capture.maxGap = Math.max(capture.maxGap,gap);
+
+    const allowedGap = capture.noteValue.beats <= 0.5 ? 130 : 280;
+    if (gap > allowedGap){
+      abortCapture(reason || "فقدان وضوح النغمة");
+    }
   }
 
-  function resetBeat(){ui.beat.textContent="—";ui.orb.style.setProperty("--beat-progress","0%");document.querySelectorAll(".beat-dot").forEach(d=>d.classList.remove("active"))}
+  function resetBeat(){
+    ui.beat.textContent = "—";
+    ui.orb.style.setProperty("--beat-progress","0%");
+    document.querySelectorAll(".beat-dot")
+      .forEach(dot=>dot.classList.remove("active"));
+  }
+
   function updateBeat(){
-    if(!capture?.active)return;
-    const elapsed=capture.count/capture.sampleRate,progress=clamp(elapsed/capture.seconds,0,1),beat=clamp(Math.floor(elapsed/(capture.seconds/4))+1,1,4);
-    ui.beat.textContent=String(beat);ui.orb.style.setProperty("--beat-progress",`${progress*100}%`);
-    document.querySelectorAll(".beat-dot").forEach(d=>d.classList.toggle("active",Number(d.dataset.beat)===beat))
+    if (!capture?.active) return;
+
+    const elapsed = Math.max(0,(performance.now()-capture.visualStartMs)/1000);
+    const progress = clamp(elapsed/capture.seconds,0,1);
+    const beats = capture.noteValue.beats;
+    const beatLength = 60/capture.bpm;
+
+    if (beats < 1){
+      ui.beat.textContent = "½";
+    }else{
+      const currentBeat = clamp(Math.floor(elapsed/beatLength)+1,1,Math.ceil(beats));
+      ui.beat.textContent = String(currentBeat);
+    }
+
+    ui.orb.style.setProperty("--beat-progress",`${progress*100}%`);
+
+    document.querySelectorAll(".beat-dot").forEach(dot=>{
+      const dotNumber = Number(dot.dataset.beat);
+      const completedBeats = progress*beats;
+      dot.classList.toggle(
+        "active",
+        beats < 1 ? progress>0 : completedBeats >= dotNumber-1
+      );
+    });
   }
 
-  function abort(reason){
-    if(!capture?.active&&!armed)return;armed=false;if(capture)capture.active=false;capture=null;finalizeQueued=false;
-    ui.arm.disabled=!listening;ui.cancel.disabled=true;ui.recStatus.textContent=`لم يُحفظ التسجيل: ${reason}. أعد المحاولة.`;resetBeat();quality("تم رفض التسجيل","bad")
+  function abortCapture(reason){
+    if (!capture?.active && !armed) return;
+
+    armed = false;
+    if (capture?.active && recorderNode){
+      recorderNode.port.postMessage({type:"abort",id:capture.id});
+    }
+    if (capture) capture.active = false;
+    capture = null;
+
+    ui.arm.disabled = !listening;
+    ui.cancel.disabled = true;
+    ui.recStatus.textContent =
+      `لم يُحفظ التسجيل: ${reason}. أعد المحاولة.`;
+    resetBeat();
+    quality("تم رفض التسجيل","bad");
   }
 
-  function merge(chunks,length){const out=new Float32Array(length);let offset=0;for(const c of chunks){const part=c.length<=length-offset?c:c.subarray(0,length-offset);out.set(part,offset);offset+=part.length;if(offset>=length)break}return out}
+  function detectDigitalClicks(samples,sampleRate){
+    if (!samples || samples.length < 3){
+      return {events:0,maxJump:0,threshold:0.14};
+    }
+
+    const margin = Math.min(
+      Math.floor(sampleRate*0.01),
+      Math.floor(samples.length*0.05)
+    );
+    const sampledDiffs = [];
+    let maxJump = 0;
+
+    for (let index=Math.max(1,margin);index<samples.length-margin;index++){
+      const jump = Math.abs(samples[index]-samples[index-1]);
+      maxJump = Math.max(maxJump,jump);
+      if (index%8 === 0) sampledDiffs.push(jump);
+    }
+
+    sampledDiffs.sort((a,b)=>a-b);
+    const qIndex = Math.floor((sampledDiffs.length-1)*0.999);
+    const q999 = sampledDiffs.length ? sampledDiffs[Math.max(0,qIndex)] : 0;
+    const threshold = Math.max(0.14,q999*2.8);
+
+    let events = 0;
+    let insideEvent = false;
+
+    for (let index=Math.max(1,margin);index<samples.length-margin;index++){
+      const jump = Math.abs(samples[index]-samples[index-1]);
+      if (jump > threshold){
+        if (!insideEvent) events++;
+        insideEvent = true;
+      }else{
+        insideEvent = false;
+      }
+    }
+
+    return {events,maxJump,threshold};
+  }
+
   function wav(samples,sampleRate){
-    const len=samples.length*2,b=new ArrayBuffer(44+len),v=new DataView(b),str=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
-    str(0,"RIFF");v.setUint32(4,36+len,true);str(8,"WAVE");str(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sampleRate,true);v.setUint32(28,sampleRate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,"data");v.setUint32(40,len,true);
-    let o=44;for(const x of samples){const s=clamp(x,-1,1);v.setInt16(o,s<0?s*32768:s*32767,true);o+=2}return new Blob([b],{type:"audio/wav"})
+    const dataLength = samples.length*2;
+    const buffer = new ArrayBuffer(44+dataLength);
+    const view = new DataView(buffer);
+
+    const writeString = (offset,text)=>{
+      for (let index=0;index<text.length;index++){
+        view.setUint8(offset+index,text.charCodeAt(index));
+      }
+    };
+
+    writeString(0,"RIFF");
+    view.setUint32(4,36+dataLength,true);
+    writeString(8,"WAVE");
+    writeString(12,"fmt ");
+    view.setUint32(16,16,true);
+    view.setUint16(20,1,true);
+    view.setUint16(22,1,true);
+    view.setUint32(24,sampleRate,true);
+    view.setUint32(28,sampleRate*2,true);
+    view.setUint16(32,2,true);
+    view.setUint16(34,16,true);
+    writeString(36,"data");
+    view.setUint32(40,dataLength,true);
+
+    let offset = 44;
+    for (const value of samples){
+      const sample = clamp(value,-1,1);
+      view.setInt16(
+        offset,
+        sample<0 ? sample*32768 : sample*32767,
+        true
+      );
+      offset += 2;
+    }
+
+    return new Blob([buffer],{type:"audio/wav"});
   }
 
   async function finalizeCapture(){
-    if(!capture?.active)return;const c=capture;c.active=false;capture=null;
-    const samples=merge(c.chunks,c.total),frames=c.frames,valid=frames.filter(f=>f.valid),ratio=frames.length?valid.length/frames.length:0;
-    const cents=valid.map(f=>f.cents).filter(Number.isFinite),freqs=valid.map(f=>f.frequency).filter(Number.isFinite),clip=frames.length?frames.filter(f=>f.peak>=.985).length/frames.length:1;
-    const deviation=std(cents),meanAbs=mean(cents.map(Math.abs));
-    const passed=samples.length===c.total&&ratio>=.88&&c.maxGap<=280&&deviation<=8&&meanAbs<=tolerance()&&clip<=.01;
-    if(!passed){ui.arm.disabled=!listening;ui.cancel.disabled=true;ui.recStatus.textContent=`رُفض التسجيل: صلاحية ${(ratio*100).toFixed(0)}%، تذبذب ${Number.isFinite(deviation)?deviation.toFixed(1):"—"} سنت.`;resetBeat();quality("لم يجتز معايير الجودة","bad");return}
-    const blob=wav(samples,c.sampleRate),confidence=Math.round(clamp(ratio*55+mean(valid.map(f=>f.clarity))*25+clamp(20-deviation*1.5,0,20),0,100));
-    const record={id:c.id,createdAt:new Date().toISOString(),appVersion:APP.version,owner:APP.owner,english:c.note.english,arabic:c.note.arabic,type:c.note.type,division:c.note.division,bpm:c.bpm,durationSeconds:c.seconds,sampleRate:c.sampleRate,measuredHz:Number(median(freqs).toFixed(3)),targetHz:Number(c.note.target.toFixed(3)),meanCents:Number(mean(cents).toFixed(2)),stabilityCents:Number(deviation.toFixed(2)),validRatio:Number(ratio.toFixed(4)),confidence,wavBlob:blob};
-    await put(record);records.unshift(record);render();
-    ui.arm.disabled=!listening;ui.cancel.disabled=true;ui.recStatus.textContent=`تم حفظ ${record.english}، أربع عدّات، وثقة ${record.confidence}%.`;quality("تم اعتماد التسجيل","good");
-    ui.beat.textContent="✓";ui.orb.style.setProperty("--beat-progress","100%");document.querySelectorAll(".beat-dot").forEach(d=>d.classList.add("active"));play(record)
+    if (!capture?.active || !capture.samples) return;
+
+    const completed = capture;
+    completed.active = false;
+    capture = null;
+
+    const samples = completed.samples;
+    const frames = completed.frames;
+    const validFrames = frames.filter(frame=>frame.valid);
+    const validRatio = frames.length ? validFrames.length/frames.length : 0;
+    const centsValues = validFrames.map(frame=>frame.cents).filter(Number.isFinite);
+    const frequencies = validFrames.map(frame=>frame.frequency).filter(Number.isFinite);
+    const clippingRatio = frames.length
+      ? frames.filter(frame=>frame.peak>=0.985).length/frames.length
+      : 1;
+
+    const deviation = std(centsValues);
+    const meanAbsoluteCents = mean(centsValues.map(Math.abs));
+    const clickStats = detectDigitalClicks(samples,completed.sampleRate);
+
+    const shortValue = completed.noteValue.beats <= 0.5;
+    const requiredRatio = shortValue ? 0.72 : 0.88;
+    const allowedGap = shortValue ? 130 : 280;
+
+    const passed =
+      samples.length === completed.totalSamples &&
+      validRatio >= requiredRatio &&
+      completed.maxGap <= allowedGap &&
+      deviation <= 8 &&
+      meanAbsoluteCents <= tolerance() &&
+      clippingRatio <= 0.01 &&
+      clickStats.events === 0;
+
+    if (!passed){
+      ui.arm.disabled = !listening;
+      ui.cancel.disabled = true;
+      ui.recStatus.textContent =
+        clickStats.events > 0
+          ? `رُفض التسجيل: اكتشف التطبيق ${clickStats.events} طقطقة رقمية داخل الملف.`
+          : `رُفض التسجيل: صلاحية ${(validRatio*100).toFixed(0)}%، تذبذب ${deviation.toFixed(1)} سنت.`;
+      resetBeat();
+      quality("لم يجتز معايير الجودة","bad");
+      return;
+    }
+
+    const wavBlob = wav(samples,completed.sampleRate);
+    const confidence = Math.round(clamp(
+      validRatio*55 +
+      mean(validFrames.map(frame=>frame.clarity))*25 +
+      clamp(20-deviation*1.5,0,20),
+      0,100
+    ));
+
+    const record = {
+      id:completed.id,
+      createdAt:new Date().toISOString(),
+      appVersion:APP.version,
+      owner:APP.owner,
+      english:completed.note.english,
+      arabic:completed.note.arabic,
+      type:completed.note.type,
+      division:completed.note.division,
+      noteValueKey:completed.noteValue.key,
+      noteValueArabic:completed.noteValue.ar,
+      noteValueEnglish:completed.noteValue.en,
+      beats:completed.noteValue.beats,
+      bpm:completed.bpm,
+      durationSeconds:completed.seconds,
+      sampleRate:completed.sampleRate,
+      measuredHz:Number(median(frequencies).toFixed(3)),
+      targetHz:Number(completed.note.target.toFixed(3)),
+      meanCents:Number(mean(centsValues).toFixed(2)),
+      stabilityCents:Number(deviation.toFixed(2)),
+      validRatio:Number(validRatio.toFixed(4)),
+      confidence,
+      digitalClickEvents:clickStats.events,
+      maxSampleJump:Number(clickStats.maxJump.toFixed(6)),
+      wavBlob
+    };
+
+    await put(record);
+    records.unshift(record);
+    renderLibrary();
+
+    ui.arm.disabled = !listening;
+    ui.cancel.disabled = true;
+    ui.recStatus.textContent =
+      `تم حفظ ${record.english} · ${record.noteValueArabic} · ${record.beats} عدّة · دون طقطقة رقمية.`;
+    quality("تم اعتماد التسجيل","good");
+
+    ui.beat.textContent = "✓";
+    ui.orb.style.setProperty("--beat-progress","100%");
+    document.querySelectorAll(".beat-dot").forEach(dot=>dot.classList.add("active"));
+    play(record);
   }
 
-  function safe(s){return String(s||"").normalize("NFKC").replace(/[\\/:*?"<>|#%&{}$!'@+=`~]/g,"-").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"")}
-  function baseName(r){return`${safe(r.english)}_${safe(r.arabic)}_${r.createdAt.replace(/[:.]/g,"-")}`}
-  function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;a.rel="noopener";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
-  async function play(r){if(playUrl)URL.revokeObjectURL(playUrl);playUrl=URL.createObjectURL(r.wavBlob);ui.audio.src=playUrl;ui.playerName.textContent=`${r.english} — ${r.arabic}`;ui.player.classList.add("show");try{await ui.audio.play()}catch(_){}}
-  function closePlayer(){ui.audio.pause();ui.audio.removeAttribute("src");if(playUrl)URL.revokeObjectURL(playUrl);playUrl=null;ui.player.classList.remove("show")}
+  function safe(value){
+    return String(value||"")
+      .normalize("NFKC")
+      .replace(/[\\/:*?"<>|#%&{}$!'@+=`~]/g,"-")
+      .replace(/\s+/g,"-")
+      .replace(/-+/g,"-")
+      .replace(/^-|-$/g,"");
+  }
 
-  function loadScript(url){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=url;s.async=true;s.onload=res;s.onerror=()=>rej(new Error(url));document.head.appendChild(s)})}
+  function baseName(record){
+    const noteValue = record.noteValueArabic || "روند";
+    return [
+      safe(record.english),
+      safe(record.arabic),
+      safe(noteValue),
+      `${record.beats ?? 4}-beats`,
+      record.createdAt.replace(/[:.]/g,"-")
+    ].join("_");
+  }
+
+  function download(blob,name){
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = name;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+
+  async function play(record){
+    if (playbackUrl) URL.revokeObjectURL(playbackUrl);
+    playbackUrl = URL.createObjectURL(record.wavBlob);
+    ui.audio.src = playbackUrl;
+    ui.playerName.textContent =
+      `${record.english} — ${record.arabic} — ${record.noteValueArabic || "روند"}`;
+    ui.player.classList.add("show");
+    try{await ui.audio.play()}catch(_){}
+  }
+
+  function closePlayer(){
+    ui.audio.pause();
+    ui.audio.removeAttribute("src");
+    if (playbackUrl) URL.revokeObjectURL(playbackUrl);
+    playbackUrl = null;
+    ui.player.classList.remove("show");
+  }
+
+  function loadScript(url){
+    return new Promise((resolve,reject)=>{
+      const script = document.createElement("script");
+      script.src = url;
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = ()=>reject(new Error(url));
+      document.head.appendChild(script);
+    });
+  }
+
   async function ensureLame(){
-    if(window.lamejs)return window.lamejs;if(lamePromise)return lamePromise;
-    lamePromise=(async()=>{for(const url of["https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js","https://unpkg.com/lamejs@1.2.1/lame.min.js"]){try{await loadScript(url);if(window.lamejs)return window.lamejs}catch(_){}}throw new Error("MP3 encoder unavailable")})();
-    return lamePromise
+    if (window.lamejs) return window.lamejs;
+    if (lamePromise) return lamePromise;
+
+    lamePromise = (async()=>{
+      for (const url of [
+        "https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js",
+        "https://unpkg.com/lamejs@1.2.1/lame.min.js"
+      ]){
+        try{
+          await loadScript(url);
+          if (window.lamejs) return window.lamejs;
+        }catch(_){}
+      }
+      throw new Error("MP3 encoder unavailable");
+    })();
+
+    return lamePromise;
   }
+
   async function toMp3(wavBlob){
-    await ensureLame();const b=await wavBlob.arrayBuffer(),v=new DataView(b),sampleRate=v.getUint32(24,true),count=Math.floor(v.getUint32(40,true)/2),samples=new Int16Array(count);
-    for(let i=0;i<count;i++)samples[i]=v.getInt16(44+i*2,true);
-    const enc=new lamejs.Mp3Encoder(1,sampleRate,192),chunks=[],block=1152;
-    for(let i=0;i<samples.length;i+=block){const x=enc.encodeBuffer(samples.subarray(i,i+block));if(x.length)chunks.push(new Int8Array(x));if(i%(block*120)===0)await new Promise(r=>setTimeout(r,0))}
-    const end=enc.flush();if(end.length)chunks.push(new Int8Array(end));return new Blob(chunks,{type:"audio/mpeg"})
-  }
-  async function downloadMp3(r,btn){
-    const text=btn.textContent;btn.disabled=true;btn.textContent="تجهيز…";
-    try{download(await toMp3(r.wavBlob),`${baseName(r)}.mp3`)}catch(_){msg("تعذر MP3. يحتاج المحول اتصالًا بالإنترنت عند الاستخدام الأول. WAV يعمل محليًا دائمًا.",true)}
-    finally{btn.disabled=false;btn.textContent=text}
+    await ensureLame();
+    const buffer = await wavBlob.arrayBuffer();
+    const view = new DataView(buffer);
+    const sampleRate = view.getUint32(24,true);
+    const sampleCount = Math.floor(view.getUint32(40,true)/2);
+    const samples = new Int16Array(sampleCount);
+
+    for (let index=0;index<sampleCount;index++){
+      samples[index] = view.getInt16(44+index*2,true);
+    }
+
+    const encoder = new lamejs.Mp3Encoder(1,sampleRate,192);
+    const chunks = [];
+    const blockSize = 1152;
+
+    for (let offset=0;offset<samples.length;offset+=blockSize){
+      const encoded = encoder.encodeBuffer(samples.subarray(offset,offset+blockSize));
+      if (encoded.length) chunks.push(new Int8Array(encoded));
+      if (offset%(blockSize*120) === 0){
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+
+    const end = encoder.flush();
+    if (end.length) chunks.push(new Int8Array(end));
+    return new Blob(chunks,{type:"audio/mpeg"});
   }
 
-  const csvEscape=x=>{const s=String(x??"");return/[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
-  function manifest(items){
-    const h=["id","english","arabic","type","division","measured_hz","target_hz","mean_cents","stability_cents","confidence","bpm","duration","sample_rate","created_at","app_version","owner"];
-    const rows=items.map(r=>[r.id,r.english,r.arabic,r.type,r.division,r.measuredHz,r.targetHz,r.meanCents,r.stabilityCents,r.confidence,r.bpm,r.durationSeconds,r.sampleRate,r.createdAt,r.appVersion,r.owner]);
-    return"\uFEFF"+[h,...rows].map(row=>row.map(csvEscape).join(",")).join("\n")
-  }
-  async function bulkExport(items,format,btn){
-    if(!items.length)return;if(!window.JSZip){msg("مكوّن ZIP غير متاح. افتح الحزمة كاملة مع مجلد vendor.",true);return}
-    const old=btn.textContent;btn.disabled=true;btn.textContent="جارٍ التجهيز…";
+  async function downloadMp3(record,button){
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = "تجهيز…";
+
     try{
-      const zip=new JSZip();zip.file("manifest.csv",manifest(items));zip.file("VERSION.json",JSON.stringify({app:APP.name,version:APP.version,releaseDate:APP.buildDate,copyright:`© 2026 ${APP.owner}. جميع الحقوق محفوظة.`,count:items.length},null,2));
-      for(let i=0;i<items.length;i++){const r=items[i],name=baseName(r);if(format==="wav"||format==="both")zip.folder("WAV").file(`${name}.wav`,r.wavBlob);if(format==="mp3"||format==="both"){btn.textContent=`MP3 ${i+1}/${items.length}`;zip.folder("MP3").file(`${name}.mp3`,await toMp3(r.wavBlob))}}
-      btn.textContent="إنشاء ZIP…";const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});download(blob,`ney-recordings-${format}-${new Date().toISOString().replace(/[:.]/g,"-")}.zip`)
-    }catch(_){msg(format==="wav"?"تعذر إنشاء ZIP. تأكد من بقاء مجلد vendor بجانب index.html.":"تعذر MP3. جرّب التصدير الجماعي بصيغة WAV.",true)}
-    finally{btn.disabled=false;btn.textContent=old;updateButtons()}
+      const mp3 = await toMp3(record.wavBlob);
+      download(mp3,`${baseName(record)}.mp3`);
+    }catch(_){
+      showMessage(
+        "تعذر MP3. يحتاج المحول اتصالًا بالإنترنت عند الاستخدام الأول. WAV يعمل محليًا دائمًا.",
+        true
+      );
+    }finally{
+      button.disabled = false;
+      button.textContent = original;
+    }
   }
 
-  function dateText(iso){return new Date(iso).toLocaleString("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})}
-  function render(){
-    ui.list.innerHTML="";ui.empty.style.display=records.length?"none":"block";
-    for(const r of records){
-      const item=document.createElement("article");item.className="record-item";
-      const cb=document.createElement("input");cb.type="checkbox";cb.className="record-select";cb.checked=selected.has(r.id);cb.addEventListener("change",()=>{cb.checked?selected.add(r.id):selected.delete(r.id);updateButtons()});
-      const name=document.createElement("div");name.className="record-name";name.innerHTML=`<strong></strong><span></span>`;name.querySelector("strong").textContent=r.english;name.querySelector("span").textContent=r.arabic;
-      const meta=document.createElement("div");meta.className="record-meta";
-      [`${r.type}`,`${r.measuredHz.toFixed(2)} Hz`,`${r.meanCents>0?"+":""}${r.meanCents.toFixed(1)} سنت`,`ثبات ${r.stabilityCents.toFixed(1)}`,`ثقة ${r.confidence}%`,`${r.bpm} BPM`,dateText(r.createdAt)].forEach(t=>{const s=document.createElement("span");s.className="meta-chip";s.textContent=t;meta.appendChild(s)});
-      const actions=document.createElement("div");actions.className="record-actions";
-      const p=document.createElement("button");p.className="button secondary mini";p.textContent="▶ سماع";p.onclick=()=>play(r);
-      const w=document.createElement("button");w.className="button secondary mini";w.textContent="WAV";w.onclick=()=>download(r.wavBlob,`${baseName(r)}.wav`);
-      const m=document.createElement("button");m.className="button primary mini";m.textContent="MP3";m.onclick=()=>downloadMp3(r,m);
-      const d=document.createElement("button");d.className="button danger mini";d.textContent="حذف";d.onclick=async()=>{if(confirm(`حذف تسجيل ${r.english}؟`)){await del(r.id);records=records.filter(x=>x.id!==r.id);selected.delete(r.id);render()}};
-      actions.append(p,w,m,d);item.append(cb,name,meta,actions);ui.list.appendChild(item)
-    }updateButtons()
-  }
-  function updateButtons(){
-    ui.exportSelected.disabled=selected.size===0;ui.exportSelected.textContent=selected.size?`تصدير المحدد (${selected.size})`:"تصدير المحدد";
-    ui.exportAll.disabled=records.length===0;ui.selectAll.checked=records.length>0&&selected.size===records.length;ui.selectAll.indeterminate=selected.size>0&&selected.size<records.length
+  const csvEscape = value => {
+    const text = String(value??"");
+    return /[",\n]/.test(text)
+      ? `"${text.replace(/"/g,'""')}"`
+      : text;
+  };
+
+  function manifest(items){
+    const headers = [
+      "id","english","arabic","pitch_type","note_value_ar","note_value_en",
+      "beats","division","measured_hz","target_hz","mean_cents",
+      "stability_cents","confidence","digital_click_events",
+      "max_sample_jump","bpm","duration_seconds","sample_rate",
+      "created_at","app_version","owner"
+    ];
+
+    const rows = items.map(record=>[
+      record.id,record.english,record.arabic,record.type,
+      record.noteValueArabic||"روند",record.noteValueEnglish||"Whole note",
+      record.beats??4,record.division,record.measuredHz,record.targetHz,
+      record.meanCents,record.stabilityCents,record.confidence,
+      record.digitalClickEvents??0,record.maxSampleJump??0,
+      record.bpm,record.durationSeconds,record.sampleRate,
+      record.createdAt,record.appVersion,record.owner
+    ]);
+
+    return "\uFEFF" +
+      [headers,...rows]
+        .map(row=>row.map(csvEscape).join(","))
+        .join("\n");
   }
 
-  function openDb(){return new Promise((res,rej)=>{const q=indexedDB.open(APP.dbName,APP.dbVersion);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains(APP.storeName))q.result.createObjectStore(APP.storeName,{keyPath:"id"})};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-  function request(mode,op){return new Promise((res,rej)=>{const q=op(db.transaction(APP.storeName,mode).objectStore(APP.storeName));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-  const put=r=>request("readwrite",s=>s.put(r)),del=id=>request("readwrite",s=>s.delete(id)),all=()=>request("readonly",s=>s.getAll());
+  async function bulkExport(items,format,button){
+    if (!items.length) return;
 
-  async function init(){
-    updateDuration();resetDetector();resetBeat();
-    try{db=await openDb();records=(await all()).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));render()}catch(e){console.error(e);msg("تعذر فتح التخزين المحلي. قد لا تستمر التسجيلات بعد إغلاق الصفحة.",true)}
-    if(!window.isSecureContext&&location.protocol!=="file:")msg("تشغيل الميكروفون يحتاج إلى HTTPS أو localhost.",true)
+    if (!window.JSZip){
+      showMessage("مكوّن ZIP غير متاح. افتح الحزمة كاملة مع مجلد vendor.",true);
+      return;
+    }
+
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = "جارٍ التجهيز…";
+
+    try{
+      const zip = new JSZip();
+      zip.file("manifest.csv",manifest(items));
+      zip.file("VERSION.json",JSON.stringify({
+        app:APP.name,
+        version:APP.version,
+        releaseDate:APP.buildDate,
+        copyright:`© 2026 ${APP.owner}. جميع الحقوق محفوظة.`,
+        count:items.length
+      },null,2));
+
+      for (let index=0;index<items.length;index++){
+        const record = items[index];
+        const filename = baseName(record);
+
+        if (format === "wav" || format === "both"){
+          zip.folder("WAV").file(`${filename}.wav`,record.wavBlob);
+        }
+
+        if (format === "mp3" || format === "both"){
+          button.textContent = `MP3 ${index+1}/${items.length}`;
+          const mp3 = await toMp3(record.wavBlob);
+          zip.folder("MP3").file(`${filename}.mp3`,mp3);
+        }
+      }
+
+      button.textContent = "إنشاء ZIP…";
+      const blob = await zip.generateAsync({
+        type:"blob",
+        compression:"DEFLATE",
+        compressionOptions:{level:6}
+      });
+
+      download(
+        blob,
+        `ney-recordings-${format}-${new Date().toISOString().replace(/[:.]/g,"-")}.zip`
+      );
+    }catch(_){
+      showMessage(
+        format === "wav"
+          ? "تعذر إنشاء ZIP. تأكد من بقاء مجلد vendor بجانب index.html."
+          : "تعذر MP3. جرّب التصدير الجماعي بصيغة WAV.",
+        true
+      );
+    }finally{
+      button.disabled = false;
+      button.textContent = original;
+      updateLibraryButtons();
+    }
   }
 
-  ui.mic.onclick=()=>listening?stopMic():startMic();ui.calibrate.onclick=beginCalibration;ui.arm.onclick=arm;ui.cancel.onclick=()=>abort("ألغاه المستخدم");
-  ui.bpm.oninput=updateDuration;ui.bpm.onchange=updateDuration;ui.a4.onchange=()=>{ui.a4.value=String(a4());resetDetector()};ui.division.onchange=resetDetector;
-  ui.selectAll.onchange=()=>{selected.clear();if(ui.selectAll.checked)records.forEach(r=>selected.add(r.id));render()};
-  ui.exportSelected.onclick=()=>bulkExport(records.filter(r=>selected.has(r.id)),ui.bulk.value,ui.exportSelected);
-  ui.exportAll.onclick=()=>bulkExport(records,ui.bulk.value,ui.exportAll);ui.closePlayer.onclick=closePlayer;
-  window.addEventListener("beforeunload",()=>{stream?.getTracks().forEach(t=>t.stop());if(playUrl)URL.revokeObjectURL(playUrl)});
-  init()
+  function dateText(iso){
+    return new Date(iso).toLocaleString("ar-SA",{
+      year:"numeric",
+      month:"2-digit",
+      day:"2-digit",
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }
+
+  function renderLibrary(){
+    ui.list.innerHTML = "";
+    ui.empty.style.display = records.length ? "none" : "block";
+
+    for (const record of records){
+      const item = document.createElement("article");
+      item.className = "record-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "record-select";
+      checkbox.checked = selected.has(record.id);
+      checkbox.addEventListener("change",()=>{
+        checkbox.checked
+          ? selected.add(record.id)
+          : selected.delete(record.id);
+        updateLibraryButtons();
+      });
+
+      const name = document.createElement("div");
+      name.className = "record-name";
+      const english = document.createElement("strong");
+      english.textContent = record.english;
+      const arabic = document.createElement("span");
+      arabic.textContent = record.arabic;
+      name.append(english,arabic);
+
+      const meta = document.createElement("div");
+      meta.className = "record-meta";
+
+      [
+        record.noteValueArabic || "روند",
+        `${record.beats ?? 4} عدّة`,
+        record.type,
+        `${Number(record.measuredHz).toFixed(2)} Hz`,
+        `${record.meanCents>0?"+":""}${Number(record.meanCents).toFixed(1)} سنت`,
+        `ثبات ${Number(record.stabilityCents).toFixed(1)}`,
+        `ثقة ${record.confidence}%`,
+        `طقطقة ${record.digitalClickEvents ?? 0}`,
+        `${record.bpm} BPM`,
+        dateText(record.createdAt)
+      ].forEach(text=>{
+        const chip = document.createElement("span");
+        chip.className = "meta-chip";
+        chip.textContent = text;
+        meta.appendChild(chip);
+      });
+
+      const actions = document.createElement("div");
+      actions.className = "record-actions";
+
+      const playButton = document.createElement("button");
+      playButton.className = "button secondary mini";
+      playButton.textContent = "▶ سماع";
+      playButton.onclick = ()=>play(record);
+
+      const wavButton = document.createElement("button");
+      wavButton.className = "button secondary mini";
+      wavButton.textContent = "WAV";
+      wavButton.onclick = ()=>download(
+        record.wavBlob,
+        `${baseName(record)}.wav`
+      );
+
+      const mp3Button = document.createElement("button");
+      mp3Button.className = "button primary mini";
+      mp3Button.textContent = "MP3";
+      mp3Button.onclick = ()=>downloadMp3(record,mp3Button);
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "button danger mini";
+      deleteButton.textContent = "حذف";
+      deleteButton.onclick = async()=>{
+        if (!confirm(`حذف تسجيل ${record.english}؟`)) return;
+        await deleteRecord(record.id);
+        records = records.filter(item=>item.id!==record.id);
+        selected.delete(record.id);
+        renderLibrary();
+      };
+
+      actions.append(playButton,wavButton,mp3Button,deleteButton);
+      item.append(checkbox,name,meta,actions);
+      ui.list.appendChild(item);
+    }
+
+    updateLibraryButtons();
+  }
+
+  function updateLibraryButtons(){
+    ui.exportSelected.disabled = selected.size === 0;
+    ui.exportSelected.textContent =
+      selected.size ? `تصدير المحدد (${selected.size})` : "تصدير المحدد";
+    ui.exportAll.disabled = records.length === 0;
+    ui.clearAll.disabled = records.length === 0;
+    ui.selectAll.checked =
+      records.length>0 && selected.size===records.length;
+    ui.selectAll.indeterminate =
+      selected.size>0 && selected.size<records.length;
+  }
+
+  function openDb(){
+    return new Promise((resolve,reject)=>{
+      const request = indexedDB.open(APP.dbName,APP.dbVersion);
+      request.onupgradeneeded = ()=>{
+        if (!request.result.objectStoreNames.contains(APP.storeName)){
+          request.result.createObjectStore(APP.storeName,{keyPath:"id"});
+        }
+      };
+      request.onsuccess = ()=>resolve(request.result);
+      request.onerror = ()=>reject(request.error);
+    });
+  }
+
+  function dbRequest(mode,operation){
+    return new Promise((resolve,reject)=>{
+      const store = db
+        .transaction(APP.storeName,mode)
+        .objectStore(APP.storeName);
+      const request = operation(store);
+      request.onsuccess = ()=>resolve(request.result);
+      request.onerror = ()=>reject(request.error);
+    });
+  }
+
+  const put = record => dbRequest("readwrite",store=>store.put(record));
+  const deleteRecord = id => dbRequest("readwrite",store=>store.delete(id));
+  const allRecords = () => dbRequest("readonly",store=>store.getAll());
+  const clearRecords = () => dbRequest("readwrite",store=>store.clear());
+
+  async function clearAllLibrary(){
+    if (!records.length) return;
+
+    const confirmed = confirm(
+      `سيتم حذف جميع التسجيلات وعددها ${records.length}. لا يمكن التراجع. هل تريد المتابعة؟`
+    );
+    if (!confirmed) return;
+
+    closePlayer();
+    await clearRecords();
+    records = [];
+    selected.clear();
+    renderLibrary();
+    showMessage("تم مسح قائمة التسجيلات بالكامل.");
+  }
+
+  async function initialize(){
+    updateDuration();
+    resetDetector();
+    resetBeat();
+
+    try{
+      db = await openDb();
+      records = (await allRecords())
+        .sort((left,right)=>new Date(right.createdAt)-new Date(left.createdAt));
+      renderLibrary();
+    }catch(error){
+      console.error(error);
+      showMessage(
+        "تعذر فتح التخزين المحلي. قد لا تستمر التسجيلات بعد إغلاق الصفحة.",
+        true
+      );
+    }
+
+    if (!window.isSecureContext && location.protocol !== "file:"){
+      showMessage("تشغيل AudioWorklet والميكروفون يحتاج إلى HTTPS أو localhost.",true);
+    }
+  }
+
+  ui.mic.onclick = ()=>listening ? stopMic() : startMic();
+  ui.calibrate.onclick = beginCalibration;
+  ui.arm.onclick = armRecording;
+  ui.cancel.onclick = ()=>abortCapture("ألغاه المستخدم");
+
+  ui.bpm.oninput = updateDuration;
+  ui.bpm.onchange = updateDuration;
+  ui.noteValue.onchange = updateDuration;
+  ui.a4.onchange = ()=>{
+    ui.a4.value = String(a4());
+    resetDetector();
+  };
+  ui.division.onchange = resetDetector;
+
+  ui.selectAll.onchange = ()=>{
+    selected.clear();
+    if (ui.selectAll.checked){
+      records.forEach(record=>selected.add(record.id));
+    }
+    renderLibrary();
+  };
+
+  ui.exportSelected.onclick = ()=>bulkExport(
+    records.filter(record=>selected.has(record.id)),
+    ui.bulk.value,
+    ui.exportSelected
+  );
+
+  ui.exportAll.onclick = ()=>bulkExport(
+    records,
+    ui.bulk.value,
+    ui.exportAll
+  );
+
+  ui.clearAll.onclick = clearAllLibrary;
+  ui.closePlayer.onclick = closePlayer;
+
+  window.addEventListener("beforeunload",()=>{
+    stream?.getTracks().forEach(track=>track.stop());
+    if (playbackUrl) URL.revokeObjectURL(playbackUrl);
+  });
+
+  initialize();
 })();
 </script>
 </body>
