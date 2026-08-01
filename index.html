@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#082f3a" />
+  <title>مسجل نغمات الناي — A440</title>
+  <style>
+    :root{
+      --bg:#071a20;
+      --panel:#0c2730;
+      --panel2:#103640;
+      --line:#24505b;
+      --text:#f3fbfc;
+      --muted:#a9c2c7;
+      --accent:#24c5b5;
+      --good:#45d483;
+      --warn:#f3ba4b;
+      --bad:#ef6f6c;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(36,197,181,.12), transparent 34%),
+        linear-gradient(180deg,#06171d,#081f27 45%,#06171d);
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{width:min(920px,100%);margin:auto;padding:20px}
+    header{display:flex;gap:14px;align-items:center;justify-content:space-between;margin:6px 0 18px}
+    h1{font-size:clamp(1.35rem,3.5vw,2rem);margin:0}
+    .sub{color:var(--muted);font-size:.95rem;margin-top:5px}
+    .badge{
+      border:1px solid var(--line);background:rgba(16,54,64,.78);
+      color:var(--accent);padding:8px 12px;border-radius:999px;white-space:nowrap
+    }
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+    .card{
+      background:rgba(12,39,48,.92);border:1px solid var(--line);
+      border-radius:22px;padding:18px;box-shadow:var(--shadow)
+    }
+    .main-display{text-align:center;display:grid;gap:12px;align-content:start}
+    .status{color:var(--muted);min-height:24px}
+    .note{
+      font-size:clamp(4.5rem,17vw,9rem);font-weight:800;line-height:.9;
+      letter-spacing:-.06em;margin-top:6px
+    }
+    .solfege{font-size:1.15rem;color:var(--muted)}
+    .frequency{font-size:1.25rem}
+    .frequency strong{font-variant-numeric:tabular-nums}
+    .meter-wrap{margin-top:8px}
+    .meter-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem}
+    .meter{
+      height:18px;border-radius:999px;background:#06151a;border:1px solid var(--line);
+      position:relative;margin:7px 0 4px;overflow:visible
+    }
+    .meter::before{
+      content:"";position:absolute;inset:3px 49.5%;background:var(--good);
+      border-radius:99px;box-shadow:0 0 14px rgba(69,212,131,.55)
+    }
+    .needle{
+      position:absolute;top:-7px;left:50%;width:3px;height:30px;background:var(--text);
+      border-radius:999px;transform:translateX(-50%);transition:left .12s linear
+    }
+    .cents{font-variant-numeric:tabular-nums;font-size:1rem}
+    .quality{
+      display:inline-flex;align-items:center;gap:8px;margin:auto;padding:7px 11px;
+      border-radius:999px;background:#092229;color:var(--muted)
+    }
+    .dot{width:9px;height:9px;border-radius:50%;background:var(--bad)}
+    .controls{display:grid;gap:12px}
+    button,input,select{font:inherit}
+    button{
+      border:0;border-radius:14px;padding:12px 15px;cursor:pointer;font-weight:700;
+      transition:transform .12s ease,opacity .12s ease
+    }
+    button:active{transform:scale(.98)}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .primary{background:var(--accent);color:#03201e}
+    .secondary{background:#153a44;color:var(--text);border:1px solid var(--line)}
+    .danger{background:transparent;color:#ffaaa7;border:1px solid #754544}
+    .button-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}
+    input[type="number"],input[type="text"],select{
+      width:100%;border-radius:12px;border:1px solid var(--line);background:#071c22;
+      color:var(--text);padding:10px 12px;outline:none
+    }
+    input:focus,select:focus{border-color:var(--accent)}
+    .switch-row{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:10px 0;border-top:1px solid rgba(36,80,91,.65)
+    }
+    .switch-row input{width:22px;height:22px;accent-color:var(--accent)}
+    .hint{font-size:.82rem;color:var(--muted);line-height:1.6}
+    .history{margin-top:16px}
+    .history-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    h2{font-size:1.1rem;margin:0}
+    .count{color:var(--muted);font-size:.9rem}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:15px}
+    table{width:100%;border-collapse:collapse;min-width:620px}
+    th,td{padding:11px 12px;text-align:right;border-bottom:1px solid rgba(36,80,91,.55)}
+    th{color:var(--muted);font-size:.85rem;background:#092229}
+    td{font-variant-numeric:tabular-nums}
+    tr:last-child td{border-bottom:0}
+    .empty{padding:22px;text-align:center;color:var(--muted)}
+    .footer-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+    .message{
+      display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;
+      border:1px solid var(--line);background:#102f38;color:var(--text);line-height:1.6
+    }
+    .message.show{display:block}
+    .message.error{border-color:#754544;background:#351f21;color:#ffd2d0}
+    @media(max-width:760px){
+      .grid{grid-template-columns:1fr}
+      header{align-items:flex-start}
+      .badge{font-size:.85rem}
+      .wrap{padding:14px}
+      .card{border-radius:18px;padding:15px}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div>
+        <h1>مسجل نغمات الناي</h1>
+        <div class="sub">قياس التردد وتسمية النغمة وفق الضبط العالمي A4 = 440 Hz</div>
+      </div>
+      <div class="badge" id="calibrationBadge">A4 = 440 Hz</div>
+    </header>
+
+    <div id="message" class="message" role="alert"></div>
+
+    <section class="grid">
+      <div class="card main-display">
+        <div id="status" class="status">اضغط «بدء الاستماع» ثم اعزف نغمة ثابتة</div>
+        <div id="note" class="note">—</div>
+        <div id="solfege" class="solfege">—</div>
+        <div class="frequency"><strong id="frequency">0.00</strong> Hz</div>
+
+        <div class="meter-wrap" aria-label="مؤشر دقة النغمة">
+          <div class="meter-labels"><span>♭ منخفض</span><span>مضبوط</span><span>♯ مرتفع</span></div>
+          <div class="meter">
+            <div id="needle" class="needle"></div>
+          </div>
+          <div id="cents" class="cents">0 سنت</div>
+        </div>
+
+        <div class="quality">
+          <span id="qualityDot" class="dot"></span>
+          <span id="qualityText">لا توجد إشارة</span>
+        </div>
+      </div>
+
+      <aside class="card controls">
+        <button id="startBtn" class="primary" type="button">بدء الاستماع</button>
+        <button id="saveBtn" class="secondary" type="button" disabled>حفظ النغمة الحالية</button>
+
+        <div class="button-row">
+          <label>
+            الضبط المرجعي A4
+            <input id="a4Input" type="number" min="400" max="480" step="0.1" value="440">
+          </label>
+          <label>
+            مدة الثبات للحفظ
+            <select id="stableTime">
+              <option value="400">0.4 ثانية</option>
+              <option value="700" selected>0.7 ثانية</option>
+              <option value="1000">1 ثانية</option>
+              <option value="1500">1.5 ثانية</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          اسم الجلسة
+          <input id="sessionName" type="text" maxlength="60" placeholder="مثال: سلم ناي الدوكاه">
+        </label>
+
+        <div class="switch-row">
+          <div>
+            <div style="color:var(--text);font-weight:700">الحفظ التلقائي</div>
+            <div class="hint">يحفظ النغمة بعد ثباتها، ولا يكررها حتى تتغير.</div>
+          </div>
+          <input id="autoSave" type="checkbox" checked aria-label="تشغيل الحفظ التلقائي">
+        </div>
+
+        <div class="hint">
+          للحصول على قراءة أدق: قرّب الجهاز من الناي، اعزف نغمة واحدة لمدة ثانية،
+          وتجنب الضوضاء والصدى القوي. النتيجة تعرض النغمة الفعلية Concert Pitch.
+        </div>
+      </aside>
+    </section>
+
+    <section class="card history">
+      <div class="history-head">
+        <h2>النغمات المحفوظة</h2>
+        <div class="count"><span id="count">0</span> نغمة</div>
+      </div>
+      <div class="table-wrap">
+        <table aria-label="قائمة النغمات المحفوظة">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>النغمة</th>
+              <th>الاسم العربي</th>
+              <th>التردد</th>
+              <th>الانحراف</th>
+              <th>الوقت</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty">لم يتم حفظ أي نغمة بعد.</div>
+      </div>
+
+      <div class="footer-actions">
+        <button id="exportCsv" class="secondary" type="button">تصدير CSV</button>
+        <button id="exportJson" class="secondary" type="button">تصدير JSON</button>
+        <button id="clearBtn" class="danger" type="button">مسح القائمة</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const NOTE_NAMES = ["C","C♯","D","E♭","E","F","F♯","G","A♭","A","B♭","B"];
+      const SOLFEGE = ["دو","دو دييز","ري","مي بيمول","مي","فا","فا دييز","صول","لا بيمول","لا","سي بيمول","سي"];
+
+      const els = {
+        startBtn: document.getElementById("startBtn"),
+        saveBtn: document.getElementById("saveBtn"),
+        note: document.getElementById("note"),
+        solfege: document.getElementById("solfege"),
+        frequency: document.getElementById("frequency"),
+        cents: document.getElementById("cents"),
+        needle: document.getElementById("needle"),
+        status: document.getElementById("status"),
+        qualityDot: document.getElementById("qualityDot"),
+        qualityText: document.getElementById("qualityText"),
+        a4Input: document.getElementById("a4Input"),
+        stableTime: document.getElementById("stableTime"),
+        autoSave: document.getElementById("autoSave"),
+        sessionName: document.getElementById("sessionName"),
+        calibrationBadge: document.getElementById("calibrationBadge"),
+        historyBody: document.getElementById("historyBody"),
+        emptyState: document.getElementById("emptyState"),
+        count: document.getElementById("count"),
+        exportCsv: document.getElementById("exportCsv"),
+        exportJson: document.getElementById("exportJson"),
+        clearBtn: document.getElementById("clearBtn"),
+        message: document.getElementById("message")
+      };
+
+      let audioContext = null;
+      let analyser = null;
+      let source = null;
+      let mediaStream = null;
+      let animationId = null;
+      let running = false;
+      let current = null;
+      let history = loadHistory();
+
+      let freqWindow = [];
+      let candidateMidi = null;
+      let candidateSince = 0;
+      let savedCandidate = null;
+      let lastSignalAt = 0;
+
+      renderHistory();
+
+      function showMessage(text, isError = false) {
+        els.message.textContent = text;
+        els.message.className = "message show" + (isError ? " error" : "");
+      }
+
+      function hideMessage() {
+        els.message.className = "message";
+        els.message.textContent = "";
+      }
+
+      function getA4() {
+        const value = Number(els.a4Input.value);
+        return Number.isFinite(value) && value >= 400 && value <= 480 ? value : 440;
+      }
+
+      function frequencyToNote(freq) {
+        const a4 = getA4();
+        const midiFloat = 69 + 12 * Math.log2(freq / a4);
+        const midi = Math.round(midiFloat);
+        const target = a4 * Math.pow(2, (midi - 69) / 12);
+        const cents = 1200 * Math.log2(freq / target);
+        const noteIndex = ((midi % 12) + 12) % 12;
+        const octave = Math.floor(midi / 12) - 1;
+        return {
+          midi,
+          note: NOTE_NAMES[noteIndex],
+          solfege: SOLFEGE[noteIndex],
+          octave,
+          target,
+          cents
+        };
+      }
+
+      function rms(buffer) {
+        let sum = 0;
+        for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i];
+        return Math.sqrt(sum / buffer.length);
+      }
+
+      // خوارزمية YIN لاكتشاف التردد الأساسي، مناسبة نسبيًا للناي مع الهارمونيّات.
+      function yinPitch(buffer, sampleRate) {
+        const threshold = 0.12;
+        const minFreq = 65;
+        const maxFreq = 1600;
+        const minTau = Math.floor(sampleRate / maxFreq);
+        const maxTau = Math.min(Math.floor(sampleRate / minFreq), Math.floor(buffer.length / 2));
+        const yin = new Float32Array(maxTau + 1);
+
+        for (let tau = 1; tau <= maxTau; tau++) {
+          let sum = 0;
+          for (let i = 0; i < maxTau; i++) {
+            const delta = buffer[i] - buffer[i + tau];
+            sum += delta * delta;
+          }
+          yin[tau] = sum;
+        }
+
+        yin[0] = 1;
+        let runningSum = 0;
+        for (let tau = 1; tau <= maxTau; tau++) {
+          runningSum += yin[tau];
+          yin[tau] = runningSum === 0 ? 1 : yin[tau] * tau / runningSum;
+        }
+
+        let tauEstimate = -1;
+        for (let tau = minTau; tau <= maxTau; tau++) {
+          if (yin[tau] < threshold) {
+            while (tau + 1 <= maxTau && yin[tau + 1] < yin[tau]) tau++;
+            tauEstimate = tau;
+            break;
+          }
+        }
+
+        if (tauEstimate === -1) {
+          let bestTau = minTau;
+          for (let tau = minTau + 1; tau <= maxTau; tau++) {
+            if (yin[tau] < yin[bestTau]) bestTau = tau;
+          }
+          if (yin[bestTau] > 0.22) return null;
+          tauEstimate = bestTau;
+        }
+
+        const x0 = tauEstimate > 1 ? tauEstimate - 1 : tauEstimate;
+        const x2 = tauEstimate + 1 <= maxTau ? tauEstimate + 1 : tauEstimate;
+        const s0 = yin[x0], s1 = yin[tauEstimate], s2 = yin[x2];
+        let betterTau = tauEstimate;
+
+        const denominator = 2 * (2 * s1 - s2 - s0);
+        if (denominator !== 0) betterTau += (s2 - s0) / denominator;
+
+        const frequency = sampleRate / betterTau;
+        const clarity = Math.max(0, Math.min(1, 1 - yin[tauEstimate]));
+        return Number.isFinite(frequency) ? { frequency, clarity } : null;
+      }
+
+      function median(values) {
+        if (!values.length) return null;
+        const sorted = [...values].sort((a,b) => a-b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      }
+
+      function resetDetection() {
+        current = null;
+        freqWindow = [];
+        candidateMidi = null;
+        candidateSince = 0;
+        savedCandidate = null;
+        els.note.textContent = "—";
+        els.solfege.textContent = "—";
+        els.frequency.textContent = "0.00";
+        els.cents.textContent = "0 سنت";
+        els.needle.style.left = "50%";
+        els.saveBtn.disabled = true;
+        setQuality("لا توجد إشارة", "bad");
+      }
+
+      function setQuality(text, level) {
+        els.qualityText.textContent = text;
+        els.qualityDot.style.background =
+          level === "good" ? "var(--good)" :
+          level === "warn" ? "var(--warn)" : "var(--bad)";
+      }
+
+      function updateDisplay(freq, clarity, level) {
+        const noteData = frequencyToNote(freq);
+        current = { frequency: freq, clarity, level, ...noteData };
+
+        els.note.textContent = `${noteData.note}${noteData.octave}`;
+        els.solfege.textContent = `${noteData.solfege} — التردد المستهدف ${noteData.target.toFixed(2)} Hz`;
+        els.frequency.textContent = freq.toFixed(2);
+
+        const roundedCents = Math.round(noteData.cents);
+        els.cents.textContent = `${roundedCents > 0 ? "+" : ""}${roundedCents} سنت`;
+        const clamped = Math.max(-50, Math.min(50, noteData.cents));
+        els.needle.style.left = `${50 + clamped}%`;
+
+        const abs = Math.abs(noteData.cents);
+        if (clarity >= 0.86 && abs <= 8) setQuality("نغمة ثابتة ومضبوطة", "good");
+        else if (clarity >= 0.72 && abs <= 22) setQuality("قراءة جيدة", "warn");
+        else setQuality("حاول تثبيت النفَس والنغمة", "bad");
+
+        els.saveBtn.disabled = false;
+        trackStableNote(noteData.midi, level);
+      }
+
+      function trackStableNote(midi, level) {
+        const now = performance.now();
+        if (candidateMidi !== midi) {
+          candidateMidi = midi;
+          candidateSince = now;
+          savedCandidate = null;
+          return;
+        }
+
+        const required = Number(els.stableTime.value);
+        const stableFor = now - candidateSince;
+        if (stableFor >= required && els.autoSave.checked && savedCandidate !== midi && current) {
+          saveCurrent(true);
+          savedCandidate = midi;
+        }
+      }
+
+      async function start() {
+        hideMessage();
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showMessage("المتصفح لا يدعم الوصول إلى الميكروفون. افتح الصفحة في Chrome أو Safari حديث عبر HTTPS أو localhost.", true);
+          return;
+        }
+
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false,
+              channelCount: 1
+            }
+          });
+
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          await audioContext.resume();
+
+          source = audioContext.createMediaStreamSource(mediaStream);
+          analyser = audioContext.createAnalyser();
+          analyser.fftSize = 4096;
+          analyser.smoothingTimeConstant = 0;
+          source.connect(analyser);
+
+          running = true;
+          els.startBtn.textContent = "إيقاف الاستماع";
+          els.startBtn.className = "danger";
+          els.status.textContent = "الاستماع يعمل… اعزف نغمة واحدة ثابتة";
+          analyze();
+        } catch (error) {
+          const reason = error && error.name === "NotAllowedError"
+            ? "تم رفض إذن الميكروفون. اسمح للصفحة باستخدام الميكروفون من إعدادات المتصفح."
+            : "تعذر تشغيل الميكروفون. جرّب فتح الصفحة عبر HTTPS أو localhost.";
+          showMessage(reason, true);
+        }
+      }
+
+      async function stop() {
+        running = false;
+        if (animationId) cancelAnimationFrame(animationId);
+        animationId = null;
+
+        if (source) {
+          try { source.disconnect(); } catch (_) {}
+        }
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+        }
+        if (audioContext) {
+          try { await audioContext.close(); } catch (_) {}
+        }
+
+        source = null;
+        mediaStream = null;
+        analyser = null;
+        audioContext = null;
+
+        els.startBtn.textContent = "بدء الاستماع";
+        els.startBtn.className = "primary";
+        els.status.textContent = "تم إيقاف الاستماع";
+        resetDetection();
+      }
+
+      function analyze() {
+        if (!running || !analyser || !audioContext) return;
+
+        const buffer = new Float32Array(analyser.fftSize);
+        analyser.getFloatTimeDomainData(buffer);
+        const volume = rms(buffer);
+        const result = volume > 0.008 ? yinPitch(buffer, audioContext.sampleRate) : null;
+
+        if (result && result.frequency >= 65 && result.frequency <= 1600 && result.clarity > 0.58) {
+          lastSignalAt = performance.now();
+          freqWindow.push(result.frequency);
+          if (freqWindow.length > 7) freqWindow.shift();
+
+          const smoothed = median(freqWindow);
+          const spread = Math.max(...freqWindow) - Math.min(...freqWindow);
+          const level = spread < 3 ? "stable" : "moving";
+          updateDisplay(smoothed, result.clarity, level);
+          els.status.textContent = "تم اكتشاف الصوت";
+        } else if (performance.now() - lastSignalAt > 450) {
+          freqWindow = [];
+          candidateMidi = null;
+          candidateSince = 0;
+          savedCandidate = null;
+          current = null;
+          els.note.textContent = "—";
+          els.solfege.textContent = "اعزف نغمة أوضح وأطول";
+          els.frequency.textContent = "0.00";
+          els.cents.textContent = "0 سنت";
+          els.needle.style.left = "50%";
+          els.saveBtn.disabled = true;
+          setQuality("لا توجد نغمة واضحة", "bad");
+        }
+
+        animationId = requestAnimationFrame(analyze);
+      }
+
+      function saveCurrent(isAuto = false) {
+        if (!current) return;
+
+        const item = {
+          id: Date.now() + Math.random(),
+          session: els.sessionName.value.trim(),
+          note: `${current.note}${current.octave}`,
+          solfege: current.solfege,
+          midi: current.midi,
+          frequency: Number(current.frequency.toFixed(2)),
+          target: Number(current.target.toFixed(2)),
+          cents: Number(current.cents.toFixed(1)),
+          a4: getA4(),
+          savedAt: new Date().toISOString(),
+          mode: isAuto ? "auto" : "manual"
+        };
+
+        history.push(item);
+        persistHistory();
+        renderHistory();
+        els.status.textContent = `تم حفظ ${item.note}`;
+      }
+
+      function renderHistory() {
+        els.historyBody.innerHTML = "";
+        els.count.textContent = String(history.length);
+        els.emptyState.style.display = history.length ? "none" : "block";
+
+        history.forEach((item, index) => {
+          const tr = document.createElement("tr");
+          const localTime = new Date(item.savedAt).toLocaleTimeString("ar-SA", {
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+          });
+
+          const cells = [
+            String(index + 1),
+            item.note,
+            item.solfege,
+            `${Number(item.frequency).toFixed(2)} Hz`,
+            `${item.cents > 0 ? "+" : ""}${Number(item.cents).toFixed(1)} سنت`,
+            localTime
+          ];
+
+          cells.forEach(text => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+
+          const actionTd = document.createElement("td");
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "danger";
+          deleteBtn.style.padding = "7px 10px";
+          deleteBtn.textContent = "حذف";
+          deleteBtn.addEventListener("click", () => {
+            history = history.filter(x => x.id !== item.id);
+            persistHistory();
+            renderHistory();
+          });
+          actionTd.appendChild(deleteBtn);
+          tr.appendChild(actionTd);
+
+          els.historyBody.appendChild(tr);
+        });
+      }
+
+      function persistHistory() {
+        try {
+          localStorage.setItem("ney-note-recorder-history", JSON.stringify(history));
+        } catch (_) {}
+      }
+
+      function loadHistory() {
+        try {
+          const raw = localStorage.getItem("ney-note-recorder-history");
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+          return [];
+        }
+      }
+
+      function downloadFile(filename, content, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function csvEscape(value) {
+        const s = String(value ?? "");
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      }
+
+      function exportCsv() {
+        const headers = ["session","note","arabic_name","midi","measured_hz","target_hz","cents","a4_hz","saved_at","mode"];
+        const rows = history.map(x => [
+          x.session, x.note, x.solfege, x.midi, x.frequency, x.target, x.cents, x.a4, x.savedAt, x.mode
+        ]);
+        const csv = "\uFEFF" + [headers, ...rows].map(row => row.map(csvEscape).join(",")).join("\n");
+        downloadFile("ney-notes-a440.csv", csv, "text/csv;charset=utf-8");
+      }
+
+      function exportJson() {
+        const payload = {
+          app: "Ney Note Recorder",
+          calibration: `A4=${getA4()}Hz`,
+          session: els.sessionName.value.trim(),
+          exportedAt: new Date().toISOString(),
+          notes: history
+        };
+        downloadFile("ney-notes-a440.json", JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+      }
+
+      els.startBtn.addEventListener("click", () => running ? stop() : start());
+      els.saveBtn.addEventListener("click", () => saveCurrent(false));
+      els.exportCsv.addEventListener("click", exportCsv);
+      els.exportJson.addEventListener("click", exportJson);
+
+      els.clearBtn.addEventListener("click", () => {
+        if (!history.length) return;
+        const confirmed = confirm("هل تريد مسح جميع النغمات المحفوظة؟");
+        if (!confirmed) return;
+        history = [];
+        persistHistory();
+        renderHistory();
+      });
+
+      els.a4Input.addEventListener("change", () => {
+        const a4 = getA4();
+        els.a4Input.value = String(a4);
+        els.calibrationBadge.textContent = `A4 = ${a4} Hz`;
+        if (current) updateDisplay(current.frequency, current.clarity, current.level);
+      });
+
+      window.addEventListener("beforeunload", () => {
+        if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+      });
+
+      if (!window.isSecureContext && location.protocol !== "file:") {
+        showMessage("ملاحظة: تشغيل الميكروفون يحتاج عادةً إلى HTTPS أو localhost.", true);
+      }
+    })();
+  </script>
+</body>
+</html>
