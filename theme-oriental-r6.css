@@ -1,0 +1,117 @@
+/* مِعيار الناي — focused visual refinements r6 */
+
+.oriental-interface-r6 .note-stage{position:relative;overflow:hidden}
+.oriental-interface-r6 .note-waiting-overlay{
+  position:absolute;inset:0;z-index:4;display:grid;place-content:center;justify-items:center;gap:7px;
+  padding:18px;text-align:center;color:#e7d9b9;opacity:0;visibility:hidden;transition:opacity .18s ease;
+  background:radial-gradient(circle at center,rgba(98,221,200,.1),transparent 58%)
+}
+.oriental-interface-r6 .note-waiting-overlay .waiting-note-mark{
+  display:grid;place-items:center;width:54px;height:54px;border:1px solid rgba(222,182,108,.34);border-radius:50%;
+  color:#e2bb71;font-family:Georgia,serif;font-size:1.8rem;background:rgba(2,26,29,.74);
+  box-shadow:0 0 26px rgba(98,221,200,.08),inset 0 1px rgba(255,255,255,.05)
+}
+.oriental-interface-r6 .note-waiting-overlay strong{font-size:1rem;color:#f2dfb7}
+.oriental-interface-r6 .note-waiting-overlay small{font-size:.68rem;color:#9fb5af}
+.oriental-interface-r6 .note-panel.is-waiting .note-waiting-overlay{opacity:1;visibility:visible}
+.oriental-interface-r6 .note-panel.is-waiting .english-note,
+.oriental-interface-r6 .note-panel.is-waiting .arabic-note,
+.oriental-interface-r6 .note-panel.is-waiting .note-subtitle{visibility:hidden}
+.oriental-interface-r6 .note-panel.is-waiting .waveform-viz{opacity:.52}
+
+.oriental-interface-r6 .tuner-panel{grid-template-rows:auto 108px auto auto auto auto!important}
+.oriental-interface-r6 .tuner{
+  position:relative!important;min-height:108px!important;height:108px!important;padding:18px 24px 8px!important;
+  overflow:hidden!important;border:1px solid rgba(126,196,186,.11)!important;border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(3,31,34,.3),rgba(2,22,25,.08))!important
+}
+.oriental-interface-r6 .tuner-track{margin:35px 0 19px!important}
+.oriental-interface-r6 .tuner-labels{bottom:6px!important}
+.oriental-interface-r6 .metrics{
+  position:relative;z-index:3;padding-top:3px;background:linear-gradient(180deg,rgba(4,31,34,.96),rgba(4,31,34,.82))
+}
+.oriental-interface-r6 .metric{box-shadow:inset 0 1px rgba(255,255,255,.025)}
+
+.oriental-interface-r6 .recording-panel{display:grid!important;grid-template-rows:auto auto auto 1fr!important}
+.oriental-interface-r6 .recording-readiness{
+  align-self:end;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:3px;padding-top:8px;
+  border-top:1px solid rgba(222,182,108,.12)
+}
+.oriental-interface-r6 .readiness-item{
+  min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 5px;
+  border:1px solid rgba(126,196,186,.12);border-radius:8px;background:rgba(2,24,27,.4);color:#7f9993
+}
+.oriental-interface-r6 .readiness-item i{width:7px;height:7px;border-radius:50%;background:#6f7775;box-shadow:0 0 0 3px rgba(111,119,117,.08)}
+.oriental-interface-r6 .readiness-item b{font-size:.57rem;white-space:nowrap}
+.oriental-interface-r6 .readiness-item.is-ready{color:#b9dfd7;border-color:rgba(98,221,200,.24)}
+.oriental-interface-r6 .readiness-item.is-ready i{background:#58d99f;box-shadow:0 0 0 3px rgba(88,217,159,.1),0 0 9px rgba(88,217,159,.35)}
+
+.oriental-interface-r6 .library-tools-more{position:relative}
+.oriental-interface-r6 .library-tools-more summary{list-style:none}
+.oriental-interface-r6 .library-tools-more summary::-webkit-details-marker{display:none}
+.oriental-interface-r6 .library-tools-trigger{
+  width:31px;height:31px;display:grid;place-items:center;border:1px solid rgba(222,182,108,.24);border-radius:8px;
+  background:rgba(2,24,27,.66);color:#dbc081;font-size:1.15rem;cursor:pointer
+}
+.oriental-interface-r6 .library-tools-menu{
+  position:absolute;z-index:30;top:37px;inset-inline-end:0;min-width:150px;padding:6px;
+  border:1px solid rgba(222,182,108,.3);border-radius:10px;background:#05282b;box-shadow:0 15px 35px rgba(0,0,0,.42)
+}
+.oriental-interface-r6 .library-tools-menu .button{width:100%;justify-content:center!important}
+
+@media(min-width:900px) and (max-height:820px) and (orientation:landscape){
+  .oriental-interface-r6 .app{padding-top:8px!important;padding-bottom:calc(14px + env(safe-area-inset-bottom))!important}
+  .oriental-interface-r6 .app-content{gap:9px!important}
+  .oriental-interface-r6 .topbar{min-height:62px!important;padding-bottom:8px!important}
+  .oriental-interface-r6 .brand-mark{width:46px!important;height:46px!important;flex-basis:46px!important}
+  .oriental-interface-r6 .brand h1{font-size:2rem!important}
+  .oriental-interface-r6 .brand p{font-size:.66rem!important}
+  .oriental-interface-r6 .note-panel,
+  .oriental-interface-r6 .tuner-panel{height:232px!important;padding:11px 13px!important}
+  .oriental-interface-r6 .panel-heading{min-height:36px!important;padding-bottom:6px!important}
+  .oriental-interface-r6 .panel-heading-copy h2{font-size:1rem!important}
+  .oriental-interface-r6 .panel-heading-copy p{font-size:.57rem!important}
+  .oriental-interface-r6 .english-note{font-size:5.1rem!important}
+  .oriental-interface-r6 .arabic-note{font-size:2.15rem!important}
+  .oriental-interface-r6 .waveform-viz{height:29px!important}
+  .oriental-interface-r6 .tuner-panel{grid-template-rows:auto 82px auto auto auto auto!important;gap:4px!important}
+  .oriental-interface-r6 .tuner{height:82px!important;min-height:82px!important;padding:9px 20px 4px!important}
+  .oriental-interface-r6 .tuner-track{margin:29px 0 11px!important}
+  .oriental-interface-r6 .metrics{gap:4px!important}
+  .oriental-interface-r6 .metric{min-height:41px!important;padding:5px!important}
+  .oriental-interface-r6 .metric span{font-size:.57rem!important}
+  .oriental-interface-r6 .metric strong{font-size:.74rem!important}
+  .oriental-interface-r6 .quality-line{min-height:22px!important;font-size:.63rem!important}
+  .oriental-interface-r6 .quality-toggle{min-height:24px!important;font-size:.61rem!important}
+
+  .oriental-interface-r6 .controls-panel{padding:8px 11px!important}
+  .oriental-interface-r6 .controls-heading{margin-bottom:5px!important}
+  .oriental-interface-r6 .controls-heading h2{font-size:1rem!important}
+  .oriental-interface-r6 .controls-heading p{font-size:.57rem!important}
+  .oriental-interface-r6 .advanced-button{min-height:27px!important;font-size:.62rem!important}
+  .oriental-interface-r6 .control-cell{padding:5px 7px!important}
+  .oriental-interface-r6 .control-cell-label{margin-bottom:4px!important;font-size:.61rem!important}
+  .oriental-interface-r6 .segment-button{min-height:32px!important}
+  .oriental-interface-r6 .stepper-row,
+  .oriental-interface-r6 .reference-box{height:32px!important}
+  .oriental-interface-r6 .stepper-row input,
+  .oriental-interface-r6 .reference-box input{height:29px!important}
+
+  .oriental-interface-r6 .metronome-panel,
+  .oriental-interface-r6 .recording-panel,
+  .oriental-interface-r6 .library-panel{height:250px!important;padding:10px 12px!important}
+  .oriental-interface-r6 .beat-orb{width:96px!important;height:96px!important}
+  .oriental-interface-r6 .beat-number{font-size:2.2rem!important}
+  .oriental-interface-r6 .recording-mic-row .button{min-height:32px!important}
+  .oriental-interface-r6 .recorder-copy-compact h2{font-size:1rem!important}
+  .oriental-interface-r6 .recorder-actions .gold{min-height:48px!important}
+  .oriental-interface-r6 .library-head{margin-bottom:5px!important;padding-bottom:5px!important}
+  .oriental-interface-r6 .library-head h2{font-size:1.05rem!important}
+  .oriental-interface-r6 .record-item{min-height:43px!important}
+  .oriental-interface-r6 .status-footer{min-height:30px!important;padding-top:6px!important}
+}
+
+@media(max-width:700px){
+  .oriental-interface-r6 .recording-readiness{grid-template-columns:1fr}
+  .oriental-interface-r6 .readiness-item{justify-content:flex-start;padding-inline:10px}
+}
