@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const THEME_VERSION = '2026-08-05-r3';
+  const THEME_VERSION = '2026-08-05-r4';
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -24,12 +24,11 @@
   }
 
   function loadTheme() {
-    const oldTheme = document.querySelector('link[data-oriental-theme]');
-    if (oldTheme) oldTheme.remove();
+    document.querySelectorAll('link[data-oriental-theme]').forEach(node => node.remove());
 
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = `./theme-oriental-r3.css?v=${THEME_VERSION}`;
+    link.href = `./theme-oriental-r4.css?v=${THEME_VERSION}`;
     link.dataset.orientalTheme = 'true';
     document.head.appendChild(link);
 
@@ -42,29 +41,57 @@
     }
   }
 
-  function buildUtilityButton(label, iconName, tone, onClick) {
-    const button = el('button', `utility-button tone-${tone}`);
+  function panelHeading(title, caption, iconName, tone = 'teal') {
+    const heading = el('header', 'panel-heading');
+    const copy = el('div', 'panel-heading-copy');
+    copy.append(el('h2', '', title), el('p', '', caption));
+    heading.append(copy, emblem(iconName, tone, 'sm'));
+    return heading;
+  }
+
+  function collectRefs(panel, recorderCard) {
+    return {
+      mic: panel.querySelector('#micButton'),
+      calibrate: panel.querySelector('#calibrateButton'),
+      fields: panel.querySelector('.fields'),
+      processing: panel.querySelector('.processing-status'),
+      helper: panel.querySelector('.helper'),
+      division: panel.querySelector('#divisionSelect'),
+      a4: panel.querySelector('#a4Input'),
+      bpm: panel.querySelector('#bpmInput'),
+      tolerance: panel.querySelector('#toleranceSelect'),
+      noteValue: recorderCard.querySelector('#noteValueSelect'),
+      recorderCopy: recorderCard.querySelector('.recorder-copy'),
+      metronome: recorderCard.querySelector('.metronome'),
+      noteValueBox: recorderCard.querySelector('.note-value-box'),
+      recordingStatus: recorderCard.querySelector('#recordingStatus'),
+      arm: recorderCard.querySelector('#armButton'),
+      cancel: recorderCard.querySelector('#cancelButton')
+    };
+  }
+
+  function buildUtilityButton(label, iconName, onClick) {
+    const button = el('button', 'utility-button');
     button.type = 'button';
-    button.append(emblem(iconName, tone, 'sm'), el('span', '', label));
+    button.append(emblem(iconName, 'gold', 'xs'), el('span', '', label));
     button.addEventListener('click', onClick || (() => {}));
     return button;
   }
 
-  function buildHeader(app, topbar) {
+  function buildHeader(app, topbar, openAdvanced) {
     const brand = topbar.querySelector('.brand');
     const version = topbar.querySelector('.version-stack');
 
     const utilities = el('nav', 'header-utilities');
     utilities.setAttribute('aria-label', 'أدوات التطبيق');
     utilities.append(
-      buildUtilityButton('الإعدادات', 'tune', 'teal', () => document.querySelector('.controls-panel')?.scrollIntoView({ behavior: 'smooth' })),
-      buildUtilityButton('مساعدة', 'question_mark', 'gold', () => {
+      buildUtilityButton('الإعدادات', 'tune', openAdvanced),
+      buildUtilityButton('مساعدة', 'help', () => {
         const message = document.getElementById('message');
         if (!message) return;
-        message.textContent = 'شغّل الميكروفون، انتظر انتهاء معايرة ضوضاء المكان، ثم اعزف نغمة ثابتة وجهّز التسجيل.';
+        message.textContent = 'شغّل الميكروفون، انتظر انتهاء معايرة ضوضاء المكان، ثم اعزف نغمة ثابتة واضغط تجهيز التسجيل.';
         message.className = 'message show';
-      }),
-      buildUtilityButton('المعايرة', 'graphic_eq', 'coral', () => document.getElementById('calibrateButton')?.click())
+      })
     );
 
     const micStatus = el('button', 'header-mic-status');
@@ -73,15 +100,12 @@
     micStatus.append(
       el('span', 'header-mic-dot'),
       el('span', 'header-mic-copy', 'الميكروفون غير نشط'),
-      emblem('mic', 'teal', 'sm')
+      emblem('mic', 'teal', 'xs')
     );
     micStatus.addEventListener('click', () => document.getElementById('micButton')?.click());
 
-    const ornament = el('span', 'header-ornament');
-    ornament.setAttribute('aria-hidden', 'true');
-
     topbar.innerHTML = '';
-    topbar.append(utilities, brand, micStatus, ornament);
+    topbar.append(utilities, brand, micStatus);
     if (version) topbar.append(version);
 
     const micButton = document.getElementById('micButton');
@@ -89,30 +113,26 @@
       const sync = () => {
         const active = micButton.textContent.includes('إيقاف');
         micStatus.classList.toggle('is-active', active);
-        micStatus.querySelector('.header-mic-copy').textContent = active ? 'الميكروفون نشط' : 'الميكروفون غير نشط';
+        micStatus.querySelector('.header-mic-copy').textContent =
+          active ? 'الميكروفون نشط' : 'الميكروفون غير نشط';
       };
-      new MutationObserver(sync).observe(micButton, { childList: true, subtree: true, characterData: true, attributes: true });
+      new MutationObserver(sync).observe(micButton, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
       sync();
     }
 
     const rail = el('aside', 'ney-rail');
     rail.setAttribute('aria-label', 'هوية الناي');
-    const neyHalo = el('div', 'ney-halo');
-    const neyImage = document.createElement('img');
-    neyImage.src = './assets/ney-dokah-reference.webp';
-    neyImage.alt = 'ناي دوكاه عربي';
-    neyImage.loading = 'eager';
-    neyHalo.appendChild(neyImage);
-    rail.append(neyHalo, el('p', 'ney-quote', 'الناي روحٌ\nوالنغمةُ سِرّ'));
+    const image = document.createElement('img');
+    image.src = './assets/ney-dokah-reference.webp';
+    image.alt = 'ناي دوكاه عربي';
+    image.loading = 'eager';
+    rail.append(image, el('p', 'ney-quote', 'الناي روحٌ\nوالنغمةُ سِرّ'));
     app.prepend(rail);
-  }
-
-  function panelHeading(title, caption, iconName, tone) {
-    const heading = el('header', 'panel-heading');
-    const copy = el('div', 'panel-heading-copy');
-    copy.append(el('h2', '', title), el('p', '', caption));
-    heading.append(copy, emblem(iconName, tone, 'md'));
-    return heading;
   }
 
   function splitAnalysis(detector) {
@@ -126,43 +146,44 @@
     const grid = el('div', 'analysis-grid');
 
     const notePanel = el('article', 'premium-panel note-panel');
-    const noteHalo = el('div', 'note-halo');
-    noteHalo.setAttribute('aria-hidden', 'true');
     const waveform = el('div', 'waveform-viz');
-    for (let i = 0; i < 56; i += 1) {
+    for (let i = 0; i < 46; i += 1) {
       const bar = el('i');
-      bar.style.setProperty('--h', `${14 + ((i * 23) % 68)}%`);
-      bar.style.setProperty('--d', `${(i % 14) * -0.075}s`);
+      bar.style.setProperty('--h', `${16 + ((i * 17) % 58)}%`);
+      bar.style.setProperty('--d', `${(i % 12) * -0.08}s`);
       waveform.appendChild(bar);
     }
     notePanel.append(
-      panelHeading('النغمة المكتشفة', 'قراءة مباشرة للصوت العربي الشرقي', 'music_note', 'gold'),
-      noteHalo,
+      panelHeading('النغمة المكتشفة', 'الاسم والطبقة والتردد الأساسي', 'music_note', 'gold'),
       noteStage,
       waveform,
       status
     );
 
     const tunerPanel = el('article', 'premium-panel tuner-panel');
-    const spectrum = el('div', 'spectrum-ribbon');
-    ['♭', '−25', '0', '+25', '♯'].forEach((label, index) => {
-      const mark = el('span', index === 2 ? 'spectrum-center' : '', label);
-      spectrum.appendChild(mark);
+    const qualityToggle = el('button', 'quality-toggle');
+    qualityToggle.type = 'button';
+    qualityToggle.setAttribute('aria-expanded', 'false');
+    qualityToggle.append(icon('fact_check'), el('span', '', 'تفاصيل الجودة'), icon('expand_more'));
+
+    const qualityDetails = el('div', 'quality-details');
+    qualityDetails.append(validation);
+    qualityToggle.addEventListener('click', () => {
+      const open = qualityDetails.classList.toggle('is-open');
+      qualityToggle.setAttribute('aria-expanded', String(open));
+      qualityToggle.lastElementChild.textContent = open ? 'expand_less' : 'expand_more';
     });
+
     tunerPanel.append(
-      panelHeading('المعيار اللحظي', 'توازن النغمة ودرجة الانحراف بالسنت', 'speed', 'teal'),
-      spectrum,
+      panelHeading('المعيار اللحظي', 'الانحراف وجودة الإشارة لحظة بلحظة', 'speed', 'teal'),
       tuner,
       metrics,
       quality,
-      validation
+      qualityToggle,
+      qualityDetails
     );
 
-    const bridge = el('div', 'analysis-bridge');
-    bridge.setAttribute('aria-hidden', 'true');
-    bridge.append(emblem('airwave', 'gold', 'sm'));
-
-    grid.append(notePanel, bridge, tunerPanel);
+    grid.append(notePanel, tunerPanel);
     detector.innerHTML = '';
     detector.className = 'analysis-shell';
     detector.appendChild(grid);
@@ -170,11 +191,12 @@
 
   function bindSegmentedControl(select, container, options) {
     if (!select) return;
+
     options.forEach(option => {
-      const button = el('button', `segment-button ${option.className || ''}`.trim());
+      const button = el('button', 'segment-button');
       button.type = 'button';
       button.dataset.value = option.value;
-      if (option.icon) button.append(emblem(option.icon, option.tone || 'teal', 'xs'));
+      if (option.icon) button.append(icon(option.icon));
       const copy = el('span', 'segment-copy');
       copy.append(el('strong', '', option.label));
       if (option.note) copy.append(el('small', '', option.note));
@@ -197,20 +219,17 @@
     sync();
   }
 
-  function makeStepper(input, labelText) {
-    const wrap = el('section', 'control-tile stepper-control tile-bpm');
-    const top = el('div', 'control-tile-head');
-    top.append(emblem('tempo', 'coral', 'xs'), el('span', 'control-label', labelText));
+  function makeStepper(input) {
     const row = el('div', 'stepper-row');
     const minus = el('button', 'stepper-button');
     minus.type = 'button';
+    minus.setAttribute('aria-label', 'خفض السرعة');
     minus.append(icon('remove'));
     const plus = el('button', 'stepper-button');
     plus.type = 'button';
+    plus.setAttribute('aria-label', 'رفع السرعة');
     plus.append(icon('add'));
-    input.parentElement?.classList.add('source-field-hidden');
     row.append(minus, input, plus);
-    wrap.append(top, row, el('small', 'control-hint', 'سرعة العدّ المرئي والتسجيل'));
 
     const apply = delta => {
       const min = Number(input.min || -Infinity);
@@ -223,138 +242,196 @@
     };
     minus.addEventListener('click', () => apply(-1));
     plus.addEventListener('click', () => apply(1));
-    return wrap;
+    return row;
   }
 
-  function rebuildControls(panel, recorderCard) {
-    const mic = panel.querySelector('#micButton');
-    const calibrate = panel.querySelector('#calibrateButton');
-    const fields = panel.querySelector('.fields');
-    const processing = panel.querySelector('.processing-status');
-    const helper = panel.querySelector('.helper');
-    const divisionSelect = panel.querySelector('#divisionSelect');
-    const a4Input = panel.querySelector('#a4Input');
-    const bpmInput = panel.querySelector('#bpmInput');
-    const toleranceSelect = panel.querySelector('#toleranceSelect');
-    const noteValueSelect = recorderCard.querySelector('#noteValueSelect');
+  function makeControlCell(title, iconName, tone = 'teal') {
+    const cell = el('section', 'control-cell');
+    const label = el('div', 'control-cell-label');
+    label.append(emblem(iconName, tone, 'xs'), el('span', '', title));
+    cell.appendChild(label);
+    return cell;
+  }
 
+  function rebuildControls(panel, refs, openAdvanced) {
     panel.innerHTML = '';
     panel.className = 'premium-panel controls-panel';
 
     const heading = el('header', 'controls-heading');
-    const headingText = el('div');
-    headingText.append(el('h2', '', 'لوحة العازف'), el('p', '', 'اضبط الأداة كما تضبط الناي قبل بدء الجملة الموسيقية'));
-    heading.append(headingText, emblem('tune', 'gold', 'md'));
+    const copy = el('div');
+    copy.append(el('h2', '', 'التحكم السريع'), el('p', '', 'الإعدادات المستخدمة أثناء العزف فقط'));
+    const advancedButton = el('button', 'advanced-button');
+    advancedButton.type = 'button';
+    advancedButton.append(icon('tune'), el('span', '', 'إعدادات متقدمة'));
+    advancedButton.addEventListener('click', openAdvanced);
+    heading.append(copy, advancedButton);
 
-    const controls = el('div', 'controls-grid');
+    const toolbar = el('div', 'controls-toolbar');
 
-    const referenceGroup = el('section', 'control-tile reference-control tile-reference');
-    const referenceTop = el('div', 'control-tile-head');
-    referenceTop.append(emblem('fork_right', 'gold', 'xs'), el('span', 'control-label', 'مرجع A4'));
-    if (a4Input?.parentElement) a4Input.parentElement.classList.add('source-field-hidden');
-    const referenceBox = el('div', 'reference-box');
-    referenceBox.append(el('strong', '', 'A'), a4Input, el('small', '', 'Hz'));
-    referenceGroup.append(referenceTop, referenceBox, el('small', 'control-hint', 'المرجع القياسي للدوزان'));
-
-    const bpmGroup = makeStepper(bpmInput, 'النبض BPM');
-
-    const valuesGroup = el('section', 'control-tile note-values-control tile-values');
-    const valuesTop = el('div', 'control-tile-head');
-    valuesTop.append(emblem('music_note', 'teal', 'xs'), el('span', 'control-label', 'القيمة الموسيقية'));
-    const noteSegments = el('div', 'note-segments');
-    bindSegmentedControl(noteValueSelect, noteSegments, [
-      { value: 'whole', label: 'روند', note: '4 عدّات', icon: 'circle', tone: 'gold' },
-      { value: 'half', label: 'بلانش', note: 'عدّتان', icon: 'music_note', tone: 'teal' },
-      { value: 'quarter', label: 'نوار', note: 'عدّة', icon: 'music_note', tone: 'coral' },
-      { value: 'eighth', label: 'كروش', note: '½ عدّة', icon: 'music_note', tone: 'violet' }
-    ]);
-    valuesGroup.append(valuesTop, noteSegments);
-
-    const divisionGroup = el('section', 'control-tile division-control tile-division');
-    const divisionTop = el('div', 'control-tile-head');
-    divisionTop.append(emblem('piano', 'teal', 'xs'), el('span', 'control-label', 'نظام التقسيم'));
+    const divisionCell = makeControlCell('التقسيم', 'piano', 'teal');
     const divisionSegments = el('div', 'division-segments');
-    bindSegmentedControl(divisionSelect, divisionSegments, [
+    bindSegmentedControl(refs.division, divisionSegments, [
       { value: '12', label: '12‑TET', note: 'غربي' },
-      { value: '24', label: '24‑TET', note: 'شرقي ربع تون' }
+      { value: '24', label: '24‑TET', note: 'شرقي' }
     ]);
-    divisionGroup.append(divisionTop, divisionSegments);
+    divisionCell.appendChild(divisionSegments);
 
-    const toleranceGroup = el('section', 'control-tile tolerance-control tile-tolerance');
-    const toleranceTop = el('div', 'control-tile-head');
-    toleranceTop.append(emblem('target', 'violet', 'xs'), el('span', 'control-label', 'حساسية الضبط'));
-    if (toleranceSelect?.parentElement) toleranceSelect.parentElement.classList.add('source-field-hidden');
-    toleranceGroup.append(toleranceTop, toleranceSelect, el('small', 'control-hint', 'مساحة قبول الانحراف بالسنت'));
+    const valueCell = makeControlCell('القيمة الموسيقية', 'music_note', 'gold');
+    const noteSegments = el('div', 'note-segments');
+    bindSegmentedControl(refs.noteValue, noteSegments, [
+      { value: 'whole', label: 'روند', note: '4', icon: 'circle' },
+      { value: 'half', label: 'بلانش', note: '2', icon: 'music_note' },
+      { value: 'quarter', label: 'نوار', note: '1', icon: 'music_note' },
+      { value: 'eighth', label: 'كروش', note: '½', icon: 'music_note' }
+    ]);
+    valueCell.appendChild(noteSegments);
 
-    const actions = el('section', 'control-actions tile-actions');
-    const actionHeading = el('div', 'control-tile-head');
-    actionHeading.append(emblem('mic', 'coral', 'xs'), el('span', 'control-label', 'المصدر الصوتي'));
-    actions.append(actionHeading, mic, calibrate);
+    const bpmCell = makeControlCell('النبض BPM', 'tempo', 'coral');
+    bpmCell.appendChild(makeStepper(refs.bpm));
 
-    controls.append(valuesGroup, divisionGroup, referenceGroup, bpmGroup, toleranceGroup, actions);
+    const referenceCell = makeControlCell('مرجع A4', 'fork_right', 'gold');
+    const referenceBox = el('div', 'reference-box');
+    referenceBox.append(el('span', '', 'A'), refs.a4, el('small', '', 'Hz'));
+    referenceCell.appendChild(referenceBox);
 
-    const statusStrip = el('section', 'processing-strip');
-    const stripHeading = el('div', 'processing-strip-heading');
-    stripHeading.append(emblem('settings_input_component', 'teal', 'xs'), el('strong', '', 'سلامة مسار الصوت'));
-    statusStrip.append(stripHeading, processing, helper);
+    toolbar.append(divisionCell, valueCell, bpmCell, referenceCell);
+    panel.append(heading, toolbar);
 
-    panel.append(heading, controls, fields, statusStrip);
-    fields.classList.add('source-fields-container');
+    refs.fields?.remove();
   }
 
-  function rebuildRecorder(recorderCard) {
-    const recorderCopy = recorderCard.querySelector('.recorder-copy');
-    const metronome = recorderCard.querySelector('.metronome');
-    if (!recorderCopy || !metronome) return;
+  function buildAdvancedDrawer(refs) {
+    const overlay = el('div', 'advanced-overlay');
+    overlay.setAttribute('aria-hidden', 'true');
 
-    const noteValueBox = recorderCopy.querySelector('.note-value-box');
-    if (noteValueBox) noteValueBox.classList.add('source-field-hidden');
+    const drawer = el('aside', 'advanced-drawer');
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-labelledby', 'advancedTitle');
+
+    const header = el('header', 'advanced-header');
+    const titleBox = el('div');
+    titleBox.append(el('h2', '', 'الإعدادات المتقدمة'), el('p', '', 'تفاصيل القياس ومسار الميكروفون'));
+    titleBox.querySelector('h2').id = 'advancedTitle';
+    const close = el('button', 'drawer-close');
+    close.type = 'button';
+    close.setAttribute('aria-label', 'إغلاق الإعدادات');
+    close.append(icon('close'));
+    header.append(titleBox, close);
+
+    const toleranceSection = el('section', 'advanced-section');
+    toleranceSection.append(
+      panelHeading('حساسية الضبط', 'هامش قبول الانحراف بالسنت', 'target', 'violet'),
+      refs.tolerance
+    );
+
+    const calibrationSection = el('section', 'advanced-section');
+    calibrationSection.append(
+      panelHeading('معايرة المكان', 'أعد قياس ضوضاء الغرفة عند تغير الموقع', 'noise_control_off', 'gold'),
+      refs.calibrate
+    );
+
+    const processingSection = el('section', 'advanced-section processing-advanced');
+    processingSection.append(
+      panelHeading('مسار الصوت', 'حالة الميكروفون والمعالجة الداخلية', 'settings_input_component', 'teal'),
+      refs.processing,
+      refs.helper
+    );
+
+    drawer.append(header, toleranceSection, calibrationSection, processingSection);
+    overlay.appendChild(drawer);
+    document.body.appendChild(overlay);
+
+    let lastFocused = null;
+    const open = () => {
+      lastFocused = document.activeElement;
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('drawer-open');
+      close.focus();
+    };
+    const dismiss = () => {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('drawer-open');
+      lastFocused?.focus?.();
+    };
+
+    close.addEventListener('click', dismiss);
+    overlay.addEventListener('click', event => {
+      if (event.target === overlay) dismiss();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && overlay.classList.contains('is-open')) dismiss();
+    });
+
+    return { open, close: dismiss };
+  }
+
+  function buildLowerArea(recorderCard, library, refs) {
+    if (refs.noteValueBox) refs.noteValueBox.remove();
 
     recorderCard.innerHTML = '';
-    recorderCard.className = 'recording-layout';
+    recorderCard.className = 'lower-grid';
 
     const metronomePanel = el('section', 'premium-panel metronome-panel');
-    metronomePanel.append(panelHeading('الميزان الصامت', 'إيقاع بصري لا يتداخل مع التسجيل', 'graphic_eq', 'teal'), metronome);
+    metronomePanel.append(
+      panelHeading('الميزان الصامت', 'العدّ المرئي', 'graphic_eq', 'teal'),
+      refs.metronome
+    );
 
     const recordingPanel = el('section', 'premium-panel recording-panel');
-    const recordAura = el('div', 'record-aura');
-    recordAura.setAttribute('aria-hidden', 'true');
-    recordingPanel.append(panelHeading('التسجيل', 'التقط نغمة صافية بالقيمة الموسيقية المحددة', 'mic_external_on', 'coral'), recordAura, recorderCopy);
+    const micRow = el('div', 'recording-mic-row');
+    micRow.append(refs.mic);
+    refs.recorderCopy.classList.add('recorder-copy-compact');
+    recordingPanel.append(
+      panelHeading('التسجيل', 'ابدأ بعد استقرار النغمة', 'mic_external_on', 'coral'),
+      micRow,
+      refs.recorderCopy
+    );
 
-    const qualityPanel = el('aside', 'premium-panel recording-quality-panel');
-    const qualityTitle = el('div', 'quality-title');
-    qualityTitle.append(emblem('verified', 'gold', 'sm'), el('div'));
-    qualityTitle.lastChild.append(el('strong', '', 'بوابة الجودة'), el('span', '', 'الحفظ بعد اجتياز جميع الشروط'));
-    const qualitySteps = el('div', 'quality-steps');
-    [
-      ['ضوضاء منخفضة', 'noise_control_off'],
-      ['نغمة ثابتة', 'moving'],
-      ['ضبط سليم', 'check_circle'],
-      ['دون طقطقة', 'hearing_disabled']
-    ].forEach(([label, iconName], index) => {
-      const step = el('div', 'quality-step');
-      step.append(emblem(iconName, index % 2 ? 'teal' : 'gold', 'xs'), el('span', '', label));
-      qualitySteps.appendChild(step);
-    });
-    qualityPanel.append(qualityTitle, qualitySteps, el('p', '', 'يبقى الصوت الخام كما هو، وتُستخدم معايير الجودة لقبول التسجيل فقط.'));
+    enhanceLibrary(library);
 
-    recorderCard.append(metronomePanel, recordingPanel, qualityPanel);
+    recorderCard.append(metronomePanel, recordingPanel, library);
+  }
+
+  function compactRecordItem(item) {
+    if (item.dataset.compact === 'true') return;
+    item.dataset.compact = 'true';
+
+    const actions = item.querySelector('.record-actions');
+    if (!actions) return;
+    const buttons = [...actions.querySelectorAll('button')];
+    const play = buttons.shift();
+    if (play) play.classList.add('play-action');
+
+    if (buttons.length) {
+      const menu = el('details', 'record-more');
+      const summary = el('summary', 'record-more-trigger');
+      summary.setAttribute('aria-label', 'المزيد من الإجراءات');
+      summary.append(icon('more_horiz'));
+      const popover = el('div', 'record-more-menu');
+      buttons.forEach(button => popover.appendChild(button));
+      menu.append(summary, popover);
+      actions.appendChild(menu);
+    }
   }
 
   function enhanceLibrary(library) {
     library.classList.remove('card');
     library.classList.add('premium-panel', 'library-panel');
+
     const title = library.querySelector('.library-head h2');
-    if (title) title.textContent = 'مكتبة النغمات';
+    if (title) title.textContent = 'التسجيلات المحفوظة';
     const description = library.querySelector('.library-head p');
-    if (description) description.textContent = 'استمع، راجع الجودة، وحدد التسجيلات قبل تصديرها.';
+    if (description) description.textContent = 'آخر التسجيلات مع التمرير الداخلي.';
 
     const list = library.querySelector('#recordingsList');
-    if (list && !library.querySelector('.recordings-table-head')) {
-      const header = el('div', 'recordings-table-head');
-      ['اختيار', 'هوية النغمة', 'مؤشرات الجودة', 'التحكم والتصدير'].forEach(text => header.append(el('span', '', text)));
-      library.insertBefore(header, list);
-    }
+    if (!list) return;
+
+    const compactAll = () => list.querySelectorAll('.record-item').forEach(compactRecordItem);
+    compactAll();
+    new MutationObserver(compactAll).observe(list, { childList: true, subtree: false });
   }
 
   function addStatusFooter(footer) {
@@ -367,6 +444,7 @@
 
   function apply() {
     loadTheme();
+
     const app = document.querySelector('.app');
     const topbar = document.querySelector('.topbar');
     const detector = document.querySelector('.detector');
@@ -376,21 +454,34 @@
     const footer = document.querySelector('.footer');
 
     if (!app || !topbar || !detector || !controls || !recorder || !library || !footer) return;
-    if (app.dataset.redesigned === 'r3') return;
-    app.dataset.redesigned = 'r3';
-    document.body.classList.add('oriental-interface', 'oriental-interface-r3');
+    if (app.dataset.redesigned === 'r4') return;
 
-    buildHeader(app, topbar);
+    const refs = collectRefs(controls, recorder);
+    if (Object.values(refs).some(value => value === null)) {
+      console.warn('Ney Meyar UI rebuild skipped: required UI reference missing.');
+      return;
+    }
+
+    app.dataset.redesigned = 'r4';
+    document.body.classList.add('oriental-interface', 'oriental-interface-r4');
+
+    const drawer = buildAdvancedDrawer(refs);
+    buildHeader(app, topbar, drawer.open);
     splitAnalysis(detector);
-    rebuildControls(controls, recorder);
-    rebuildRecorder(recorder);
-    enhanceLibrary(library);
+    rebuildControls(controls, refs, drawer.open);
+    buildLowerArea(recorder, library, refs);
     addStatusFooter(footer);
 
     const mainContent = el('div', 'app-content');
-    [topbar, document.getElementById('message'), detector, controls, recorder, library, footer]
-      .filter(Boolean)
-      .forEach(node => mainContent.appendChild(node));
+    [
+      topbar,
+      document.getElementById('message'),
+      detector,
+      controls,
+      recorder,
+      footer
+    ].filter(Boolean).forEach(node => mainContent.appendChild(node));
+
     app.appendChild(mainContent);
   }
 
