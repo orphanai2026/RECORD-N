@@ -1,0 +1,189 @@
+/*
+ * مِعيار الناي — atmospheric oriental background r9
+ * طبقة بصرية هادئة مستوحاة من مجالس الطرب والعمارة الشرقية.
+ * © 2026 محمد الزهراني. جميع الحقوق محفوظة.
+ */
+
+.oriental-interface-r8{
+  --r9-gold: rgba(222,182,108,.20);
+  --r9-gold-soft: rgba(222,182,108,.08);
+  --r9-teal: rgba(72,191,174,.10);
+  --r9-deep: #021416;
+  --r9-ink: #031b1e;
+  position:relative;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 50% 5%, rgba(177,126,55,.11), transparent 22rem),
+    radial-gradient(circle at 84% 24%, rgba(55,165,151,.10), transparent 29rem),
+    radial-gradient(circle at 12% 72%, rgba(162,102,44,.07), transparent 25rem),
+    linear-gradient(145deg,#021214 0%,#05282b 48%,#031719 100%)!important;
+  isolation:isolate;
+}
+
+/* ملمس ورقي داكن وناعم */
+.oriental-interface-r8::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-4;
+  pointer-events:none;
+  opacity:.36;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.018) 0 1px,transparent 1.3px),
+    radial-gradient(circle at 70% 60%,rgba(222,182,108,.018) 0 1px,transparent 1.4px),
+    radial-gradient(circle at 35% 80%,rgba(93,216,197,.014) 0 1px,transparent 1.2px);
+  background-size:17px 17px,23px 23px,29px 29px;
+  mix-blend-mode:screen;
+}
+
+/* شبكة هندسية شرقية عند الأطراف فقط */
+.oriental-interface-r8::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-3;
+  pointer-events:none;
+  opacity:.50;
+  background:
+    linear-gradient(30deg,transparent 24%,var(--r9-gold-soft) 25%,var(--r9-gold-soft) 26%,transparent 27%,transparent 74%,var(--r9-gold-soft) 75%,var(--r9-gold-soft) 76%,transparent 77%),
+    linear-gradient(150deg,transparent 24%,rgba(76,186,170,.035) 25%,rgba(76,186,170,.035) 26%,transparent 27%,transparent 74%,rgba(76,186,170,.035) 75%,rgba(76,186,170,.035) 76%,transparent 77%);
+  background-size:58px 100px;
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,transparent 18%,transparent 82%,#000 100%);
+  mask-image:linear-gradient(90deg,#000 0%,transparent 18%,transparent 82%,#000 100%);
+}
+
+/* هالة مضيئة خلف الشعار */
+.oriental-interface-r8 .topbar{
+  position:relative;
+  overflow:visible!important;
+}
+.oriental-interface-r8 .topbar::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:50%;
+  top:-28px;
+  width:min(58vw,760px);
+  height:155px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at center,rgba(224,176,91,.17) 0%,rgba(73,188,171,.08) 35%,transparent 72%);
+  filter:blur(18px);
+  pointer-events:none;
+}
+
+/* قوس زخرفي هادئ في الركن العلوي */
+.oriental-interface-r8 .app-content::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset-inline-end:-95px;
+  top:64px;
+  width:360px;
+  height:360px;
+  border:1px solid rgba(222,182,108,.11);
+  border-radius:50%;
+  box-shadow:
+    0 0 0 22px rgba(222,182,108,.018),
+    0 0 0 54px rgba(72,191,174,.014),
+    0 0 0 88px rgba(222,182,108,.010);
+  opacity:.75;
+  pointer-events:none;
+}
+
+/* موجة موسيقية تجريدية بين الأقسام */
+.oriental-interface-r8 .analysis-shell,
+.oriental-interface-r8 .controls-panel,
+.oriental-interface-r8 .lower-grid{
+  position:relative;
+}
+.oriental-interface-r8 .controls-panel::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset-inline:8%;
+  top:-16px;
+  height:34px;
+  pointer-events:none;
+  opacity:.28;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 13px,rgba(78,200,181,.44) 14px 15px,transparent 16px 25px);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent);
+  clip-path:polygon(0 62%,4% 51%,8% 69%,12% 38%,16% 58%,20% 30%,24% 70%,28% 44%,32% 58%,36% 24%,40% 66%,44% 42%,48% 60%,52% 31%,56% 72%,60% 40%,64% 55%,68% 27%,72% 64%,76% 43%,80% 69%,84% 35%,88% 58%,92% 46%,96% 63%,100% 54%,100% 100%,0 100%);
+}
+
+/* زخرفة خطية دقيقة على حواف البطاقات */
+.oriental-interface-r8 .premium-panel{
+  position:relative;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.025),transparent 35%),
+    radial-gradient(circle at 85% 0%,rgba(91,211,192,.055),transparent 24rem),
+    linear-gradient(155deg,rgba(6,43,47,.93),rgba(3,25,28,.95))!important;
+  border-color:rgba(222,182,108,.23)!important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.028),
+    inset 0 0 0 1px rgba(0,0,0,.20),
+    0 18px 48px rgba(0,0,0,.28)!important;
+}
+.oriental-interface-r8 .premium-panel::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent,rgba(222,182,108,.055),transparent) top/100% 1px no-repeat,
+    linear-gradient(180deg,transparent,rgba(74,190,173,.025),transparent) left/1px 100% no-repeat;
+  opacity:.8;
+}
+
+/* اختلاف خفيف بين المناطق لمنع الرتابة */
+.oriental-interface-r8 .note-panel{
+  background:
+    radial-gradient(circle at 26% 58%,rgba(224,176,91,.075),transparent 15rem),
+    linear-gradient(155deg,rgba(7,47,50,.95),rgba(3,26,29,.96))!important;
+}
+.oriental-interface-r8 .tuner-panel{
+  background:
+    radial-gradient(circle at 78% 42%,rgba(68,196,177,.075),transparent 20rem),
+    linear-gradient(155deg,rgba(6,42,46,.95),rgba(3,25,28,.96))!important;
+}
+.oriental-interface-r8 .controls-panel{
+  background:
+    linear-gradient(90deg,rgba(222,182,108,.022),transparent 18%,transparent 82%,rgba(72,191,174,.022)),
+    linear-gradient(155deg,rgba(7,44,48,.95),rgba(3,26,29,.96))!important;
+}
+.oriental-interface-r8 .library-panel{
+  background:
+    radial-gradient(circle at 90% 12%,rgba(224,176,91,.05),transparent 18rem),
+    linear-gradient(155deg,rgba(6,41,44,.95),rgba(3,24,27,.96))!important;
+}
+
+/* لمسة ضوء تحت العناصر الفعّالة دون مبالغة */
+.oriental-interface-r8 .segment-button.is-selected,
+.oriental-interface-r8 .button.primary,
+.oriental-interface-r8 .button.gold{
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.16),
+    0 8px 22px rgba(53,180,161,.10)!important;
+}
+
+/* تخفيف الزخارف في الشاشات الصغيرة */
+@media(max-width:900px){
+  .oriental-interface-r8::after{opacity:.28}
+  .oriental-interface-r8 .app-content::before{display:none}
+  .oriental-interface-r8 .controls-panel::before{opacity:.16}
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .oriental-interface-r8 .topbar::before{
+    animation:r9-ambient-glow 8s ease-in-out infinite;
+  }
+}
+
+@keyframes r9-ambient-glow{
+  0%,100%{opacity:.72;transform:translateX(-50%) scale(.98)}
+  50%{opacity:1;transform:translateX(-50%) scale(1.04)}
+}
