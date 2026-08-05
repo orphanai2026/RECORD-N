@@ -1,0 +1,29 @@
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Node tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Local development
+.env
+.env.*
+!.env.example
+*.local
+coverage/
+dist/
+.tmp/
+tmp/
+
+# User recordings and exports
+*.wav
+*.mp3
+*.zip
+recordings/
+exports/
