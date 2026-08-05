@@ -1,0 +1,375 @@
+/*
+ * مِعيار الناي — Tablet refinement layer r5
+ * يحمّل بعد r4 ويعالج كثافة التابلت والجزء السفلي دون المساس بمنطق الصوت.
+ * © 2026 محمد الزهراني. جميع الحقوق محفوظة.
+ */
+
+/* العناوين الوظيفية: وضوح أعلى، مع إبقاء الخط الزخرفي لاسم المنتج فقط */
+.oriental-interface-r4 .panel-heading-copy h2,
+.oriental-interface-r4 .controls-heading h2,
+.oriental-interface-r4 .library-head h2,
+.oriental-interface-r4 .recorder-copy-compact h2,
+.oriental-interface-r4 .advanced-header h2 {
+  font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.oriental-interface-r4 .panel-heading-copy h2 {
+  font-size: 1rem !important;
+}
+
+.oriental-interface-r4 .controls-heading h2,
+.oriental-interface-r4 .library-head h2 {
+  font-size: 1.08rem !important;
+}
+
+.oriental-interface-r4 .panel-heading-copy p,
+.oriental-interface-r4 .controls-heading p,
+.oriental-interface-r4 .library-head p {
+  line-height: 1.45;
+}
+
+/* المعيار الموسيقي يجب أن يقرأ من المنخفض يسارًا إلى المرتفع يمينًا */
+.oriental-interface-r4 .tuner,
+.oriental-interface-r4 .tuner-track,
+.oriental-interface-r4 .tuner-labels {
+  direction: ltr !important;
+}
+
+.oriental-interface-r4 .tuner-labels span {
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+/* المحافظة على كتابة TET بالترتيب الصحيح داخل واجهة RTL */
+.oriental-interface-r4 .division-segments {
+  direction: rtl;
+}
+
+.oriental-interface-r4 .division-segments .segment-button[data-value="24"] {
+  order: 0;
+}
+
+.oriental-interface-r4 .division-segments .segment-button[data-value="12"] {
+  order: 1;
+}
+
+.oriental-interface-r4 .division-segments .segment-copy strong {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* تقليل اعتماد عناصر التحكم على الأيقونات الخارجية في التابلت */
+.oriental-interface-r4 .control-cell-label .material-symbols-rounded {
+  font-size: 16px !important;
+  overflow: hidden;
+  max-width: 18px;
+}
+
+.oriental-interface-r4 .control-cell-label {
+  min-height: 27px;
+  white-space: nowrap;
+}
+
+/* لوحة التحكم: مساحات أقل ونصوص أكثر اتزانًا */
+.oriental-interface-r4 .controls-panel {
+  padding: 10px 14px !important;
+}
+
+.oriental-interface-r4 .controls-heading {
+  margin-bottom: 7px !important;
+}
+
+.oriental-interface-r4 .controls-toolbar {
+  gap: 7px !important;
+}
+
+.oriental-interface-r4 .control-cell {
+  padding: 6px 8px !important;
+}
+
+.oriental-interface-r4 .segment-button {
+  min-height: 36px !important;
+}
+
+.oriental-interface-r4 .stepper-row,
+.oriental-interface-r4 .reference-box {
+  height: 36px !important;
+}
+
+/* الجزء السفلي: توزيع المساحة لصالح الوظيفة */
+.oriental-interface-r4 .lower-grid {
+  grid-template-columns: minmax(220px, .62fr) minmax(285px, .76fr) minmax(570px, 1.62fr) !important;
+  align-items: stretch;
+}
+
+.oriental-interface-r4 .metronome-panel,
+.oriental-interface-r4 .recording-panel,
+.oriental-interface-r4 .library-panel {
+  height: 286px !important;
+  padding: 11px 12px !important;
+}
+
+/* الميزان الصامت: عدم قص معلومات المدة في الأسفل */
+.oriental-interface-r4 .metronome-panel .panel-heading {
+  min-height: 39px;
+  padding-bottom: 6px;
+}
+
+.oriental-interface-r4 .metronome {
+  padding: 6px 7px 3px !important;
+  gap: 1px !important;
+  align-content: center;
+}
+
+.oriental-interface-r4 .beat-orb {
+  width: 100px !important;
+  height: 100px !important;
+}
+
+.oriental-interface-r4 .beat-number {
+  font-size: 2.15rem !important;
+}
+
+.oriental-interface-r4 .beat-heading {
+  margin-top: 0 !important;
+  gap: 4px !important;
+}
+
+.oriental-interface-r4 .beat-heading strong {
+  font-size: .76rem;
+}
+
+.oriental-interface-r4 .beat-heading .silent-chip,
+.oriental-interface-r4 #durationLabel {
+  min-height: 24px !important;
+  padding: 3px 7px !important;
+  font-size: .58rem !important;
+  line-height: 1.25;
+}
+
+.oriental-interface-r4 .beat-dots {
+  margin-top: 3px !important;
+}
+
+.oriental-interface-r4 .beat-status {
+  min-height: 25px !important;
+  max-height: 35px;
+  margin-top: 2px !important;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* التسجيل: إظهار جميع الأزرار دون قطع البطاقة */
+.oriental-interface-r4 .recording-panel {
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  gap: 5px !important;
+}
+
+.oriental-interface-r4 .recording-panel .panel-heading {
+  min-height: 39px;
+  padding-bottom: 6px;
+}
+
+.oriental-interface-r4 .recording-mic-row .button {
+  min-height: 32px !important;
+  padding-block: 5px !important;
+}
+
+.oriental-interface-r4 .recorder-copy-compact {
+  gap: 4px !important;
+  overflow: hidden;
+}
+
+.oriental-interface-r4 .recorder-copy-compact h2 {
+  font-size: .98rem !important;
+  line-height: 1.35;
+}
+
+.oriental-interface-r4 .recorder-actions {
+  gap: 5px !important;
+}
+
+.oriental-interface-r4 .recorder-actions .gold {
+  min-height: 48px !important;
+  padding: 8px 12px !important;
+  font-size: .79rem !important;
+}
+
+.oriental-interface-r4 .recorder-actions .danger {
+  min-height: 31px !important;
+  padding: 5px 10px !important;
+  font-size: .7rem !important;
+}
+
+/* لا يشغل زر الإلغاء مساحة عندما يكون غير قابل للاستخدام */
+.oriental-interface-r4 .recorder-actions .danger:disabled {
+  display: none !important;
+}
+
+.oriental-interface-r4 .recording-panel #recordingStatus {
+  min-height: 29px !important;
+  max-height: 42px;
+  padding: 5px 7px !important;
+  overflow: hidden;
+  line-height: 1.4 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* المكتبة: رأس أصغر ومساحة أكبر للصفوف */
+.oriental-interface-r4 .library-panel {
+  grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+}
+
+.oriental-interface-r4 .library-head {
+  min-height: 45px;
+  margin-bottom: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.oriental-interface-r4 .library-head h2 {
+  line-height: 1.25;
+}
+
+.oriental-interface-r4 .library-toolbar {
+  flex-wrap: nowrap !important;
+}
+
+.oriental-interface-r4 .library-toolbar .button {
+  min-height: 29px !important;
+  padding: 4px 7px !important;
+  white-space: nowrap;
+}
+
+/* لا نظهر التصدير المحدد وهو غير نشط؛ يظهر تلقائيًا بعد التحديد */
+.oriental-interface-r4 #exportSelectedButton:disabled {
+  display: none !important;
+}
+
+.oriental-interface-r4 #clearAllButton {
+  background: rgba(225, 123, 105, .055) !important;
+  border-color: rgba(225, 123, 105, .28) !important;
+  font-size: .57rem !important;
+}
+
+.oriental-interface-r4 .recordings {
+  gap: 4px !important;
+}
+
+.oriental-interface-r4 .record-item {
+  min-height: 46px !important;
+  padding: 5px 7px !important;
+}
+
+/* مربع تحديد مخصص بدل المربع الأبيض الافتراضي */
+.oriental-interface-r4 .record-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  border: 1px solid rgba(222, 182, 108, .42);
+  border-radius: 5px;
+  background: rgba(2, 24, 27, .76);
+  box-shadow: inset 0 0 0 3px rgba(2, 24, 27, .9);
+  cursor: pointer;
+}
+
+.oriental-interface-r4 .record-select:checked {
+  background: var(--r4-teal);
+  box-shadow: inset 0 0 0 4px #07353a, 0 0 12px rgba(98, 221, 200, .25);
+  border-color: var(--r4-teal);
+}
+
+.oriental-interface-r4 .record-select:focus-visible {
+  outline: 2px solid var(--r4-gold-light);
+  outline-offset: 2px;
+}
+
+/* مساحة آمنة لشريط التنقل في أجهزة أندرويد و iPad */
+.oriental-interface-r4 .app {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.oriental-interface-r4 .status-footer {
+  padding-bottom: max(3px, env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* تحسين خاص بالتابلت الأفقي */
+@media (min-width: 921px) and (max-width: 1400px) and (orientation: landscape) {
+  .oriental-interface-r4 .app {
+    padding-inline: 14px !important;
+  }
+
+  .oriental-interface-r4 .ney-rail {
+    display: none !important;
+  }
+
+  .oriental-interface-r4 .app-content {
+    gap: 10px !important;
+  }
+
+  .oriental-interface-r4 .topbar {
+    min-height: 68px !important;
+  }
+
+  .oriental-interface-r4 .note-panel,
+  .oriental-interface-r4 .tuner-panel {
+    height: 282px !important;
+  }
+
+  .oriental-interface-r4 .analysis-grid {
+    grid-template-columns: minmax(300px, .76fr) minmax(500px, 1.24fr) !important;
+    gap: 10px !important;
+  }
+
+  .oriental-interface-r4 .controls-toolbar {
+    grid-template-columns: minmax(180px, .82fr) minmax(330px, 1.5fr) minmax(135px, .58fr) minmax(135px, .58fr) !important;
+  }
+
+  .oriental-interface-r4 .lower-grid {
+    grid-template-columns: minmax(210px, .6fr) minmax(270px, .74fr) minmax(500px, 1.66fr) !important;
+    gap: 10px !important;
+  }
+
+  .oriental-interface-r4 .metronome-panel,
+  .oriental-interface-r4 .recording-panel,
+  .oriental-interface-r4 .library-panel {
+    height: 278px !important;
+  }
+
+  /* نخفي رموز عناوين التحكم فقط على الأجهزة التي ظهر فيها تشويش الخط */
+  .oriental-interface-r4 .control-cell-label .icon-emblem {
+    display: none !important;
+  }
+
+  .oriental-interface-r4 .control-cell-label {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 920px) {
+  .oriental-interface-r4 .metronome-panel,
+  .oriental-interface-r4 .recording-panel {
+    height: 278px !important;
+  }
+
+  .oriental-interface-r4 .library-panel {
+    height: 292px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .oriental-interface-r4 .recorder-actions .danger:disabled {
+    display: inline-flex !important;
+  }
+
+  .oriental-interface-r4 .library-toolbar {
+    flex-wrap: wrap !important;
+  }
+}
