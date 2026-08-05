@@ -1,10 +1,36 @@
 (() => {
   'use strict';
 
+  function installStyles() {
+    if (document.getElementById('deduplicate-r8-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'deduplicate-r8-styles';
+    style.textContent = `
+      .oriental-interface-r8 .header-mic-status.status-only,
+      .oriental-interface-r8 .header-mic-status.status-only:disabled {
+        pointer-events: none !important;
+        cursor: default !important;
+        opacity: 1 !important;
+        filter: none !important;
+        color: #d9c79d !important;
+      }
+      .oriental-interface-r8 .header-utilities.single-utility {
+        min-width: 108px;
+        justify-content: flex-start !important;
+      }
+      .oriental-interface-r8 .icon-emblem.decorative-only { pointer-events: none; }
+    `;
+    document.head.appendChild(style);
+  }
+
   function removeDuplicateSettingsAction() {
-    document.querySelectorAll('.header-utilities .utility-button').forEach(button => {
+    const utilities = document.querySelector('.header-utilities');
+    if (!utilities) return;
+
+    utilities.querySelectorAll('.utility-button').forEach(button => {
       if (button.textContent.includes('الإعدادات')) button.remove();
     });
+    utilities.classList.toggle('single-utility', utilities.querySelectorAll('.utility-button').length === 1);
   }
 
   function makeMicHeaderStatusOnly() {
@@ -20,6 +46,11 @@
     status.title = 'حالة الميكروفون';
   }
 
+  function removeRepeatedAdvancedButtons() {
+    const buttons = [...document.querySelectorAll('.advanced-button')];
+    buttons.slice(1).forEach(button => button.remove());
+  }
+
   function markDecorativeIcons() {
     document.querySelectorAll('.panel-heading .icon-emblem, .control-cell-label .icon-emblem').forEach(icon => {
       icon.setAttribute('aria-hidden', 'true');
@@ -28,14 +59,23 @@
   }
 
   function apply() {
+    installStyles();
     removeDuplicateSettingsAction();
     makeMicHeaderStatusOnly();
+    removeRepeatedAdvancedButtons();
     markDecorativeIcons();
+    document.body.classList.add('deduplicated-interface');
+  }
+
+  function start() {
+    apply();
+    const observer = new MutationObserver(() => apply());
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', apply, { once: true });
+    document.addEventListener('DOMContentLoaded', start, { once: true });
   } else {
-    apply();
+    start();
   }
 })();
