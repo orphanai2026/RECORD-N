@@ -1,0 +1,269 @@
+/* مِعيار الناي — alignment, contrast, and drawer precision r10 */
+
+/* Unified text alignment and vertical rhythm inside controls/cards */
+.oriental-interface-r8 .control-cell,
+.oriental-interface-r8 .metric,
+.oriental-interface-r8 .segment-button,
+.oriental-interface-r8 .reference-box,
+.oriental-interface-r8 .stepper-row,
+.oriental-interface-r8 .record-item,
+.oriental-interface-r8 .readiness-item {
+  box-sizing: border-box;
+}
+
+.oriental-interface-r8 .control-cell {
+  display: grid !important;
+  grid-template-rows: auto minmax(0,1fr) !important;
+  align-items: stretch !important;
+}
+
+.oriental-interface-r8 .control-cell-label {
+  width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+}
+
+.oriental-interface-r8 .segment-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
+}
+
+.oriental-interface-r8 .segment-copy {
+  display: grid !important;
+  place-items: center !important;
+  min-width: 0;
+}
+
+.oriental-interface-r8 .segment-copy strong,
+.oriental-interface-r8 .segment-copy small {
+  display: block;
+  width: 100%;
+  text-align: center !important;
+  white-space: nowrap;
+}
+
+.oriental-interface-r8 .reference-box,
+.oriental-interface-r8 .stepper-row {
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.oriental-interface-r8 .reference-box input,
+.oriental-interface-r8 .stepper-row input {
+  text-align: center !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.oriental-interface-r8 .metric {
+  display: grid !important;
+  place-content: center !important;
+  gap: 3px !important;
+  text-align: center !important;
+}
+
+.oriental-interface-r8 .metric span,
+.oriental-interface-r8 .metric strong {
+  width: 100%;
+  text-align: center !important;
+}
+
+.oriental-interface-r8 .record-item {
+  align-items: center !important;
+}
+
+.oriental-interface-r8 .record-name,
+.oriental-interface-r8 .record-meta,
+.oriental-interface-r8 .record-actions {
+  align-self: center !important;
+}
+
+/* Refined contrast: clearer gold, calmer panels, stronger readable text */
+.oriental-interface-r8 {
+  --r10-gold: #f2d494;
+  --r10-gold-strong: #ffd98b;
+  --r10-text: #f5f2e9;
+  --r10-muted: #b8c9c5;
+  --r10-panel: rgba(4, 39, 42, .94);
+  --r10-panel-deep: rgba(2, 25, 28, .96);
+  --r10-line: rgba(226, 185, 108, .30);
+  --r10-line-soft: rgba(118, 211, 196, .16);
+}
+
+.oriental-interface-r8 .premium-panel,
+.oriental-interface-r8 .control-cell,
+.oriental-interface-r8 .metric,
+.oriental-interface-r8 .record-item {
+  background: linear-gradient(155deg, var(--r10-panel), var(--r10-panel-deep)) !important;
+  border-color: var(--r10-line) !important;
+}
+
+.oriental-interface-r8 .panel-heading-copy h2,
+.oriental-interface-r8 .controls-heading h2,
+.oriental-interface-r8 .library-head h2,
+.oriental-interface-r8 .recorder-copy-compact h2 {
+  color: var(--r10-gold) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+}
+
+.oriental-interface-r8 .panel-heading-copy p,
+.oriental-interface-r8 .controls-heading p,
+.oriental-interface-r8 .library-head p,
+.oriental-interface-r8 .detector-status,
+.oriental-interface-r8 .quality-line {
+  color: var(--r10-muted) !important;
+}
+
+.oriental-interface-r8 .metric strong,
+.oriental-interface-r8 .record-name strong,
+.oriental-interface-r8 .segment-copy strong,
+.oriental-interface-r8 .stepper-row input,
+.oriental-interface-r8 .reference-box input {
+  color: var(--r10-text) !important;
+}
+
+.oriental-interface-r8 .segment-button.is-selected {
+  color: #f6fff9 !important;
+  background: linear-gradient(180deg, rgba(45, 157, 145, .90), rgba(17, 91, 87, .92)) !important;
+  border-color: rgba(115, 232, 210, .78) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.14), 0 0 0 1px rgba(86,220,196,.12), 0 8px 20px rgba(0,0,0,.16) !important;
+}
+
+.oriental-interface-r8 .button.gold {
+  color: #1f1608 !important;
+  background: linear-gradient(180deg, #d9b56d, #9e7138) !important;
+  border-color: #e9c77d !important;
+}
+
+.oriental-interface-r8 .button.primary,
+.oriental-interface-r8 #micButton {
+  color: #04211e !important;
+  background: linear-gradient(180deg, #63dfcb, #38bba9) !important;
+  border-color: #7aebd8 !important;
+}
+
+/* Advanced drawer: tablet-safe, centered, fully visible, internally scrollable */
+.oriental-interface-r8 .advanced-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: rgba(0, 10, 12, .72) !important;
+  backdrop-filter: blur(7px) !important;
+}
+
+.oriental-interface-r8 .advanced-overlay:not(.is-open) {
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.oriental-interface-r8 .advanced-overlay.is-open {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.oriental-interface-r8 .advanced-drawer {
+  position: relative !important;
+  inset: auto !important;
+  width: min(420px, 88vw) !important;
+  max-width: 88vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 18px 16px calc(22px + env(safe-area-inset-bottom,0px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  border-radius: 0 18px 18px 0 !important;
+  border: 1px solid rgba(226,185,108,.34) !important;
+  background: linear-gradient(180deg, #07393d 0%, #04272b 58%, #031d21 100%) !important;
+  box-shadow: 22px 0 70px rgba(0,0,0,.58) !important;
+  transform: none !important;
+}
+
+.oriental-interface-r8 .advanced-header {
+  position: sticky !important;
+  top: -18px !important;
+  z-index: 5 !important;
+  margin: -18px -16px 14px !important;
+  padding: 18px 16px 12px !important;
+  background: linear-gradient(180deg, rgba(7,57,61,.99), rgba(7,57,61,.93)) !important;
+  border-bottom: 1px solid rgba(226,185,108,.22) !important;
+}
+
+.oriental-interface-r8 .advanced-header h2 {
+  color: var(--r10-gold) !important;
+  font-size: 1.35rem !important;
+  line-height: 1.35 !important;
+}
+
+.oriental-interface-r8 .advanced-header p {
+  color: var(--r10-muted) !important;
+  margin-top: 4px !important;
+}
+
+.oriental-interface-r8 .drawer-close {
+  width: 40px !important;
+  height: 40px !important;
+  flex: 0 0 40px !important;
+  border-color: rgba(226,185,108,.34) !important;
+  background: rgba(2,24,27,.70) !important;
+  color: var(--r10-gold-strong) !important;
+}
+
+.oriental-interface-r8 .advanced-section {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 0 12px !important;
+  padding: 13px !important;
+  border: 1px solid rgba(226,185,108,.20) !important;
+  border-radius: 14px !important;
+  background: rgba(2, 27, 30, .68) !important;
+  overflow: visible !important;
+}
+
+.oriental-interface-r8 .advanced-section .panel-heading {
+  min-width: 0 !important;
+}
+
+.oriental-interface-r8 .advanced-section select,
+.oriental-interface-r8 .advanced-section button,
+.oriental-interface-r8 .advanced-section .processing-status,
+.oriental-interface-r8 .advanced-section .helper {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.oriental-interface-r8 .processing-list {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+@media (max-width: 900px) {
+  .oriental-interface-r8 .advanced-drawer {
+    width: min(390px, 92vw) !important;
+    max-width: 92vw !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .oriental-interface-r8 .advanced-drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+  }
+  .oriental-interface-r8 .processing-list {
+    grid-template-columns: 1fr !important;
+  }
+}
