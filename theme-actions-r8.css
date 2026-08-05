@@ -1,0 +1,19 @@
+/* مِعيار الناي — single-action interface rules r8 */
+.oriental-interface-r8 .header-mic-status.status-only,
+.oriental-interface-r8 .header-mic-status.status-only:disabled{
+  pointer-events:none!important;
+  cursor:default!important;
+  opacity:1!important;
+  filter:none!important;
+  color:#d9c79d!important;
+}
+.oriental-interface-r8 .header-utilities{
+  min-width:0;
+}
+.oriental-interface-r8 .header-utilities .utility-button{
+  min-width:auto;
+}
+.oriental-interface-r8 .decorative-only{
+  pointer-events:none!important;
+  cursor:default!important;
+}
