@@ -1,0 +1,15 @@
+{
+  "name": "ney-meyar",
+  "version": "0.5.1",
+  "private": true,
+  "description": "Arabic ney pitch recorder and analysis tool",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "license": "UNLICENSED"
+}
