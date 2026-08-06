@@ -242,3 +242,5 @@
     rebuildInformationDialogs();
   });
 })();
+
+(()=>{"use strict";const r=document.getElementById("a4Reference"),b=document.getElementById("brandReferenceValue");if(!r||!b)return;const u=()=>{const v=Number(r.value||440);b.textContent=`A4 = ${Number.isInteger(v)?v.toFixed(0):v.toFixed(1)} Hz`};r.addEventListener("input",u);r.addEventListener("change",u);u()})();
