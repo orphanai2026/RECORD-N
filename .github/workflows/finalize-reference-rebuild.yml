@@ -1,0 +1,117 @@
+name: Finalize reference rebuild
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/finalize-reference-rebuild.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: record-n-final-reference-rebuild
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Rebuild from embedded approved files
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64
+          import gzip
+          import re
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/rebuild-reference-interface.yml').read_text(encoding='utf-8')
+          encoded = dict(re.findall(r'^\s{6}(INDEX_DATA|STYLES_DATA|APP_DATA):\s*(\S+)\s*$', workflow, re.MULTILINE))
+          expected = {'INDEX_DATA', 'STYLES_DATA', 'APP_DATA'}
+          if set(encoded) != expected:
+              raise SystemExit(f'Could not recover embedded files: {sorted(encoded)}')
+
+          mapping = {
+              'INDEX_DATA': 'index.html',
+              'STYLES_DATA': 'styles.css',
+              'APP_DATA': 'app.js',
+          }
+          for key, filename in mapping.items():
+              Path(filename).write_bytes(gzip.decompress(base64.b64decode(encoded[key])))
+
+          styles_path = Path('styles.css')
+          styles = styles_path.read_text(encoding='utf-8')
+          styles = styles.replace('.help-button { grid-column: 1; justify-self: start; }', '.help-button { grid-column: 3; justify-self: end; }')
+          styles = styles.replace('  grid-column: 3;\n  justify-self: end;', '  grid-column: 1;\n  justify-self: start;', 1)
+          styles = styles.replace('.top-grid { direction: ltr;', '.top-grid { direction: rtl;')
+          styles = styles.replace('.bottom-grid { direction: ltr;', '.bottom-grid { direction: rtl;')
+          styles = styles.replace('  .help-button { grid-column: 1; grid-row: 2; justify-self: start; }', '  .help-button { grid-column: 2; grid-row: 2; justify-self: end; }')
+          styles = styles.replace('  .microphone-status { grid-column: 2; grid-row: 2; justify-self: stretch;', '  .microphone-status { grid-column: 1; grid-row: 2; justify-self: stretch;')
+          styles += '''\n/* Final reference-order and density calibration */\n@media (min-width: 901px) {\n  .top-grid { direction: rtl; grid-template-columns: minmax(0, 55fr) minmax(0, 45fr); }\n  .bottom-grid { direction: rtl; grid-template-columns: minmax(0,48fr) minmax(0,28fr) minmax(0,24fr); }\n  .recordings-panel, .recording-panel, .metronome-panel { grid-column: auto; }\n  .quick-controls { height: 170px; min-height: 170px; overflow: hidden; }\n  .quick-controls__header { min-height: 39px; }\n  .controls-grid { padding-top: 6px; }\n  .control-group { height: 84px; min-height: 84px; padding-block: 5px 7px; }\n  .segment, .duration-option { min-height: 44px; height: 44px; }\n  .stepper, .reference-input { height: 44px; }\n}\n'''
+          styles_path.write_text(styles, encoding='utf-8')
+
+          obsolete = [
+              'theme-base.css', 'theme-approved.css', 'theme-oriental.css',
+              'theme-oriental-r4.css', 'theme-ney-luxury.css',
+              'theme-reference-match.css', 'ui-rebuild.js',
+              'ui-enhancements.js', 'ui-approved.js',
+              'vendor/jszip.min.js', 'vendor/jszip-core.min.js',
+              'audio-recorder-worklet.js',
+              '.github/workflows/rebuild-reference-interface.yml',
+              '.github/workflows/finalize-reference-rebuild.yml'
+          ]
+          for filename in obsolete:
+              path = Path(filename)
+              if path.exists():
+                  path.unlink()
+          vendor = Path('vendor')
+          if vendor.exists() and not any(vendor.iterdir()):
+              vendor.rmdir()
+          PY
+
+      - name: Write direct-interface quality check
+        shell: bash
+        run: |
+          cat > scripts/check.mjs <<'EOF'
+          import { access, readFile } from "node:fs/promises";
+          import { Script } from "node:vm";
+
+          const required = ["index.html", "styles.css", "app.js", "assets/ney-dokah-reference.webp", "VERSION.json", "README.md", "COPYRIGHT.md", "LICENSE.md"];
+          const obsolete = ["theme-base.css", "theme-approved.css", "theme-oriental.css", "theme-oriental-r4.css", "theme-ney-luxury.css", "theme-reference-match.css", "ui-rebuild.js", "ui-enhancements.js", "ui-approved.js", "vendor/jszip.min.js", "vendor/jszip-core.min.js", "audio-recorder-worklet.js"];
+          const failures = [];
+          for (const file of required) { try { await access(file); } catch { failures.push(`Missing required file: ${file}`); } }
+          for (const file of obsolete) { try { await access(file); failures.push(`Obsolete file remains: ${file}`); } catch {} }
+          const html = await readFile("index.html", "utf8");
+          const css = await readFile("styles.css", "utf8");
+          const js = await readFile("app.js", "utf8");
+          for (const token of ["lang=\"ar\"", "dir=\"rtl\"", "styles.css", "app.js", "id=\"micButton\"", "id=\"recordingsList\"", "id=\"metronomeOrb\""]) if (!html.includes(token)) failures.push(`index.html missing ${token}`);
+          if (/<style[\s>]/i.test(html)) failures.push("index.html contains inline CSS");
+          if (/<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/i.test(html)) failures.push("index.html contains inline application JavaScript");
+          for (const token of ["--gold-100", ".top-grid", ".bottom-grid", ".note-rosette", ".tuner-bar", "@media (max-width: 1200px)", "@media (max-width: 900px)", "@media (max-width: 640px)", "prefers-reduced-motion"]) if (!css.includes(token)) failures.push(`styles.css missing ${token}`);
+          for (const token of ["getUserMedia", "MediaRecorder", "autocorrelate", "noteFromFrequency", "showToast", "renderRecords"]) if (!js.includes(token)) failures.push(`app.js missing ${token}`);
+          try { new Script(js, { filename: "app.js" }); } catch (error) { failures.push(`app.js syntax error: ${error.message}`); }
+          if (failures.length) { failures.forEach(item => console.error(`- ${item}`)); process.exit(1); }
+          console.log("Repository checks passed: real RTL HTML/CSS/Vanilla JS reference interface.");
+          EOF
+
+      - name: Run quality checks
+        run: npm run check
+
+      - name: Commit directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --stat
+          git commit -m "feat: rebuild approved ney reference interface"
+          git push origin HEAD:main
