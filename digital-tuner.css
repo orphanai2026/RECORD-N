@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap");
+
 /* Digital tuner display and corrected RTL pitch colors */
 .tuner-bar {
   background: linear-gradient(90deg, #d9463e 0%, #f06a5f 33%, #55e49e 43%, #2cce83 57%, #ffdc63 66%, #f2bf43 100%);
@@ -112,7 +114,6 @@ textarea {
   font-family: var(--font-body);
 }
 
-.brand-copy h1,
 .panel-title h2,
 .quick-controls h2,
 .recording-workflow h3,
@@ -146,15 +147,19 @@ textarea {
 }
 
 .brand-copy h1 {
-  font-size: clamp(2.45rem, 3vw, 3.35rem);
-  line-height: 1.12;
+  font-family: "Aref Ruqaa Ink", "Amiri", serif;
+  font-size: clamp(3rem, 3.4vw, 4rem);
+  line-height: .94;
   font-weight: 700;
+  letter-spacing: 0;
   white-space: nowrap;
   text-shadow: 0 7px 22px rgba(0, 0, 0, .34), 0 0 16px rgba(215, 157, 69, .1);
 }
 
 .brand-copy p {
-  margin-top: 5px;
+  margin-top: 8px;
+  font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  letter-spacing: 0;
   font-size: .9rem;
   line-height: 1.55;
   font-weight: 500;
@@ -347,7 +352,7 @@ textarea {
   }
 
   .brand-copy h1 {
-    font-size: 2.65rem;
+    font-size: 3.2rem;
   }
 
   .bottom-grid {
@@ -370,7 +375,7 @@ textarea {
   }
 
   .brand-copy h1 {
-    font-size: 2.28rem;
+    font-size: 2.75rem;
   }
 
   .brand-copy p {
@@ -428,7 +433,8 @@ textarea {
   }
 
   .brand-copy h1 {
-    font-size: 1.9rem;
+    font-size: 2.25rem;
+    line-height: 1;
     white-space: normal;
   }
 
