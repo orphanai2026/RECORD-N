@@ -1,0 +1,344 @@
+name: Calibrate reference layout
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/calibrate-reference-layout.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: record-n-layout-calibration
+  cancel-in-progress: false
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply screenshot calibration
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          marker = '/* Screenshot calibration 1648x928 — 2026-08-06 */'
+          css_path = Path('styles.css')
+          css = css_path.read_text(encoding='utf-8')
+          if marker in css:
+              css = css.split(marker, 1)[0].rstrip()
+
+          calibration = r'''
+
+/* Screenshot calibration 1648x928 — 2026-08-06 */
+@keyframes note-rosette-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.note-rosette {
+  animation-name: note-rosette-spin;
+  transform: translate(-50%, -50%);
+}
+
+@media (min-width: 901px) {
+  :root { --gap: 10px; }
+
+  .app-shell {
+    width: min(1480px, calc(100% - 28px));
+    padding: 4px 0 10px;
+  }
+
+  .app-header {
+    height: 96px;
+    min-height: 96px;
+    grid-template-rows: 1fr;
+    gap: 16px;
+    padding: 2px 18px 6px;
+  }
+
+  .app-header > * {
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .help-button {
+    grid-column: 1;
+    justify-self: end;
+  }
+
+  .microphone-status {
+    grid-column: 3;
+    justify-self: start;
+    min-width: 220px;
+    min-height: 44px;
+  }
+
+  .brand {
+    grid-column: 2;
+    min-width: 430px;
+    gap: 14px;
+  }
+
+  .brand-logo {
+    width: 68px;
+    height: 68px;
+    flex-basis: 68px;
+  }
+
+  .brand-logo__ney {
+    width: 21px;
+    height: 52px;
+  }
+
+  .brand-copy h1 {
+    font-size: clamp(2.65rem, 3.1vw, 3.28rem);
+  }
+
+  .brand-copy p {
+    margin-top: 6px;
+    font-size: .9rem;
+  }
+
+  .tuner-panel,
+  .detected-panel {
+    height: 300px;
+    padding: 12px 15px;
+  }
+
+  .panel-header {
+    min-height: 50px;
+    padding-bottom: 6px;
+  }
+
+  .panel-title {
+    gap: 10px;
+  }
+
+  .panel-title h2,
+  .quick-controls h2 {
+    font-size: 1.42rem;
+  }
+
+  .panel-title p,
+  .quick-controls p {
+    margin-top: 3px;
+    font-size: .72rem;
+  }
+
+  .icon-disc {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .tuner-panel {
+    grid-template-rows: auto 74px 64px auto auto;
+    gap: 6px;
+  }
+
+  .tuner-scale {
+    padding: 8px 14px 5px;
+  }
+
+  .tuner-bar {
+    height: 13px;
+    margin-top: 11px;
+  }
+
+  .tuner-needle {
+    top: -9px;
+    height: 31px;
+  }
+
+  .tuner-ticks {
+    margin-top: 5px;
+  }
+
+  .metrics-grid {
+    gap: 7px;
+  }
+
+  .metric-card {
+    min-height: 62px;
+    padding: 6px;
+  }
+
+  .metric-card strong {
+    margin-top: 4px;
+    font-size: 1.04rem;
+  }
+
+  .ghost-button {
+    min-height: 32px;
+    padding: 5px 10px;
+  }
+
+  .detected-panel {
+    grid-template-rows: auto 1fr 26px;
+    gap: 5px;
+  }
+
+  .note-visual {
+    min-height: 176px;
+  }
+
+  .note-rosette {
+    top: 44%;
+    width: 166px;
+    height: 166px;
+  }
+
+  .note-core {
+    top: 44%;
+    width: 100px;
+    height: 100px;
+  }
+
+  .note-core img {
+    width: 33px;
+    height: 72px;
+  }
+
+  .note-result {
+    bottom: 0;
+  }
+
+  .note-result strong {
+    font-size: 1.48rem;
+  }
+
+  .note-result span {
+    margin-top: 3px;
+    font-size: .8rem;
+  }
+
+  .waveform {
+    height: 26px;
+  }
+
+  .quick-controls {
+    height: 138px;
+    min-height: 138px;
+    padding: 7px 12px 8px;
+    overflow: hidden;
+  }
+
+  .quick-controls__header {
+    min-height: 34px;
+    padding-bottom: 5px;
+  }
+
+  .controls-grid {
+    gap: 8px;
+    padding-top: 5px;
+  }
+
+  .control-group {
+    height: 72px;
+    min-height: 72px;
+    padding: 4px 8px 6px;
+  }
+
+  .segment,
+  .duration-option {
+    height: 39px;
+    min-height: 39px;
+  }
+
+  .stepper,
+  .reference-input {
+    height: 39px;
+  }
+
+  .bottom-grid > * {
+    height: 226px;
+    padding: 10px 12px;
+  }
+
+  .recordings-list {
+    max-height: 153px;
+    gap: 6px;
+    padding-top: 6px;
+  }
+
+  .record-row {
+    min-height: 61px;
+    padding: 6px 8px;
+  }
+
+  .recording-actions-stack {
+    gap: 7px;
+    padding-top: 7px;
+  }
+
+  .primary-button,
+  .gold-button {
+    min-height: 42px;
+    padding: 7px 10px;
+  }
+
+  .readiness-list {
+    gap: 3px;
+    margin-top: 7px;
+    padding-top: 6px;
+  }
+
+  .readiness-list div {
+    min-height: 22px;
+    padding: 2px 6px;
+  }
+
+  .metronome-orb {
+    width: 110px;
+    height: 110px;
+  }
+
+  .metronome-orb i {
+    transform-origin: 5px 60px;
+  }
+}
+
+@media (max-width: 640px) {
+  .help-button {
+    grid-column: 1;
+    justify-self: end;
+  }
+
+  .microphone-status {
+    grid-column: 2;
+    justify-self: stretch;
+  }
+}
+'''
+
+          css_path.write_text(css + calibration, encoding='utf-8')
+
+          index_path = Path('index.html')
+          index = index_path.read_text(encoding='utf-8')
+          index = index.replace('styles.css?v=2026-08-06-r1', 'styles.css?v=2026-08-06-r2')
+          index = index.replace('app.js?v=2026-08-06-r1', 'app.js?v=2026-08-06-r2')
+          index_path.write_text(index, encoding='utf-8')
+
+          Path('.github/workflows/calibrate-reference-layout.yml').unlink()
+          PY
+
+      - name: Run repository checks
+        run: npm run check
+
+      - name: Commit directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: calibrate desktop reference layout"
+          git push origin HEAD:main
