@@ -455,3 +455,168 @@
   .inline-settings { grid-template-columns: 1fr; }
   .tuner-limit bdi { font-size: .55rem; }
 }
+
+
+/* Advanced modal containment and automatic recording — 2026-08-06 */
+.modal.modal--advanced {
+  width: min(980px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.modal--advanced form {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.modal--advanced form > header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(215, 157, 69, .24);
+  background: rgba(1, 29, 32, .97);
+  backdrop-filter: blur(12px);
+}
+
+.modal--advanced .advanced-settings-grid {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 14px 18px;
+}
+
+.modal--advanced .settings-section,
+.modal--advanced .settings-section > *,
+.modal--advanced .inline-settings,
+.modal--advanced .inline-settings > *,
+.modal--advanced .diagnostics-panel,
+.modal--advanced .diagnostics-panel > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.modal--advanced .settings-section {
+  overflow: hidden;
+}
+
+.modal--advanced .settings-section select,
+.modal--advanced .settings-section input[type="number"],
+.modal--advanced .settings-section input[type="text"],
+.modal--advanced .settings-section input[type="range"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+.modal--advanced .range-setting span,
+.modal--advanced .diagnostics-panel div {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.modal--advanced .diagnostics-panel strong {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.modal--advanced .advanced-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(215, 157, 69, .24);
+  background: rgba(1, 29, 32, .97);
+  backdrop-filter: blur(12px);
+}
+
+.modal--advanced .advanced-footer .primary-button {
+  width: min(300px, 100%);
+  margin: 0;
+}
+
+.gold-button.is-armed {
+  border-color: rgba(67, 222, 212, .82);
+  background: linear-gradient(145deg, rgba(14, 105, 102, .96), rgba(4, 65, 65, .98));
+  box-shadow: 0 0 0 3px rgba(67, 222, 212, .1), 0 0 22px rgba(67, 222, 212, .22);
+}
+
+.gold-button.is-recording {
+  border-color: rgba(82, 217, 138, .9);
+  background: linear-gradient(145deg, rgba(25, 131, 90, .98), rgba(6, 78, 57, .98));
+  box-shadow: 0 0 0 3px rgba(82, 217, 138, .1), 0 0 24px rgba(82, 217, 138, .28);
+}
+
+@media (max-width: 900px) {
+  .modal.modal--advanced {
+    width: min(720px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .modal--advanced form {
+    max-height: calc(100dvh - 16px);
+  }
+
+  .modal--advanced .advanced-settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 12px;
+  }
+
+  .modal--advanced .settings-section--admin {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal.modal--advanced {
+    width: calc(100vw - 8px);
+    max-width: calc(100vw - 8px);
+    max-height: calc(100dvh - 8px);
+    border-radius: 14px;
+  }
+
+  .modal--advanced form {
+    max-height: calc(100dvh - 8px);
+  }
+
+  .modal--advanced form > header {
+    padding: 13px 12px 11px;
+  }
+
+  .modal--advanced .advanced-settings-grid {
+    gap: 9px;
+    padding: 10px 8px;
+  }
+
+  .modal--advanced .settings-section {
+    padding: 11px;
+  }
+
+  .modal--advanced .admin-actions,
+  .modal--advanced .inline-settings,
+  .modal--advanced .diagnostics-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modal--advanced .advanced-footer {
+    padding: 10px 8px 12px;
+  }
+
+  .modal--advanced .advanced-footer .primary-button {
+    width: 100%;
+  }
+}

@@ -22,6 +22,11 @@
     beat: 0,
     stableFrames: 0,
     isPitchStable: false,
+    recordingArmed: false,
+    recordingQualifyingFrames: 0,
+    recordingCandidateKey: null,
+    recordingStats: null,
+    discardRecording: false,
     currentFrequency: null,
     currentNote: null,
     currentCents: 0,
@@ -141,7 +146,12 @@
   }
 
   async function stopMicrophone() {
-    if (state.mediaRecorder?.state === 'recording') state.mediaRecorder.stop();
+    state.recordingArmed = false;
+    resetRecordingQualification();
+    if (state.mediaRecorder?.state === 'recording') {
+      state.discardRecording = true;
+      state.mediaRecorder.stop();
+    }
     clearTimeout(state.recordingTimer);
     cancelAnimationFrame(state.animationFrame);
     stopMetronome();
@@ -149,7 +159,9 @@
     state.source?.disconnect();
     state.analyser?.disconnect();
     if (state.audioContext && state.audioContext.state !== 'closed') await state.audioContext.close();
-    Object.assign(state, { stream: null, audioContext: null, analyser: null, source: null, animationFrame: null, stableFrames: 0, isPitchStable: false });
+    Object.assign(state, { stream: null, audioContext: null, analyser: null, source: null, animationFrame: null, stableFrames: 0, isPitchStable: false, recordingStats: null });
+    $('#prepareButton').disabled = false;
+    setPrepareButtonState('idle');
     updateMicrophoneUI(false);
   }
 
@@ -232,6 +244,7 @@
       state.stableFrames = stable ? Math.min(30, state.stableFrames + 1) : Math.max(0, state.stableFrames - 2);
       state.isPitchStable = state.stableFrames >= 8;
       updatePitchUI(result, note);
+      evaluateAutomaticRecording(result, note, stable);
     } else {
       state.stableFrames = Math.max(0, state.stableFrames - 1);
       state.isPitchStable = false;
@@ -239,6 +252,7 @@
       setReady(ui.qualityReadyDot, false);
       ui.qualityText.textContent = 'بانتظار نغمة واضحة';
       setStatusDot(ui.qualityDot, false);
+      evaluateAutomaticRecording(null, null, false);
     }
     state.animationFrame = requestAnimationFrame(analyseAudio);
   }
@@ -359,6 +373,32 @@
     return merged;
   }
 
+  function recordingNoteKey(note) {
+    return note ? `${note.english}|${Number(note.target).toFixed(3)}` : null;
+  }
+
+  function resetRecordingQualification() {
+    state.recordingQualifyingFrames = 0;
+    state.recordingCandidateKey = null;
+  }
+
+  function setPrepareButtonState(mode, progress = 0) {
+    const button = $('#prepareButton');
+    const label = button.querySelector('span');
+    button.classList.toggle('is-armed', mode === 'armed');
+    button.classList.toggle('is-recording', mode === 'recording');
+    if (mode === 'armed') label.textContent = progress > 0 ? `تثبيت النغمة ${progress}%` : 'بانتظار نغمة مضبوطة…';
+    else if (mode === 'recording') label.textContent = 'جارٍ التسجيل التلقائي…';
+    else label.textContent = 'تجهيز تسجيل النغمة';
+  }
+
+  function cancelAutomaticRecording() {
+    state.recordingArmed = false;
+    resetRecordingQualification();
+    setPrepareButtonState('idle');
+    showToast('تم إلغاء انتظار التسجيل التلقائي.');
+  }
+
   function prepareRecording() {
     if (!state.stream) {
       showToast('شغّل الميكروفون أولًا قبل تجهيز تسجيل النغمة.');
@@ -368,49 +408,156 @@
       showToast('التسجيل غير مدعوم في هذا المتصفح.');
       return;
     }
+    if (state.mediaRecorder?.state === 'recording') return;
+    if (state.recordingArmed) {
+      cancelAutomaticRecording();
+      return;
+    }
+    state.recordingArmed = true;
+    state.discardRecording = false;
+    resetRecordingQualification();
+    setPrepareButtonState('armed');
+    showToast('تم تجهيز التسجيل. سيبدأ تلقائيًا بعد ثبات النغمة ودقتها.');
+  }
+
+  function evaluateAutomaticRecording(result, note, stable) {
+    const recorderActive = state.mediaRecorder?.state === 'recording';
+    const tolerance = Number($('#toleranceRange')?.value || 12);
+    const clarityThreshold = .65;
+    const key = recordingNoteKey(note);
+    const validFrame = Boolean(result && note && stable && Math.abs(note.cents) <= tolerance && result.clarity >= clarityThreshold);
+
+    if (recorderActive && state.recordingStats) {
+      const stats = state.recordingStats;
+      stats.totalFrames += 1;
+      const sameNote = key === stats.noteKey;
+      if (validFrame && sameNote) {
+        stats.validFrames += 1;
+        stats.centsSum += Math.abs(note.cents);
+        stats.claritySum += result.clarity;
+        stats.frequencySum += result.frequency;
+      } else {
+        stats.invalidFrames += 1;
+      }
+      return;
+    }
+
+    if (!state.recordingArmed) return;
+
+    if (!validFrame) {
+      resetRecordingQualification();
+      setPrepareButtonState('armed');
+      return;
+    }
+
+    if (state.recordingCandidateKey !== key) {
+      state.recordingCandidateKey = key;
+      state.recordingQualifyingFrames = 1;
+    } else {
+      state.recordingQualifyingFrames += 1;
+    }
+
+    const requiredFrames = 18;
+    const progress = Math.min(100, Math.round(state.recordingQualifyingFrames / requiredFrames * 100));
+    setPrepareButtonState('armed', progress);
+    if (state.recordingQualifyingFrames >= requiredFrames) beginAutomaticRecording(note, result);
+  }
+
+  function beginAutomaticRecording(note, result) {
+    if (!state.recordingArmed || state.mediaRecorder?.state === 'recording') return;
     const durationMs = Math.max(350, (60000 / state.bpm) * state.durationBeats);
     state.recordingChunks = [];
+    state.recordingStats = {
+      note: { ...note },
+      noteKey: recordingNoteKey(note),
+      totalFrames: 0,
+      validFrames: 0,
+      invalidFrames: 0,
+      centsSum: 0,
+      claritySum: 0,
+      frequencySum: 0,
+      initialFrequency: result.frequency
+    };
+    state.discardRecording = false;
     try {
       state.mediaRecorder = new MediaRecorder(state.stream);
       state.mediaRecorder.addEventListener('dataavailable', event => { if (event.data.size) state.recordingChunks.push(event.data); });
       state.mediaRecorder.addEventListener('stop', saveRecording, { once: true });
       state.mediaRecorder.start();
       startPcmCapture();
-      $('#prepareButton span').textContent = 'جارٍ تسجيل النغمة…';
+      setPrepareButtonState('recording');
       $('#prepareButton').disabled = true;
-      showToast(`بدأ تسجيل ${state.durationName}. حافظ على النغمة ثابتة.`);
+      showToast(`النغمة ${note.arabic} مضبوطة. بدأ التسجيل تلقائيًا.`);
       state.recordingTimer = setTimeout(() => {
         if (state.mediaRecorder?.state === 'recording') state.mediaRecorder.stop();
       }, durationMs);
     } catch (error) {
       console.error(error);
-      showToast('تعذر بدء التسجيل.');
+      state.recordingStats = null;
+      $('#prepareButton').disabled = false;
+      state.recordingArmed = true;
+      resetRecordingQualification();
+      setPrepareButtonState('armed');
+      showToast('تعذر بدء التسجيل التلقائي.');
     }
   }
 
   function saveRecording() {
     const pcm = finishPcmCapture();
+    const stats = state.recordingStats;
+    const button = $('#prepareButton');
+    button.disabled = false;
+
+    if (state.discardRecording || !stats) {
+      state.recordingStats = null;
+      state.discardRecording = false;
+      state.recordingArmed = false;
+      resetRecordingQualification();
+      setPrepareButtonState('idle');
+      return;
+    }
+
+    const tolerance = Number($('#toleranceRange')?.value || 12);
+    const validRatio = stats.totalFrames ? stats.validFrames / stats.totalFrames : 0;
+    const averageCents = stats.validFrames ? stats.centsSum / stats.validFrames : Infinity;
+    const averageClarity = stats.validFrames ? stats.claritySum / stats.validFrames : 0;
+    const accepted = stats.totalFrames >= 6 && validRatio >= .85 && averageCents <= tolerance && averageClarity >= .65;
+
+    if (!accepted) {
+      state.recordingStats = null;
+      state.recordingArmed = true;
+      resetRecordingQualification();
+      setPrepareButtonState('armed');
+      showToast('لم يُحفظ التسجيل لأن النغمة فقدت الدقة أو الثبات. ثبّتها وسيعاد التسجيل تلقائيًا.');
+      return;
+    }
+
     const blob = new Blob(state.recordingChunks, { type: state.mediaRecorder?.mimeType || 'audio/webm' });
     const url = URL.createObjectURL(blob);
-    const note = state.currentNote || { english: '—', arabic: 'نغمة غير محددة' };
+    const averageFrequency = stats.validFrames ? stats.frequencySum / stats.validFrames : stats.initialFrequency;
+    const note = stats.note;
     state.records.unshift({
       id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
       english: note.english,
       arabic: note.arabic,
       durationName: state.durationName,
       type: 'غنة',
-      status: state.isPitchStable ? 'طبيعية' : 'غير ثابتة',
-      frequency: state.currentFrequency || 0,
+      status: 'مضبوطة',
+      frequency: averageFrequency || 0,
+      averageCents: Number(averageCents.toFixed(2)),
+      clarity: Number((averageClarity * 100).toFixed(1)),
       blob,
       url,
       pcm,
       sampleRate: state.audioContext?.sampleRate || 48000,
       sample: false
     });
-    $('#prepareButton span').textContent = 'تجهيز تسجيل النغمة';
-    $('#prepareButton').disabled = false;
+    state.recordingStats = null;
+    state.recordingArmed = false;
+    resetRecordingQualification();
+    setPrepareButtonState('idle');
     renderRecords();
-    showToast('تم حفظ التسجيل بنجاح.');
+    showToast('تم اعتماد وحفظ التسجيل المضبوط تلقائيًا.');
   }
 
   function playSample(record, button) {
