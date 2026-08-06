@@ -3,1831 +3,239 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#061c22">
-  <meta name="description" content="أداة تسجيل وتحليل نغمات الناي الشرقي وفق A440، مع رصد النصف والربع تون وتسجيل كل نغمة أربع عدات.">
-  <title>مِعيار الناي — مسجل النغمات الشرقية</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <script src="vendor/jszip.min.js"></script>
-
-  <style>
-    :root{
-      --bg:#04161b;--panel:rgba(9,40,48,.9);--line:rgba(135,205,198,.22);
-      --line-strong:rgba(135,205,198,.42);--text:#f7fbfa;--muted:#a8c2c0;
-      --accent:#55d9c7;--accent2:#d6ad65;--good:#56d58a;--warn:#eac063;
-      --bad:#ef7772;--shadow:0 24px 75px rgba(0,0,0,.34);--radius:24px
-    }
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0;min-height:100vh;overflow-x:hidden;color:var(--text);
-      font-family:"Noto Sans Arabic",Tahoma,Arial,sans-serif;
-      background:
-        radial-gradient(circle at 15% 8%,rgba(85,217,199,.13),transparent 28rem),
-        radial-gradient(circle at 86% 26%,rgba(214,173,101,.08),transparent 24rem),
-        linear-gradient(180deg,#031217 0%,#07232b 45%,#04161b 100%)
-    }
-    body::before{
-      content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
-      background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
-      background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 88%)
-    }
-    button,input,select{font:inherit}
-    button{touch-action:manipulation}
-    .app{width:min(1180px,100%);margin:auto;padding:18px 18px 36px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:8px 0 18px}
-    .brand{display:flex;align-items:center;gap:13px}
-    .brand-mark{
-      position:relative;width:54px;height:54px;flex:0 0 54px;border:1px solid var(--line-strong);
-      border-radius:18px;background:linear-gradient(145deg,rgba(214,173,101,.18),rgba(85,217,199,.09)),#0b3039;
-      overflow:hidden
-    }
-    .brand-mark::before{
-      content:"";position:absolute;width:9px;height:44px;left:22px;top:5px;border-radius:999px;
-      transform:rotate(15deg);background:linear-gradient(180deg,var(--accent2),#8e6b39);
-      box-shadow:-5px 7px 0 -3px #061c22,5px 14px 0 -3px #061c22,
-      -5px 21px 0 -3px #061c22,5px 28px 0 -3px #061c22
-    }
-    .brand h1{margin:0;font-family:"Aref Ruqaa","Noto Naskh Arabic",serif;font-size:clamp(1.55rem,4vw,2.25rem);line-height:1.05}
-    .brand p{margin:5px 0 0;color:var(--muted);font-size:.88rem}
-    .version-stack{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .badge{
-      display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:6px 11px;
-      border:1px solid var(--line);border-radius:999px;color:var(--muted);
-      background:rgba(6,28,34,.72);font-size:.78rem;white-space:nowrap
-    }
-    .badge strong{color:var(--accent)}
-    .badge.gold strong{color:var(--accent2)}
-    .message{display:none;margin:0 0 15px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;line-height:1.7;background:#0c333c}
-    .message.show{display:block}
-    .message.error{border-color:rgba(239,119,114,.5);color:#ffd6d3;background:#3a2225}
-    .hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(310px,.8fr);gap:16px;align-items:stretch}
-    .card{
-      position:relative;border:1px solid var(--line);border-radius:var(--radius);
-      background:linear-gradient(145deg,rgba(255,255,255,.025),transparent 42%),var(--panel);
-      backdrop-filter:blur(16px);box-shadow:var(--shadow);overflow:hidden
-    }
-    .detector{padding:24px;min-height:540px;display:grid;align-content:start;text-align:center}
-    .detector-status{min-height:28px;color:var(--muted);font-size:.95rem}
-    .note-stage{position:relative;width:min(430px,100%);min-height:238px;margin:10px auto 2px;display:grid;place-content:center}
-    .note-stage::before{content:"";position:absolute;inset:20px 8%;z-index:-1;border-radius:50%;background:radial-gradient(circle,rgba(85,217,199,.12),transparent 66%);filter:blur(6px)}
-    .english-note{direction:ltr;font-size:clamp(4.25rem,14vw,8.5rem);font-weight:700;line-height:.9;letter-spacing:-.06em;text-shadow:0 12px 38px rgba(0,0,0,.38)}
-    .arabic-note{margin-top:13px;font-family:"Aref Ruqaa","Noto Naskh Arabic",serif;font-size:clamp(2rem,6vw,3.25rem);color:var(--accent2)}
-    .note-subtitle{min-height:24px;margin-top:8px;color:var(--muted);font-size:.88rem}
-    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:15px}
-    .metric{min-width:0;padding:10px 8px;border:1px solid var(--line);border-radius:15px;background:rgba(4,22,27,.55)}
-    .metric span{display:block;color:var(--muted);font-size:.74rem}
-    .metric strong{display:block;overflow:hidden;margin-top:4px;color:var(--text);font-size:.92rem;font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap}
-    .tuner{margin-top:18px}
-    .tuner-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem}
-    .tuner-track{position:relative;height:21px;margin:7px 0;border:1px solid var(--line);border-radius:999px;background:linear-gradient(90deg,rgba(239,119,114,.25),rgba(234,192,99,.16) 33%,rgba(86,213,138,.19) 48% 52%,rgba(234,192,99,.16) 67%,rgba(239,119,114,.25))}
-    .tuner-track::before{content:"";position:absolute;top:3px;bottom:3px;left:calc(50% - 1px);width:2px;border-radius:999px;background:var(--good);box-shadow:0 0 13px rgba(86,213,138,.7)}
-    .needle{position:absolute;left:50%;top:-7px;width:4px;height:33px;transform:translateX(-50%);border-radius:99px;background:#fff;transition:left .1s linear;box-shadow:0 5px 14px rgba(0,0,0,.45)}
-    .quality-line{display:flex;justify-content:center;align-items:center;gap:9px;min-height:36px;margin-top:9px;color:var(--muted)}
-    .status-dot{width:10px;height:10px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 5px rgba(239,119,114,.08)}
-    .validation-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
-    .validation{padding:9px 7px;border:1px solid var(--line);border-radius:13px;background:rgba(4,22,27,.5)}
-    .validation b{display:block;font-size:.78rem}
-    .validation small{display:block;margin-top:3px;color:var(--muted);font-size:.68rem}
-    .validation.pass{border-color:rgba(86,213,138,.55)}
-    .validation.fail{border-color:rgba(239,119,114,.5)}
-    .control-panel{padding:20px;display:grid;gap:13px;align-content:start}
-    .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
-    .section-title h2{margin:0;font-family:"Aref Ruqaa","Noto Naskh Arabic",serif;font-size:1.7rem}
-    .silent-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;color:var(--accent);background:rgba(85,217,199,.08);border:1px solid rgba(85,217,199,.2);font-size:.72rem}
-    .button{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:48px;padding:11px 14px;border:1px solid transparent;border-radius:15px;cursor:pointer;font-weight:700;transition:transform .13s ease,filter .13s ease,opacity .13s ease}
-    .button:hover{filter:brightness(1.07)}
-    .button:active{transform:scale(.985)}
-    .button:disabled{opacity:.38;cursor:not-allowed;filter:none}
-    .primary{color:#03211e;background:linear-gradient(135deg,#5ce0ce,#39bba9);box-shadow:0 10px 30px rgba(85,217,199,.16)}
-    .gold{color:#231a0d;background:linear-gradient(135deg,#e2c17d,#b98a44)}
-    .secondary{color:var(--text);border-color:var(--line);background:#113a43}
-    .danger{color:#ffc5c1;border-color:rgba(239,119,114,.4);background:rgba(239,119,114,.07)}
-    label{display:grid;gap:6px;color:var(--muted);font-size:.82rem}
-    input,select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:13px;outline:none;padding:9px 11px;color:var(--text);background:#071f26}
-    input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(85,217,199,.1)}
-    .fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-    .processing-status{padding:11px;border:1px solid var(--line);border-radius:14px;background:rgba(4,22,27,.48)}
-    .processing-status strong{display:block;font-size:.8rem}
-    .processing-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;color:var(--muted);font-size:.72rem}
-    .processing-list span{padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.025)}
-    .processing-list em{color:var(--text);font-style:normal;font-weight:700}
-    .helper{color:var(--muted);font-size:.76rem;line-height:1.65}
-    .recorder-card{margin-top:16px;padding:22px}
-    .recorder-grid{display:grid;grid-template-columns:minmax(270px,.76fr) minmax(0,1.24fr);gap:18px;align-items:center}
-    .recorder-copy h2{margin:0;font-family:"Aref Ruqaa","Noto Naskh Arabic",serif;font-size:clamp(1.7rem,4vw,2.4rem)}
-    .recorder-copy p{margin:7px 0 0;color:var(--muted);line-height:1.7;font-size:.88rem}
-    .recorder-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
-    .metronome{position:relative;min-height:205px;display:grid;grid-template-columns:145px 1fr;gap:18px;align-items:center;border:1px solid var(--line);border-radius:21px;padding:16px;background:radial-gradient(circle at 78% 50%,rgba(85,217,199,.08),transparent 46%),rgba(4,22,27,.48);overflow:hidden}
-    .beat-orb{position:relative;width:132px;height:132px;display:grid;place-items:center;margin:auto;border-radius:50%;background:radial-gradient(circle at center,#0d3942 0 55%,transparent 56%),conic-gradient(var(--accent) var(--beat-progress,0%),rgba(255,255,255,.07) 0);box-shadow:inset 0 0 0 1px var(--line),0 0 45px rgba(85,217,199,.08)}
-    .beat-orb::after{content:"";position:absolute;inset:9px;border-radius:50%;border:1px solid rgba(214,173,101,.28)}
-    .beat-number{position:relative;z-index:1;font-size:3.2rem;font-weight:700;font-variant-numeric:tabular-nums}
-    .beat-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .beat-dots{display:flex;direction:ltr;gap:8px;margin-top:14px}
-    .beat-dot{width:100%;max-width:54px;height:12px;border-radius:999px;border:1px solid var(--line);background:#061a20;transition:background .1s ease,transform .1s ease}
-    .beat-dot.active{transform:translateY(-2px);background:var(--accent);box-shadow:0 0 16px rgba(85,217,199,.35)}
-    .beat-dot.half{max-width:28px;background:linear-gradient(90deg,var(--accent) 50%,#061a20 50%)}
-    .note-value-box{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:15px;background:rgba(4,22,27,.48)}
-    .beat-status{min-height:48px;margin-top:13px;color:var(--muted);font-size:.84rem;line-height:1.7}
-    .library{margin-top:16px;padding:22px}
-    .library-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px}
-    .library-head h2{margin:0;font-family:"Aref Ruqaa","Noto Naskh Arabic",serif;font-size:2rem}
-    .library-head p{margin:5px 0 0;color:var(--muted);font-size:.8rem}
-    .library-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;justify-content:flex-end}
-    .library-toolbar label{min-width:150px}
-    .check-label{display:flex;align-items:center;gap:8px;min-height:44px;padding:7px 10px;border:1px solid var(--line);border-radius:13px;background:#071f26;color:var(--text);cursor:pointer}
-    .check-label input{width:19px;min-height:0;height:19px;accent-color:var(--accent)}
-    .recordings{display:grid;gap:10px}
-    .record-item{display:grid;grid-template-columns:auto minmax(130px,.72fr) minmax(0,1.28fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:17px;background:rgba(4,22,27,.5)}
-    .record-select{width:20px;height:20px;accent-color:var(--accent)}
-    .record-name strong{display:block;direction:ltr;text-align:right;font-size:1.02rem}
-    .record-name span{display:block;margin-top:4px;font-family:"Aref Ruqaa","Noto Naskh Arabic",serif;color:var(--accent2);font-size:1.32rem}
-    .record-meta{display:flex;flex-wrap:wrap;gap:6px}
-    .meta-chip{padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.68rem;white-space:nowrap}
-    .record-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
-    .mini{min-height:38px;padding:7px 10px;border-radius:11px;font-size:.74rem}
-    .empty{padding:35px 15px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
-    .player-bar{display:none;position:sticky;bottom:12px;z-index:15;margin-top:14px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:17px;background:rgba(5,28,34,.96);box-shadow:0 16px 44px rgba(0,0,0,.42);backdrop-filter:blur(16px)}
-    .player-bar.show{display:grid;grid-template-columns:minmax(120px,.34fr) minmax(0,1fr) auto;gap:12px;align-items:center}
-    .player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .player-bar audio{width:100%}
-    .footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:20px;padding:16px 4px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.74rem}
-    .footer strong{color:var(--text)}
-    @media(max-width:900px){
-      .hero-grid{grid-template-columns:1fr}.recorder-grid{grid-template-columns:1fr}
-      .record-item{grid-template-columns:auto minmax(120px,.75fr) minmax(0,1.25fr)}
-      .record-actions{grid-column:2 / -1;justify-content:flex-start}
-    }
-    @media(max-width:650px){
-      .app{padding:12px 12px 28px}.topbar{align-items:flex-start}.version-stack{display:none}
-      .detector,.control-panel,.recorder-card,.library{padding:15px}.metrics{grid-template-columns:1fr 1fr}
-      .validation-grid{grid-template-columns:1fr 1fr}.metronome{grid-template-columns:1fr;text-align:center}
-      .beat-dots{justify-content:center}.beat-heading{justify-content:center;flex-wrap:wrap}
-      .library-head{display:grid}.library-toolbar{justify-content:stretch}.library-toolbar>*{flex:1 1 140px}
-      .record-item{grid-template-columns:auto 1fr}.record-meta,.record-actions{grid-column:2}
-      .player-bar.show{grid-template-columns:1fr}
-    }
-  </style>
+  <meta name="theme-color" content="#00191d">
+  <meta name="description" content="معيار الناي — مسجل ومعيار دقيق للنغمات الشرقية وفق A4 = 440 Hz">
+  <title>معيار الناي</title>
+  <link rel="stylesheet" href="styles.css?v=2026-08-06-r1">
+  <script src="app.js?v=2026-08-06-r1" defer></script>
 </head>
-
 <body>
-<main class="app">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true"></div>
-      <div><h1>مِعيار الناي</h1><p>مسجل النغمات الشرقية الدقيقة وفق A440</p></div>
-    </div>
-    <div class="version-stack">
-      <span class="badge"><strong>v0.5.1</strong> إصدار تجريبي</span>
-      <span class="badge gold"><strong>2026-08-02</strong> تاريخ الإصدار</span>
-    </div>
-  </header>
+  <div class="background-ornament background-ornament--right" aria-hidden="true"></div>
+  <div class="background-ornament background-ornament--left" aria-hidden="true"></div>
 
-  <div id="message" class="message" role="alert"></div>
+  <main class="app-shell" id="appShell">
+    <header class="app-header">
+      <button class="icon-button help-button" id="helpButton" type="button" aria-label="فتح المساعدة" title="مساعدة">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 1 1 5.4 1.8c-1.2.8-2 1.3-2 2.7"></path><path d="M12 17h.01"></path></svg>
+      </button>
 
-  <section class="hero-grid">
-    <article class="card detector">
-      <div id="detectorStatus" class="detector-status">ابدأ الميكروفون، ثم ابقَ صامتًا أثناء معايرة ضوضاء المكان.</div>
-      <div class="note-stage">
-        <div id="englishNote" class="english-note">—</div>
-        <div id="arabicNote" class="arabic-note">—</div>
-        <div id="noteSubtitle" class="note-subtitle">لا توجد نغمة ملتقطة</div>
-      </div>
-      <div class="metrics">
-        <div class="metric"><span>التردد المقاس</span><strong id="frequencyValue">0.00 Hz</strong></div>
-        <div class="metric"><span>الهدف</span><strong id="targetValue">—</strong></div>
-        <div class="metric"><span>الانحراف</span><strong id="centsValue">0 سنت</strong></div>
-        <div class="metric"><span>الإشارة/الضوضاء</span><strong id="snrValue">—</strong></div>
-      </div>
-      <div class="tuner">
-        <div class="tuner-labels"><span>منخفض ♭</span><span>مضبوط</span><span>مرتفع ♯</span></div>
-        <div class="tuner-track"><div id="needle" class="needle"></div></div>
-      </div>
-      <div class="quality-line" aria-live="polite"><span id="qualityDot" class="status-dot"></span><span id="qualityText">بانتظار الميكروفون</span></div>
-      <div class="validation-grid">
-        <div id="noiseCheck" class="validation"><b>الضوضاء</b><small>لم يبدأ القياس</small></div>
-        <div id="clarityCheck" class="validation"><b>وضوح النغمة</b><small>لم يبدأ القياس</small></div>
-        <div id="stabilityCheck" class="validation"><b>الثبات</b><small>لم يبدأ القياس</small></div>
-        <div id="continuityCheck" class="validation"><b>الاستمرار</b><small>لم يبدأ القياس</small></div>
-      </div>
-    </article>
-
-    <aside class="card control-panel">
-      <div class="section-title"><h2>ضبط الالتقاط</h2><span class="silent-chip">◉ بلا مؤثرات</span></div>
-      <button id="micButton" class="button primary" type="button">تشغيل الميكروفون</button>
-      <button id="calibrateButton" class="button secondary" type="button" disabled>إعادة معايرة الضوضاء</button>
-      <div class="fields">
-        <label>نظام النغمات
-          <select id="divisionSelect"><option value="24" selected>شرقي 24-TET — ربع تون</option><option value="12">كروماتيك 12-TET — نصف تون</option></select>
-        </label>
-        <label>المرجع A4<input id="a4Input" type="number" min="400" max="480" step="0.1" value="440"></label>
-        <label>سرعة الأربع عدّات<input id="bpmInput" type="number" min="30" max="180" step="1" value="60"></label>
-        <label>هامش الضبط
-          <select id="toleranceSelect"><option value="8">دقيق جدًا ±8 سنت</option><option value="12" selected>دقيق ±12 سنت</option><option value="18">مرن ±18 سنت</option></select>
-        </label>
-      </div>
-      <div class="processing-status">
-        <strong>حالة معالجة الميكروفون</strong>
-        <div class="processing-list">
-          <span>إلغاء الصدى: <em id="echoStatus">—</em></span>
-          <span>عزل الضوضاء: <em id="noiseSuppressionStatus">—</em></span>
-          <span>الرفع التلقائي: <em id="agcStatus">—</em></span>
-          <span>العينات: <em id="sampleRateStatus">—</em></span>
-          <span>محرك التسجيل: <em id="recorderEngineStatus">—</em></span>
+      <div class="brand" aria-label="معيار الناي">
+        <div class="brand-logo" aria-hidden="true">
+          <span class="brand-logo__rosette"></span>
+          <img src="assets/ney-dokah-reference.webp" alt="" class="brand-logo__ney">
         </div>
-      </div>
-      <div class="helper">عزل الضوضاء المستخدم داخل الأداة يؤثر على قرار قبول النغمة فقط، ولا يغير عينات التسجيل الصوتي.</div>
-    </aside>
-  </section>
-
-  <section class="card recorder-card">
-    <div class="recorder-grid">
-      <div class="recorder-copy">
-        <h2 id="noteValueHeading">روند — 4 عدّات</h2>
-        <p>
-          اختر القيمة الزمنية المطلوبة. يبدأ التسجيل تلقائيًا عند اعتماد نغمة واضحة،
-          ويُلتقط الصوت داخل مسار الصوت الحقيقي بواسطة AudioWorklet لمنع انقطاع الكتل والطقطقة الرقمية.
-        </p>
-
-        <div class="note-value-box">
-          <label>
-            القيمة الزمنية الموسيقية
-            <select id="noteValueSelect">
-              <option value="whole" selected>روند · Whole note · 4 عدّات</option>
-              <option value="half">بلانش · Half note · عدّتان</option>
-              <option value="quarter">نوار · Quarter note · عدّة واحدة</option>
-              <option value="eighth">كروش · Eighth note · نصف عدّة</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="recorder-actions">
-          <button id="armButton" class="button gold" type="button" disabled>تجهيز تسجيل النغمة</button>
-          <button id="cancelButton" class="button danger" type="button" disabled>إلغاء</button>
+        <div class="brand-copy">
+          <h1>معيار الناي</h1>
+          <p>مسجل النغمات الشرقية الدقيقة وفق <bdi dir="ltr">A440</bdi></p>
         </div>
       </div>
 
-      <div class="metronome">
-        <div id="beatOrb" class="beat-orb"><span id="beatNumber" class="beat-number">—</span></div>
-        <div>
-          <div class="beat-heading">
-            <strong>العداد المرئي الصامت</strong>
-            <span id="durationLabel" class="silent-chip">روند · 4.00 ثانية عند 60 BPM</span>
+      <button class="microphone-status" id="headerMicButton" type="button" aria-label="تشغيل الميكروفون">
+        <span class="status-dot status-dot--danger" id="headerStatusDot" aria-hidden="true"></span>
+        <span id="headerMicText">الميكروفون غير نشط</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path><path d="M8 22h8"></path></svg>
+      </button>
+    </header>
+
+    <section class="top-grid" aria-label="التحليل اللحظي">
+      <article class="panel tuner-panel">
+        <header class="panel-header">
+          <div class="panel-title">
+            <span class="icon-disc" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path><path d="M19.4 15a8 8 0 1 0-14.8 0"></path><path d="M12 12 16.5 7.5"></path></svg>
+            </span>
+            <div>
+              <h2>المعيار اللحظي</h2>
+              <p>الانحراف وجودة الإشارة لحظة بلحظة</p>
+            </div>
           </div>
-          <div id="beatDots" class="beat-dots" aria-hidden="true"></div>
-          <div id="recordingStatus" class="beat-status">شغّل الميكروفون ثم جهّز التسجيل.</div>
+        </header>
+
+        <div class="tuner-scale" aria-label="مؤشر ضبط النغمة">
+          <div class="tuner-labels"><span>منخفض ♭</span><span>مضبوط</span><span>مرتفع ♯</span></div>
+          <div class="tuner-bar">
+            <span class="tuner-center-zone" aria-hidden="true"></span>
+            <span class="tuner-needle" id="tunerNeedle" aria-hidden="true"></span>
+          </div>
+          <div class="tuner-ticks" aria-hidden="true"><span>-50</span><span>-25</span><span>0</span><span>+25</span><span>+50</span></div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card"><span>التردد المقاس</span><strong id="frequencyValue" dir="ltr">0.00 <small>Hz</small></strong></div>
+          <div class="metric-card"><span>الهدف</span><strong id="targetValue" dir="ltr">—</strong></div>
+          <div class="metric-card"><span>الانحراف</span><strong id="centsValue" dir="ltr">0 <small>سنت</small></strong></div>
+          <div class="metric-card"><span>الإشارة/الضوضاء</span><strong id="signalValue" dir="ltr">—</strong></div>
+        </div>
+
+        <div class="tuner-footer">
+          <div class="quality-state" aria-live="polite">
+            <span class="status-dot status-dot--danger" id="qualityDot" aria-hidden="true"></span>
+            <span id="qualityText">بانتظار نغمة واضحة</span>
+          </div>
+          <button class="ghost-button" id="qualityToggle" type="button" aria-expanded="false" aria-controls="qualityDetails">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"></path><path d="m7 16 4-5 4 3 4-7"></path></svg>
+            <span>تفاصيل الجودة</span>
+            <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+          </button>
+        </div>
+
+        <div class="quality-details" id="qualityDetails" hidden>
+          <div><span>وضوح النغمة</span><strong id="clarityValue">—</strong></div>
+          <div><span>ثبات التردد</span><strong id="stabilityValue">—</strong></div>
+          <div><span>بوابة الضوضاء</span><strong id="noiseGateValue">—</strong></div>
+        </div>
+      </article>
+
+      <article class="panel detected-panel">
+        <header class="panel-header">
+          <div class="panel-title">
+            <span class="icon-disc" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="17" cy="16" r="3"></circle></svg>
+            </span>
+            <div>
+              <h2>النغمة المكتشفة</h2>
+              <p>الاسم والطبقة والتردد الأساسي</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="note-visual">
+          <div class="note-rosette" aria-hidden="true"></div>
+          <div class="note-core" aria-hidden="true"><img src="assets/ney-dokah-reference.webp" alt=""></div>
+          <div class="note-result" id="noteResult" aria-live="polite">
+            <strong id="noteName">بانتظار النغمة</strong>
+            <span id="noteArabic">شغّل الميكروفون واعزف نغمة ثابتة</span>
+          </div>
+        </div>
+
+        <div class="waveform" id="waveform" aria-label="موجة الصوت">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel quick-controls" aria-labelledby="quickControlsTitle">
+      <header class="quick-controls__header">
+        <div>
+          <h2 id="quickControlsTitle">التحكم السريع</h2>
+          <p>الإعدادات المستخدمة أثناء العزف فقط</p>
+        </div>
+        <button class="ghost-button advanced-button" id="advancedButton" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M2 14h4"></path><path d="M10 8h4"></path><path d="M18 16h4"></path></svg>
+          <span>إعدادات متقدمة</span>
+        </button>
+      </header>
+
+      <div class="controls-grid">
+        <fieldset class="control-group division-group">
+          <legend>التقسيم</legend>
+          <div class="segmented-control" id="divisionControl">
+            <button class="segment is-active" data-division="24" type="button" aria-pressed="true"><strong dir="ltr">24-TET</strong><span>شرقي</span></button>
+            <button class="segment" data-division="12" type="button" aria-pressed="false"><strong dir="ltr">12-TET</strong><span>غربي</span></button>
+          </div>
+        </fieldset>
+
+        <fieldset class="control-group duration-group">
+          <legend>القيمة الموسيقية</legend>
+          <div class="duration-control" id="durationControl">
+            <button class="duration-option" data-duration="4" data-name="روند" type="button" aria-pressed="false"><span class="music-symbol">𝅝</span><strong>روند</strong><small>4</small></button>
+            <button class="duration-option" data-duration="2" data-name="بلانش" type="button" aria-pressed="false"><span class="music-symbol">𝅗𝅥</span><strong>بلانش</strong><small>2</small></button>
+            <button class="duration-option is-active" data-duration="1" data-name="نوار" type="button" aria-pressed="true"><span class="music-symbol">♩</span><strong>نوار</strong><small>1</small></button>
+            <button class="duration-option" data-duration="0.5" data-name="كروش" type="button" aria-pressed="false"><span class="music-symbol">♪</span><strong>كروش</strong><small>1/2</small></button>
+          </div>
+        </fieldset>
+
+        <div class="control-group bpm-group">
+          <span class="control-label">النبض <bdi dir="ltr">BPM</bdi></span>
+          <div class="stepper" role="group" aria-label="ضبط النبض">
+            <button type="button" id="bpmMinus" aria-label="خفض النبض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+            <output id="bpmValue" dir="ltr">60</output>
+            <button type="button" id="bpmPlus" aria-label="رفع النبض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+          </div>
+        </div>
+
+        <div class="control-group reference-group">
+          <span class="control-label">مرجع <bdi dir="ltr">A4</bdi></span>
+          <label class="reference-input"><input id="a4Reference" type="number" min="400" max="480" step="0.1" value="440" inputmode="decimal" aria-label="مرجع A4"><span>Hz</span></label>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="card library">
-    <div class="library-head">
-      <div><h2>مكتبة النغمات</h2><p>سماع التسجيل، تحديد تسجيلات، ثم تصدير المحدد أو المكتبة كاملة.</p></div>
-      <div class="library-toolbar">
-        <label class="check-label"><input id="selectAllCheckbox" type="checkbox">تحديد الكل</label>
-        <label>صيغة التصدير الجماعي
-          <select id="bulkFormat"><option value="wav" selected>WAV خام</option><option value="mp3">MP3</option><option value="both">WAV + MP3</option></select>
-        </label>
-        <button id="exportSelectedButton" class="button secondary mini" type="button" disabled>تصدير المحدد</button>
-        <button id="exportAllButton" class="button primary mini" type="button" disabled>تصدير الكل</button>
-        <button id="clearAllButton" class="button danger mini" type="button" disabled>مسح القائمة بالكامل</button>
-      </div>
-    </div>
-    <div id="recordingsList" class="recordings"></div>
-    <div id="emptyLibrary" class="empty">لا توجد تسجيلات محفوظة بعد.</div>
-    <div id="playerBar" class="player-bar"><strong id="playerName" class="player-name">—</strong><audio id="audioPlayer" controls></audio><button id="closePlayerButton" class="button danger mini" type="button">إغلاق</button></div>
-  </section>
-
-  <footer class="footer">
-    <span><strong>© 2026 محمد الزهراني.</strong> جميع الحقوق محفوظة.</span>
-    <span>الإصدار <strong>v0.5.1</strong> · تاريخ البناء والإصدار: <strong>2026-08-02</strong></span>
-  </footer>
-</main>
-
-<script>
-(() => {
-  "use strict";
-
-  const APP = {
-    name: "مِعيار الناي",
-    version: "0.5.1",
-    buildDate: "2026-08-02",
-    owner: "محمد الزهراني",
-    dbName: "NeyMeyarDB",
-    dbVersion: 1,
-    storeName: "recordings"
-  };
-
-  const NOTE_VALUES = {
-    whole:   { key:"whole",   ar:"روند",   en:"Whole note",   beats:4,   countText:"4 عدّات" },
-    half:    { key:"half",    ar:"بلانش",  en:"Half note",    beats:2,   countText:"عدّتان" },
-    quarter: { key:"quarter", ar:"نوار",   en:"Quarter note", beats:1,   countText:"عدّة واحدة" },
-    eighth:  { key:"eighth",  ar:"كروش",   en:"Eighth note",  beats:0.5, countText:"نصف عدّة" }
-  };
-
-  const N24 = [
-    ["C","دو","طبيعية"],["C half-sharp","دو نصف دييز","ربع تون"],
-    ["C♯ / D♭","دو دييز / ري بيمول","نصف تون"],["D half-flat","ري نصف بيمول","ربع تون"],
-    ["D","ري","طبيعية"],["D half-sharp","ري نصف دييز","ربع تون"],
-    ["D♯ / E♭","ري دييز / مي بيمول","نصف تون"],["E half-flat","مي نصف بيمول","ربع تون"],
-    ["E","مي","طبيعية"],["F half-flat","فا نصف بيمول","ربع تون"],
-    ["F","فا","طبيعية"],["F half-sharp","فا نصف دييز","ربع تون"],
-    ["F♯ / G♭","فا دييز / صول بيمول","نصف تون"],["G half-flat","صول نصف بيمول","ربع تون"],
-    ["G","صول","طبيعية"],["G half-sharp","صول نصف دييز","ربع تون"],
-    ["G♯ / A♭","صول دييز / لا بيمول","نصف تون"],["A half-flat","لا نصف بيمول","ربع تون"],
-    ["A","لا","طبيعية"],["A half-sharp","لا نصف دييز","ربع تون"],
-    ["A♯ / B♭","لا دييز / سي بيمول","نصف تون"],["B half-flat","سي نصف بيمول","ربع تون"],
-    ["B","سي","طبيعية"],["B half-sharp","سي نصف دييز","ربع تون"]
-  ];
-
-  const N12 = [
-    ["C","دو","طبيعية"],["C♯ / D♭","دو دييز / ري بيمول","نصف تون"],
-    ["D","ري","طبيعية"],["D♯ / E♭","ري دييز / مي بيمول","نصف تون"],
-    ["E","مي","طبيعية"],["F","فا","طبيعية"],
-    ["F♯ / G♭","فا دييز / صول بيمول","نصف تون"],["G","صول","طبيعية"],
-    ["G♯ / A♭","صول دييز / لا بيمول","نصف تون"],["A","لا","طبيعية"],
-    ["A♯ / B♭","لا دييز / سي بيمول","نصف تون"],["B","سي","طبيعية"]
-  ];
-
-  const $ = id => document.getElementById(id);
-  const ui = {
-    message:$("message"),
-    mic:$("micButton"),
-    calibrate:$("calibrateButton"),
-    arm:$("armButton"),
-    cancel:$("cancelButton"),
-    division:$("divisionSelect"),
-    a4:$("a4Input"),
-    bpm:$("bpmInput"),
-    tolerance:$("toleranceSelect"),
-    noteValue:$("noteValueSelect"),
-    noteValueHeading:$("noteValueHeading"),
-    status:$("detectorStatus"),
-    en:$("englishNote"),
-    ar:$("arabicNote"),
-    subtitle:$("noteSubtitle"),
-    freq:$("frequencyValue"),
-    target:$("targetValue"),
-    cents:$("centsValue"),
-    snr:$("snrValue"),
-    needle:$("needle"),
-    qdot:$("qualityDot"),
-    qtext:$("qualityText"),
-    noiseCheck:$("noiseCheck"),
-    clarityCheck:$("clarityCheck"),
-    stabilityCheck:$("stabilityCheck"),
-    continuityCheck:$("continuityCheck"),
-    echo:$("echoStatus"),
-    ns:$("noiseSuppressionStatus"),
-    agc:$("agcStatus"),
-    sr:$("sampleRateStatus"),
-    recorderEngine:$("recorderEngineStatus"),
-    orb:$("beatOrb"),
-    beat:$("beatNumber"),
-    beatDots:$("beatDots"),
-    duration:$("durationLabel"),
-    recStatus:$("recordingStatus"),
-    list:$("recordingsList"),
-    empty:$("emptyLibrary"),
-    selectAll:$("selectAllCheckbox"),
-    bulk:$("bulkFormat"),
-    exportSelected:$("exportSelectedButton"),
-    exportAll:$("exportAllButton"),
-    clearAll:$("clearAllButton"),
-    player:$("playerBar"),
-    playerName:$("playerName"),
-    audio:$("audioPlayer"),
-    closePlayer:$("closePlayerButton")
-  };
-
-  let db = null;
-  let records = [];
-  let selected = new Set();
-
-  let stream = null;
-  let ctx = null;
-  let source = null;
-  let analyser = null;
-  let recorderNode = null;
-  let silentGain = null;
-  let raf = null;
-  let listening = false;
-  let lastAnalysisAt = 0;
-
-  let calibrating = false;
-  let calibrationEnd = 0;
-  let calibrationLevels = [];
-  let noiseFloor = 0.002;
-  let noiseGate = 0.009;
-
-  let recentPitch = [];
-  let analysisHistory = [];
-  let candidateStep = null;
-  let candidateSince = 0;
-  let lastValidAt = 0;
-  let currentReading = null;
-
-  let armed = false;
-  let capture = null;
-  let playbackUrl = null;
-  let lamePromise = null;
-
-  // نسخة مدمجة تُستخدم تلقائيًا إذا لم يجد المتصفح الملف الخارجي.
-  const EMBEDDED_WORKLET_SOURCE = "class NeyRecorderProcessor extends AudioWorkletProcessor {\n  constructor(){\n    super();\n\n    this.preRollLength = Math.max(1,Math.round(sampleRate*0.25));\n    this.preRoll = new Float32Array(this.preRollLength);\n    this.preRollWrite = 0;\n    this.preRollFilled = 0;\n    this.capture = null;\n\n    this.port.onmessage = event => {\n      const data = event.data || {};\n\n      if (data.type === \"start\"){\n        this.startCapture(data.id,data.totalSamples);\n        return;\n      }\n\n      if (data.type === \"abort\"){\n        if (!this.capture || !data.id || data.id === this.capture.id){\n          this.capture = null;\n        }\n      }\n    };\n  }\n\n  orderedPreRoll(maxLength){\n    const available = Math.min(this.preRollFilled,maxLength);\n    if (available <= 0) return new Float32Array(0);\n\n    const output = new Float32Array(available);\n    const start =\n      (this.preRollWrite-available+this.preRollLength)%this.preRollLength;\n\n    for (let index=0;index<available;index++){\n      output[index] = this.preRoll[(start+index)%this.preRollLength];\n    }\n\n    return output;\n  }\n\n  startCapture(id,totalSamples){\n    const total = Math.max(1,Math.round(Number(totalSamples)||1));\n    const samples = new Float32Array(total);\n    const pre = this.orderedPreRoll(total);\n\n    samples.set(pre,0);\n    this.capture = {\n      id,\n      samples,\n      offset:pre.length,\n      total\n    };\n\n    this.port.postMessage({\n      type:\"started\",\n      id,\n      preRollSamples:pre.length,\n      totalSamples:total\n    });\n\n    if (this.capture.offset >= this.capture.total){\n      this.finishCapture();\n    }\n  }\n\n  writePreRoll(input){\n    for (let index=0;index<input.length;index++){\n      this.preRoll[this.preRollWrite] = input[index];\n      this.preRollWrite = (this.preRollWrite+1)%this.preRollLength;\n      this.preRollFilled = Math.min(\n        this.preRollLength,\n        this.preRollFilled+1\n      );\n    }\n  }\n\n  appendCapture(input){\n    if (!this.capture) return;\n\n    const remaining = this.capture.total-this.capture.offset;\n    if (remaining <= 0){\n      this.finishCapture();\n      return;\n    }\n\n    const count = Math.min(remaining,input.length);\n    this.capture.samples.set(\n      input.subarray(0,count),\n      this.capture.offset\n    );\n    this.capture.offset += count;\n\n    if (this.capture.offset >= this.capture.total){\n      this.finishCapture();\n    }\n  }\n\n  finishCapture(){\n    if (!this.capture) return;\n\n    const completed = this.capture;\n    this.capture = null;\n    const buffer = completed.samples.buffer;\n\n    this.port.postMessage({\n      type:\"complete\",\n      id:completed.id,\n      samples:buffer\n    },[buffer]);\n  }\n\n  process(inputs,outputs){\n    const input = inputs[0]?.[0];\n    const output = outputs[0]?.[0];\n\n    if (output) output.fill(0);\n\n    if (input && input.length){\n      // Capture first, then update pre-roll. This preserves exact continuity\n      // between the stored pre-roll and the next render quantum.\n      this.appendCapture(input);\n      this.writePreRoll(input);\n    }\n\n    return true;\n  }\n}\n\nregisterProcessor(\"ney-recorder\",NeyRecorderProcessor);\n";
-  let recorderEngineMode = "غير مهيأ";
-
-  const clamp = (value,min,max) => Math.min(max,Math.max(min,value));
-  const mean = values => values.length ? values.reduce((sum,value)=>sum+value,0)/values.length : 0;
-  const median = values => {
-    if (!values.length) return 0;
-    const sorted = [...values].sort((a,b)=>a-b);
-    const middle = Math.floor(sorted.length/2);
-    return sorted.length%2 ? sorted[middle] : (sorted[middle-1]+sorted[middle])/2;
-  };
-  const std = values => {
-    if (values.length < 2) return 0;
-    const average = mean(values);
-    return Math.sqrt(mean(values.map(value=>(value-average)**2)));
-  };
-  const rms = samples => Math.sqrt(samples.reduce((sum,value)=>sum+value*value,0)/samples.length);
-  const peak = samples => samples.reduce((maximum,value)=>Math.max(maximum,Math.abs(value)),0);
-
-  function showMessage(text,isError=false){
-    ui.message.textContent = text;
-    ui.message.className = "message show" + (isError ? " error" : "");
-  }
-
-  function clearMessage(){
-    ui.message.className = "message";
-    ui.message.textContent = "";
-  }
-
-  function division(){
-    return Number(ui.division.value) === 12 ? 12 : 24;
-  }
-
-  function a4(){
-    const value = Number(ui.a4.value);
-    return Number.isFinite(value) ? clamp(value,400,480) : 440;
-  }
-
-  function bpm(){
-    const value = Math.round(Number(ui.bpm.value));
-    return Number.isFinite(value) ? clamp(value,30,180) : 60;
-  }
-
-  function tolerance(){
-    return Number(ui.tolerance.value) || 12;
-  }
-
-  function selectedNoteValue(){
-    return NOTE_VALUES[ui.noteValue.value] || NOTE_VALUES.whole;
-  }
-
-  function durationSeconds(){
-    return (60/bpm()) * selectedNoteValue().beats;
-  }
-
-  function quality(text,level){
-    ui.qtext.textContent = text;
-    ui.qdot.style.background =
-      level === "good" ? "var(--good)" :
-      level === "warn" ? "var(--warn)" : "var(--bad)";
-  }
-
-  function setCheck(element,state,text){
-    element.classList.remove("pass","fail");
-    if (state === true) element.classList.add("pass");
-    if (state === false) element.classList.add("fail");
-    element.querySelector("small").textContent = text;
-  }
-
-  function resetChecks(){
-    [ui.noiseCheck,ui.clarityCheck,ui.stabilityCheck,ui.continuityCheck]
-      .forEach(element=>setCheck(element,null,"بانتظار النغمة"));
-  }
-
-  function resetDetector(){
-    currentReading = null;
-    recentPitch = [];
-    analysisHistory = [];
-    candidateStep = null;
-    candidateSince = 0;
-    ui.en.textContent = "—";
-    ui.ar.textContent = "—";
-    ui.subtitle.textContent = "لا توجد نغمة ملتقطة";
-    ui.freq.textContent = "0.00 Hz";
-    ui.target.textContent = "—";
-    ui.cents.textContent = "0 سنت";
-    ui.snr.textContent = "—";
-    ui.needle.style.left = "50%";
-    quality("بانتظار نغمة واضحة","bad");
-    resetChecks();
-  }
-
-  function renderBeatDots(){
-    const noteValue = selectedNoteValue();
-    const segmentCount = Math.max(1,Math.ceil(noteValue.beats));
-    ui.beatDots.innerHTML = "";
-
-    for (let index=0;index<segmentCount;index++){
-      const dot = document.createElement("span");
-      dot.className = "beat-dot";
-      dot.dataset.beat = String(index+1);
-      if (noteValue.beats < 1) dot.classList.add("half");
-      ui.beatDots.appendChild(dot);
-    }
-  }
-
-  function updateDuration(){
-    const value = selectedNoteValue();
-    ui.bpm.value = String(bpm());
-    ui.noteValueHeading.textContent = `${value.ar} — ${value.countText}`;
-    ui.duration.textContent = `${value.ar} · ${durationSeconds().toFixed(3)} ثانية عند ${bpm()} BPM`;
-    renderBeatDots();
-    resetBeat();
-  }
-
-  function noteFromFrequency(frequency){
-    const div = division();
-    const reference = a4();
-    const step = Math.round(div*Math.log2(frequency/reference));
-    const target = reference*Math.pow(2,step/div);
-    const cents = 1200*Math.log2(frequency/target);
-    const fromC4 = (div === 24 ? 18 : 9) + step;
-    const pitchClass = ((fromC4%div)+div)%div;
-    const octave = 4 + Math.floor(fromC4/div);
-    const item = (div === 24 ? N24 : N12)[pitchClass];
-
-    return {
-      division:div,
-      step,
-      target,
-      cents,
-      english:`${item[0]}${octave}`,
-      arabic:`${item[1]} ${octave}`,
-      type:item[2]
-    };
-  }
-
-  function yin(buffer,sampleRate){
-    const minFrequency = 65;
-    const maxFrequency = 1600;
-    const threshold = 0.11;
-    const minTau = Math.floor(sampleRate/maxFrequency);
-    const maxTau = Math.min(Math.floor(sampleRate/minFrequency),Math.floor(buffer.length/2));
-    const difference = new Float32Array(maxTau+1);
-
-    for (let tau=1;tau<=maxTau;tau++){
-      let total = 0;
-      for (let index=0;index<maxTau;index++){
-        const delta = buffer[index]-buffer[index+tau];
-        total += delta*delta;
-      }
-      difference[tau] = total;
-    }
-
-    difference[0] = 1;
-    let running = 0;
-    for (let tau=1;tau<=maxTau;tau++){
-      running += difference[tau];
-      difference[tau] = running === 0 ? 1 : difference[tau]*tau/running;
-    }
-
-    let estimate = -1;
-    for (let tau=minTau;tau<=maxTau;tau++){
-      if (difference[tau] < threshold){
-        while (tau+1<=maxTau && difference[tau+1] < difference[tau]) tau++;
-        estimate = tau;
-        break;
-      }
-    }
-
-    if (estimate === -1){
-      let best = minTau;
-      for (let tau=minTau+1;tau<=maxTau;tau++){
-        if (difference[tau] < difference[best]) best = tau;
-      }
-      if (difference[best] > 0.2) return null;
-      estimate = best;
-    }
-
-    const previous = estimate > 1 ? estimate-1 : estimate;
-    const next = estimate+1 <= maxTau ? estimate+1 : estimate;
-    const s0 = difference[previous];
-    const s1 = difference[estimate];
-    const s2 = difference[next];
-    const denominator = 2*(2*s1-s2-s0);
-    let refined = estimate;
-    if (denominator !== 0) refined += (s2-s0)/denominator;
-
-    return {
-      frequency:sampleRate/refined,
-      clarity:clamp(1-difference[estimate],0,1)
-    };
-  }
-
-  function beginCalibration(){
-    if (!listening) return;
-    abortCapture("إعادة معايرة المكان");
-    calibrating = true;
-    calibrationLevels = [];
-    calibrationEnd = performance.now()+2200;
-    ui.status.textContent = "معايرة ضوضاء المكان… ابقَ صامتًا لمدة ثانيتين.";
-    quality("جارٍ قياس الضوضاء","warn");
-  }
-
-  function finishCalibration(){
-    calibrating = false;
-    const sorted = [...calibrationLevels].sort((x,y)=>x-y);
-    const base = sorted[Math.floor((sorted.length-1)*0.8)] || 0.002;
-    noiseFloor = Math.max(0.0012,base);
-    noiseGate = Math.max(0.0055,noiseFloor*3.4);
-    ui.status.textContent = "اكتملت المعايرة. اعزف نغمة منفردة وواضحة.";
-    quality("جاهز للالتقاط","warn");
-  }
-
-  const settingLabel = value =>
-    value === false ? "متوقف ✓" :
-    value === true ? "يعمل ⚠" : "غير معروف";
-
-  function showSettings(track){
-    const settings = track.getSettings ? track.getSettings() : {};
-    ui.echo.textContent = settingLabel(settings.echoCancellation);
-    ui.ns.textContent = settingLabel(settings.noiseSuppression);
-    ui.agc.textContent = settingLabel(settings.autoGainControl);
-    ui.sr.textContent = `${settings.sampleRate || ctx.sampleRate} Hz`;
-
-    if (
-      settings.echoCancellation === true ||
-      settings.noiseSuppression === true ||
-      settings.autoGainControl === true
-    ){
-      showMessage(
-        "تنبيه: الجهاز أبقى معالجة داخلية للميكروفون مفعّلة رغم طلب تعطيلها.",
-        true
-      );
-    }
-  }
-
-
-  function runtimeDescription(){
-    const protocol = location.protocol || "unknown";
-    const secure = window.isSecureContext ? "secure" : "not-secure";
-    return `${protocol} · ${secure}`;
-  }
-
-  function readableError(error){
-    if (!error) return "خطأ غير معروف";
-    const name = error.name ? `${error.name}: ` : "";
-    return `${name}${error.message || String(error)}`;
-  }
-
-  async function loadRecorderWorklet(){
-    if (!ctx?.audioWorklet){
-      throw new Error(
-        `AudioWorklet غير متاح في السياق الحالي (${runtimeDescription()}).`
-      );
-    }
-
-    const externalUrl = new URL(
-      "./audio-recorder-worklet.js?v=0.5.1",
-      document.baseURI
-    ).href;
-
-    let externalError = null;
-
-    try{
-      await ctx.audioWorklet.addModule(externalUrl);
-      recorderEngineMode = "external";
-      ui.recorderEngine.textContent = "خارجي ✓";
-      return;
-    }catch(error){
-      externalError = error;
-      console.warn("External AudioWorklet failed:", externalUrl, error);
-    }
-
-    const blob = new Blob(
-      [EMBEDDED_WORKLET_SOURCE],
-      {type:"text/javascript"}
-    );
-    const blobUrl = URL.createObjectURL(blob);
-
-    try{
-      await ctx.audioWorklet.addModule(blobUrl);
-      recorderEngineMode = "embedded";
-      ui.recorderEngine.textContent = "مدمج ✓";
-      showMessage(
-        "تم تشغيل محرك التسجيل من النسخة المدمجة لأن ملف AudioWorklet الخارجي لم يُحمّل."
-      );
-    }catch(embeddedError){
-      console.error("Embedded AudioWorklet failed:", embeddedError);
-      throw new Error(
-        `فشل الملف الخارجي: ${readableError(externalError)} | ` +
-        `وفشلت النسخة المدمجة: ${readableError(embeddedError)}`
-      );
-    }finally{
-      URL.revokeObjectURL(blobUrl);
-    }
-  }
-
-  function recorderFailureMessage(error){
-    const details = readableError(error);
-
-    if (error?.name === "NotAllowedError"){
-      return "تم رفض إذن الميكروفون. اسمح للموقع باستخدام الميكروفون من إعدادات المتصفح.";
-    }
-
-    if (!window.isSecureContext){
-      return (
-        `الصفحة ليست في سياق آمن (${runtimeDescription()}). ` +
-        `افتح رابط الموقع المنشور الذي يبدأ بـ https://، وليس ملف HTML من مدير الملفات. ` +
-        `التفاصيل: ${details}`
-      );
-    }
-
-    if (!ctx?.audioWorklet){
-      return (
-        `AudioWorklet غير متاح في هذه الصفحة. ` +
-        `استخدم Chrome أو Safari حديثًا وافتح رابط GitHub Pages أو الاستضافة مباشرة. ` +
-        `التفاصيل: ${details}`
-      );
-    }
-
-    return (
-      `تعذر تشغيل محرك التسجيل. السياق: ${runtimeDescription()}. ` +
-      `التفاصيل التقنية: ${details}`
-    );
-  }
-
-  function handleRecorderMessage(event){
-    const data = event.data || {};
-    if (!capture || data.id !== capture.id) return;
-
-    if (data.type === "started"){
-      capture.preRollSamples = data.preRollSamples || 0;
-      capture.visualStartMs =
-        performance.now() - (capture.preRollSamples/capture.sampleRate)*1000;
-      return;
-    }
-
-    if (data.type === "complete"){
-      capture.samples = new Float32Array(data.samples);
-      finalizeCapture();
-    }
-  }
-
-  async function startMic(){
-    clearMessage();
-
-    if (!navigator.mediaDevices?.getUserMedia){
-      showMessage("المتصفح لا يدعم الميكروفون الحديث. استخدم HTTPS ومتصفحًا حديثًا.",true);
-      return;
-    }
-
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio:{
-          channelCount:1,
-          echoCancellation:false,
-          noiseSuppression:false,
-          autoGainControl:false
-        }
-      });
-
-      const track = stream.getAudioTracks()[0];
-      if ("contentHint" in track) track.contentHint = "music";
-
-      ctx = new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
-      await ctx.resume();
-
-      await loadRecorderWorklet();
-
-      source = ctx.createMediaStreamSource(stream);
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 4096;
-      analyser.smoothingTimeConstant = 0;
-
-      recorderNode = new AudioWorkletNode(ctx,"ney-recorder",{
-        numberOfInputs:1,
-        numberOfOutputs:1,
-        outputChannelCount:[1],
-        channelCount:1,
-        channelCountMode:"explicit",
-        channelInterpretation:"discrete"
-      });
-
-      silentGain = ctx.createGain();
-      silentGain.gain.value = 0;
-
-      recorderNode.port.onmessage = handleRecorderMessage;
-      recorderNode.addEventListener("processorerror",event=>{
-        console.error("AudioWorklet processor error:",event);
-        ui.recorderEngine.textContent = "تعطل ✗";
-        showMessage(
-          "تعطل معالج التسجيل. أوقف الميكروفون ثم أعد تشغيله.",
-          true
-        );
-        abortCapture("تعطل معالج التسجيل");
-      });
-
-      source.connect(analyser);
-      source.connect(recorderNode);
-      recorderNode.connect(silentGain);
-      silentGain.connect(ctx.destination);
-
-      listening = true;
-      ui.mic.textContent = "إيقاف الميكروفون";
-      ui.mic.className = "button danger";
-      ui.calibrate.disabled = false;
-      ui.arm.disabled = false;
-      showSettings(track);
-      beginCalibration();
-      analysisLoop();
-    }catch(error){
-      console.error(error);
-      ui.recorderEngine.textContent = "لم يعمل ✗";
-      showMessage(recorderFailureMessage(error),true);
-      stream?.getTracks().forEach(track=>track.stop());
-      try{await ctx?.close()}catch(_){}
-      stream = null;
-      ctx = null;
-      source = null;
-      analyser = null;
-      recorderNode = null;
-      silentGain = null;
-    }
-  }
-
-  async function stopMic(){
-    abortCapture("تم إيقاف الميكروفون");
-    armed = false;
-    listening = false;
-    calibrating = false;
-
-    if (raf) cancelAnimationFrame(raf);
-    raf = null;
-
-    try{source?.disconnect()}catch(_){}
-    try{recorderNode?.disconnect()}catch(_){}
-    try{silentGain?.disconnect()}catch(_){}
-
-    stream?.getTracks().forEach(track=>track.stop());
-    try{await ctx?.close()}catch(_){}
-
-    stream = null;
-    ctx = null;
-    source = null;
-    analyser = null;
-    recorderNode = null;
-    silentGain = null;
-
-    ui.mic.textContent = "تشغيل الميكروفون";
-    ui.mic.className = "button primary";
-    ui.calibrate.disabled = true;
-    ui.arm.disabled = true;
-    ui.recorderEngine.textContent = "متوقف";
-    ui.cancel.disabled = true;
-    ui.status.textContent = "تم إيقاف الميكروفون.";
-    ui.recStatus.textContent = "شغّل الميكروفون ثم جهّز التسجيل.";
-    resetDetector();
-    resetBeat();
-  }
-
-  function displayReading(reading){
-    currentReading = reading;
-    ui.en.textContent = reading.english;
-    ui.ar.textContent = reading.arabic;
-    ui.subtitle.textContent = `${reading.type} · ${reading.division}-TET`;
-    ui.freq.textContent = `${reading.frequency.toFixed(2)} Hz`;
-    ui.target.textContent = `${reading.target.toFixed(2)} Hz`;
-    ui.cents.textContent = `${reading.cents>0?"+":""}${reading.cents.toFixed(1)} سنت`;
-    ui.snr.textContent = `${reading.snr.toFixed(1)} dB`;
-
-    const range = reading.division === 24 ? 25 : 50;
-    ui.needle.style.left =
-      `${50 + clamp(reading.cents,-range,range)/range*50}%`;
-  }
-
-  function assess(reading){
-    const snrPass = reading.snr >= 15;
-    const clarityPass = reading.clarity >= 0.87;
-    const pitchPass = Math.abs(reading.cents) <= tolerance();
-    const clippingPass = reading.peak < 0.985;
-
-    const centsWindow = recentPitch
-      .filter(frame=>performance.now()-frame.time<=700 && frame.step===reading.step)
-      .map(frame=>frame.cents);
-
-    const deviation = std(centsWindow);
-    const stable = centsWindow.length >= 5 && deviation <= 6.5;
-
-    setCheck(ui.noiseCheck,snrPass,snrPass?`${reading.snr.toFixed(1)} dB`:"قريبة من الضوضاء");
-    setCheck(
-      ui.clarityCheck,
-      clarityPass&&clippingPass,
-      !clippingPass ? "الصوت مشبع" :
-      clarityPass ? `${Math.round(reading.clarity*100)}%` : "غير واضحة"
-    );
-    setCheck(ui.stabilityCheck,stable,stable?`تذبذب ${deviation.toFixed(1)} سنت`:"ثبّت النفَس");
-    setCheck(ui.continuityCheck,pitchPass,pitchPass?`داخل ±${tolerance()} سنت`:"خارج الهامش");
-
-    return {
-      valid:snrPass&&clarityPass&&pitchPass&&clippingPass,
-      stable,
-      deviation
-    };
-  }
-
-  function pushAnalysisHistory(frame){
-    analysisHistory.push(frame);
-    analysisHistory = analysisHistory.filter(item=>performance.now()-item.time<=400);
-  }
-
-  function analysisLoop(){
-    if (!listening || !analyser || !ctx) return;
-
-    const now = performance.now();
-    updateBeat();
-
-    if (now-lastAnalysisAt < 48){
-      raf = requestAnimationFrame(analysisLoop);
-      return;
-    }
-    lastAnalysisAt = now;
-
-    const data = new Float32Array(analyser.fftSize);
-    analyser.getFloatTimeDomainData(data);
-    const level = rms(data);
-
-    if (calibrating){
-      calibrationLevels.push(level);
-      if (now >= calibrationEnd) finishCalibration();
-      raf = requestAnimationFrame(analysisLoop);
-      return;
-    }
-
-    if (level < noiseGate){
-      pushAnalysisHistory({time:now,valid:false});
-      if (capture?.active) captureFrame(null,false,"انقطاع الصوت");
-      candidateStep = null;
-      candidateSince = 0;
-
-      if (now-lastValidAt > 220){
-        ui.status.textContent = "لا توجد نغمة واضحة أعلى من ضوضاء المكان.";
-        quality("الصوت ضعيف أو متوقف","bad");
-        setCheck(ui.noiseCheck,false,"تحت بوابة الضوضاء");
-        setCheck(ui.continuityCheck,false,"منقطعة");
-      }
-
-      raf = requestAnimationFrame(analysisLoop);
-      return;
-    }
-
-    const pitch = yin(data,ctx.sampleRate);
-    if (!pitch || pitch.frequency<65 || pitch.frequency>1600){
-      pushAnalysisHistory({time:now,valid:false});
-      if (capture?.active) captureFrame(null,false,"فقدان التردد الأساسي");
-      quality("حاول نغمة أنقى","bad");
-      raf = requestAnimationFrame(analysisLoop);
-      return;
-    }
-
-    const note = noteFromFrequency(pitch.frequency);
-    const signalToNoise =
-      20*Math.log10(Math.max(level,1e-7)/Math.max(noiseFloor,1e-7));
-
-    const reading = {
-      ...note,
-      frequency:pitch.frequency,
-      clarity:pitch.clarity,
-      snr:signalToNoise,
-      peak:peak(data)
-    };
-
-    recentPitch.push({
-      time:now,
-      step:reading.step,
-      cents:reading.cents,
-      frequency:reading.frequency
-    });
-    recentPitch = recentPitch.filter(frame=>now-frame.time<=1800);
-
-    displayReading(reading);
-    const result = assess(reading);
-
-    pushAnalysisHistory({
-      time:now,
-      valid:result.valid,
-      step:reading.step,
-      cents:reading.cents,
-      clarity:reading.clarity,
-      snr:reading.snr,
-      peak:reading.peak,
-      frequency:reading.frequency
-    });
-
-    if (result.valid){
-      lastValidAt = now;
-
-      if (candidateStep !== reading.step){
-        candidateStep = reading.step;
-        candidateSince = now;
-      }
-
-      if (result.stable && now-candidateSince>=170){
-        ui.status.textContent = "النغمة واضحة وثابتة.";
-        quality("صالحة للتسجيل","good");
-        if (armed && !capture?.active) startCapture(reading);
-      }else{
-        ui.status.textContent = "استمر لحظة حتى يثبت التردد.";
-        quality("جارٍ التثبيت","warn");
-      }
-    }else{
-      candidateStep = null;
-      candidateSince = 0;
-      ui.status.textContent = "لم تُعتمد النغمة بعد.";
-      quality("صحّح الضبط وثبّت الصوت","warn");
-    }
-
-    if (capture?.active){
-      const sameNote = reading.step === capture.note.step;
-      captureFrame(
-        reading,
-        result.valid && sameNote,
-        sameNote ? "" : "تغيّر اسم النغمة"
-      );
-    }
-
-    raf = requestAnimationFrame(analysisLoop);
-  }
-
-  function armRecording(){
-    if (!listening || calibrating) return;
-    armed = true;
-    ui.arm.disabled = true;
-    ui.cancel.disabled = false;
-    const value = selectedNoteValue();
-    ui.recStatus.textContent =
-      `جاهز لتسجيل ${value.ar}. اعزف الآن؛ يبدأ الالتقاط تلقائيًا عند اعتماد النغمة.`;
-    resetBeat();
-    ui.beat.textContent = "جاهز";
-  }
-
-  function startCapture(reading){
-    const value = {...selectedNoteValue()};
-    const totalSamples = Math.max(1,Math.round(ctx.sampleRate*durationSeconds()));
-    const id = crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random()}`;
-    const now = performance.now();
-
-    const seededFrames = analysisHistory
-      .filter(frame=>now-frame.time<=280)
-      .map(frame=>({...frame}));
-
-    capture = {
-      active:true,
-      id,
-      note:{...reading},
-      noteValue:value,
-      bpm:bpm(),
-      seconds:durationSeconds(),
-      sampleRate:ctx.sampleRate,
-      totalSamples,
-      preRollSamples:0,
-      visualStartMs:now,
-      createdAt:new Date().toISOString(),
-      frames:seededFrames,
-      invalidSince:null,
-      maxGap:0,
-      samples:null
-    };
-
-    armed = false;
-    ui.arm.disabled = true;
-    ui.cancel.disabled = false;
-    ui.recStatus.textContent =
-      `يسجل الآن: ${reading.english} · ${value.ar} · ${value.countText}.`;
-    quality("التسجيل جارٍ داخل AudioWorklet","good");
-
-    recorderNode.port.postMessage({
-      type:"start",
-      id,
-      totalSamples
-    });
-  }
-
-  function captureFrame(reading,isValid,reason){
-    if (!capture?.active) return;
-    const now = performance.now();
-
-    capture.frames.push({
-      valid:isValid,
-      time:now,
-      cents:reading?.cents ?? null,
-      clarity:reading?.clarity ?? 0,
-      snr:reading?.snr ?? 0,
-      peak:reading?.peak ?? 0,
-      frequency:reading?.frequency ?? null
-    });
-
-    if (isValid){
-      if (capture.invalidSince !== null){
-        capture.maxGap = Math.max(capture.maxGap,now-capture.invalidSince);
-      }
-      capture.invalidSince = null;
-      return;
-    }
-
-    if (capture.invalidSince === null) capture.invalidSince = now;
-    const gap = now-capture.invalidSince;
-    capture.maxGap = Math.max(capture.maxGap,gap);
-
-    const allowedGap = capture.noteValue.beats <= 0.5 ? 130 : 280;
-    if (gap > allowedGap){
-      abortCapture(reason || "فقدان وضوح النغمة");
-    }
-  }
-
-  function resetBeat(){
-    ui.beat.textContent = "—";
-    ui.orb.style.setProperty("--beat-progress","0%");
-    document.querySelectorAll(".beat-dot")
-      .forEach(dot=>dot.classList.remove("active"));
-  }
-
-  function updateBeat(){
-    if (!capture?.active) return;
-
-    const elapsed = Math.max(0,(performance.now()-capture.visualStartMs)/1000);
-    const progress = clamp(elapsed/capture.seconds,0,1);
-    const beats = capture.noteValue.beats;
-    const beatLength = 60/capture.bpm;
-
-    if (beats < 1){
-      ui.beat.textContent = "½";
-    }else{
-      const currentBeat = clamp(Math.floor(elapsed/beatLength)+1,1,Math.ceil(beats));
-      ui.beat.textContent = String(currentBeat);
-    }
-
-    ui.orb.style.setProperty("--beat-progress",`${progress*100}%`);
-
-    document.querySelectorAll(".beat-dot").forEach(dot=>{
-      const dotNumber = Number(dot.dataset.beat);
-      const completedBeats = progress*beats;
-      dot.classList.toggle(
-        "active",
-        beats < 1 ? progress>0 : completedBeats >= dotNumber-1
-      );
-    });
-  }
-
-  function abortCapture(reason){
-    if (!capture?.active && !armed) return;
-
-    armed = false;
-    if (capture?.active && recorderNode){
-      recorderNode.port.postMessage({type:"abort",id:capture.id});
-    }
-    if (capture) capture.active = false;
-    capture = null;
-
-    ui.arm.disabled = !listening;
-    ui.cancel.disabled = true;
-    ui.recStatus.textContent =
-      `لم يُحفظ التسجيل: ${reason}. أعد المحاولة.`;
-    resetBeat();
-    quality("تم رفض التسجيل","bad");
-  }
-
-  function detectDigitalClicks(samples,sampleRate){
-    if (!samples || samples.length < 3){
-      return {events:0,maxJump:0,threshold:0.14};
-    }
-
-    const margin = Math.min(
-      Math.floor(sampleRate*0.01),
-      Math.floor(samples.length*0.05)
-    );
-    const sampledDiffs = [];
-    let maxJump = 0;
-
-    for (let index=Math.max(1,margin);index<samples.length-margin;index++){
-      const jump = Math.abs(samples[index]-samples[index-1]);
-      maxJump = Math.max(maxJump,jump);
-      if (index%8 === 0) sampledDiffs.push(jump);
-    }
-
-    sampledDiffs.sort((a,b)=>a-b);
-    const qIndex = Math.floor((sampledDiffs.length-1)*0.999);
-    const q999 = sampledDiffs.length ? sampledDiffs[Math.max(0,qIndex)] : 0;
-    const threshold = Math.max(0.14,q999*2.8);
-
-    let events = 0;
-    let insideEvent = false;
-
-    for (let index=Math.max(1,margin);index<samples.length-margin;index++){
-      const jump = Math.abs(samples[index]-samples[index-1]);
-      if (jump > threshold){
-        if (!insideEvent) events++;
-        insideEvent = true;
-      }else{
-        insideEvent = false;
-      }
-    }
-
-    return {events,maxJump,threshold};
-  }
-
-  function wav(samples,sampleRate){
-    const dataLength = samples.length*2;
-    const buffer = new ArrayBuffer(44+dataLength);
-    const view = new DataView(buffer);
-
-    const writeString = (offset,text)=>{
-      for (let index=0;index<text.length;index++){
-        view.setUint8(offset+index,text.charCodeAt(index));
-      }
-    };
-
-    writeString(0,"RIFF");
-    view.setUint32(4,36+dataLength,true);
-    writeString(8,"WAVE");
-    writeString(12,"fmt ");
-    view.setUint32(16,16,true);
-    view.setUint16(20,1,true);
-    view.setUint16(22,1,true);
-    view.setUint32(24,sampleRate,true);
-    view.setUint32(28,sampleRate*2,true);
-    view.setUint16(32,2,true);
-    view.setUint16(34,16,true);
-    writeString(36,"data");
-    view.setUint32(40,dataLength,true);
-
-    let offset = 44;
-    for (const value of samples){
-      const sample = clamp(value,-1,1);
-      view.setInt16(
-        offset,
-        sample<0 ? sample*32768 : sample*32767,
-        true
-      );
-      offset += 2;
-    }
-
-    return new Blob([buffer],{type:"audio/wav"});
-  }
-
-  async function finalizeCapture(){
-    if (!capture?.active || !capture.samples) return;
-
-    const completed = capture;
-    completed.active = false;
-    capture = null;
-
-    const samples = completed.samples;
-    const frames = completed.frames;
-    const validFrames = frames.filter(frame=>frame.valid);
-    const validRatio = frames.length ? validFrames.length/frames.length : 0;
-    const centsValues = validFrames.map(frame=>frame.cents).filter(Number.isFinite);
-    const frequencies = validFrames.map(frame=>frame.frequency).filter(Number.isFinite);
-    const clippingRatio = frames.length
-      ? frames.filter(frame=>frame.peak>=0.985).length/frames.length
-      : 1;
-
-    const deviation = std(centsValues);
-    const meanAbsoluteCents = mean(centsValues.map(Math.abs));
-    const clickStats = detectDigitalClicks(samples,completed.sampleRate);
-
-    const shortValue = completed.noteValue.beats <= 0.5;
-    const requiredRatio = shortValue ? 0.72 : 0.88;
-    const allowedGap = shortValue ? 130 : 280;
-
-    const passed =
-      samples.length === completed.totalSamples &&
-      validRatio >= requiredRatio &&
-      completed.maxGap <= allowedGap &&
-      deviation <= 8 &&
-      meanAbsoluteCents <= tolerance() &&
-      clippingRatio <= 0.01 &&
-      clickStats.events === 0;
-
-    if (!passed){
-      ui.arm.disabled = !listening;
-      ui.cancel.disabled = true;
-      ui.recStatus.textContent =
-        clickStats.events > 0
-          ? `رُفض التسجيل: اكتشف التطبيق ${clickStats.events} طقطقة رقمية داخل الملف.`
-          : `رُفض التسجيل: صلاحية ${(validRatio*100).toFixed(0)}%، تذبذب ${deviation.toFixed(1)} سنت.`;
-      resetBeat();
-      quality("لم يجتز معايير الجودة","bad");
-      return;
-    }
-
-    const wavBlob = wav(samples,completed.sampleRate);
-    const confidence = Math.round(clamp(
-      validRatio*55 +
-      mean(validFrames.map(frame=>frame.clarity))*25 +
-      clamp(20-deviation*1.5,0,20),
-      0,100
-    ));
-
-    const record = {
-      id:completed.id,
-      createdAt:new Date().toISOString(),
-      appVersion:APP.version,
-      owner:APP.owner,
-      english:completed.note.english,
-      arabic:completed.note.arabic,
-      type:completed.note.type,
-      division:completed.note.division,
-      noteValueKey:completed.noteValue.key,
-      noteValueArabic:completed.noteValue.ar,
-      noteValueEnglish:completed.noteValue.en,
-      beats:completed.noteValue.beats,
-      bpm:completed.bpm,
-      durationSeconds:completed.seconds,
-      sampleRate:completed.sampleRate,
-      measuredHz:Number(median(frequencies).toFixed(3)),
-      targetHz:Number(completed.note.target.toFixed(3)),
-      meanCents:Number(mean(centsValues).toFixed(2)),
-      stabilityCents:Number(deviation.toFixed(2)),
-      validRatio:Number(validRatio.toFixed(4)),
-      confidence,
-      digitalClickEvents:clickStats.events,
-      maxSampleJump:Number(clickStats.maxJump.toFixed(6)),
-      wavBlob
-    };
-
-    await put(record);
-    records.unshift(record);
-    renderLibrary();
-
-    ui.arm.disabled = !listening;
-    ui.cancel.disabled = true;
-    ui.recStatus.textContent =
-      `تم حفظ ${record.english} · ${record.noteValueArabic} · ${record.beats} عدّة · دون طقطقة رقمية.`;
-    quality("تم اعتماد التسجيل","good");
-
-    ui.beat.textContent = "✓";
-    ui.orb.style.setProperty("--beat-progress","100%");
-    document.querySelectorAll(".beat-dot").forEach(dot=>dot.classList.add("active"));
-    play(record);
-  }
-
-  function safe(value){
-    return String(value||"")
-      .normalize("NFKC")
-      .replace(/[\\/:*?"<>|#%&{}$!'@+=`~]/g,"-")
-      .replace(/\s+/g,"-")
-      .replace(/-+/g,"-")
-      .replace(/^-|-$/g,"");
-  }
-
-  function baseName(record){
-    const noteValue = record.noteValueArabic || "روند";
-    return [
-      safe(record.english),
-      safe(record.arabic),
-      safe(noteValue),
-      `${record.beats ?? 4}-beats`,
-      record.createdAt.replace(/[:.]/g,"-")
-    ].join("_");
-  }
-
-  function download(blob,name){
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = name;
-    anchor.rel = "noopener";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
-  }
-
-  async function play(record){
-    if (playbackUrl) URL.revokeObjectURL(playbackUrl);
-    playbackUrl = URL.createObjectURL(record.wavBlob);
-    ui.audio.src = playbackUrl;
-    ui.playerName.textContent =
-      `${record.english} — ${record.arabic} — ${record.noteValueArabic || "روند"}`;
-    ui.player.classList.add("show");
-    try{await ui.audio.play()}catch(_){}
-  }
-
-  function closePlayer(){
-    ui.audio.pause();
-    ui.audio.removeAttribute("src");
-    if (playbackUrl) URL.revokeObjectURL(playbackUrl);
-    playbackUrl = null;
-    ui.player.classList.remove("show");
-  }
-
-  function loadScript(url){
-    return new Promise((resolve,reject)=>{
-      const script = document.createElement("script");
-      script.src = url;
-      script.async = true;
-      script.onload = resolve;
-      script.onerror = ()=>reject(new Error(url));
-      document.head.appendChild(script);
-    });
-  }
-
-  async function ensureLame(){
-    if (window.lamejs) return window.lamejs;
-    if (lamePromise) return lamePromise;
-
-    lamePromise = (async()=>{
-      for (const url of [
-        "https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js",
-        "https://unpkg.com/lamejs@1.2.1/lame.min.js"
-      ]){
-        try{
-          await loadScript(url);
-          if (window.lamejs) return window.lamejs;
-        }catch(_){}
-      }
-      throw new Error("MP3 encoder unavailable");
-    })();
-
-    return lamePromise;
-  }
-
-  async function toMp3(wavBlob){
-    await ensureLame();
-    const buffer = await wavBlob.arrayBuffer();
-    const view = new DataView(buffer);
-    const sampleRate = view.getUint32(24,true);
-    const sampleCount = Math.floor(view.getUint32(40,true)/2);
-    const samples = new Int16Array(sampleCount);
-
-    for (let index=0;index<sampleCount;index++){
-      samples[index] = view.getInt16(44+index*2,true);
-    }
-
-    const encoder = new lamejs.Mp3Encoder(1,sampleRate,192);
-    const chunks = [];
-    const blockSize = 1152;
-
-    for (let offset=0;offset<samples.length;offset+=blockSize){
-      const encoded = encoder.encodeBuffer(samples.subarray(offset,offset+blockSize));
-      if (encoded.length) chunks.push(new Int8Array(encoded));
-      if (offset%(blockSize*120) === 0){
-        await new Promise(resolve=>setTimeout(resolve,0));
-      }
-    }
-
-    const end = encoder.flush();
-    if (end.length) chunks.push(new Int8Array(end));
-    return new Blob(chunks,{type:"audio/mpeg"});
-  }
-
-  async function downloadMp3(record,button){
-    const original = button.textContent;
-    button.disabled = true;
-    button.textContent = "تجهيز…";
-
-    try{
-      const mp3 = await toMp3(record.wavBlob);
-      download(mp3,`${baseName(record)}.mp3`);
-    }catch(_){
-      showMessage(
-        "تعذر MP3. يحتاج المحول اتصالًا بالإنترنت عند الاستخدام الأول. WAV يعمل محليًا دائمًا.",
-        true
-      );
-    }finally{
-      button.disabled = false;
-      button.textContent = original;
-    }
-  }
-
-  const csvEscape = value => {
-    const text = String(value??"");
-    return /[",\n]/.test(text)
-      ? `"${text.replace(/"/g,'""')}"`
-      : text;
-  };
-
-  function manifest(items){
-    const headers = [
-      "id","english","arabic","pitch_type","note_value_ar","note_value_en",
-      "beats","division","measured_hz","target_hz","mean_cents",
-      "stability_cents","confidence","digital_click_events",
-      "max_sample_jump","bpm","duration_seconds","sample_rate",
-      "created_at","app_version","owner"
-    ];
-
-    const rows = items.map(record=>[
-      record.id,record.english,record.arabic,record.type,
-      record.noteValueArabic||"روند",record.noteValueEnglish||"Whole note",
-      record.beats??4,record.division,record.measuredHz,record.targetHz,
-      record.meanCents,record.stabilityCents,record.confidence,
-      record.digitalClickEvents??0,record.maxSampleJump??0,
-      record.bpm,record.durationSeconds,record.sampleRate,
-      record.createdAt,record.appVersion,record.owner
-    ]);
-
-    return "\uFEFF" +
-      [headers,...rows]
-        .map(row=>row.map(csvEscape).join(","))
-        .join("\n");
-  }
-
-  async function bulkExport(items,format,button){
-    if (!items.length) return;
-
-    if (!window.JSZip){
-      showMessage("مكوّن ZIP غير متاح. افتح الحزمة كاملة مع مجلد vendor.",true);
-      return;
-    }
-
-    const original = button.textContent;
-    button.disabled = true;
-    button.textContent = "جارٍ التجهيز…";
-
-    try{
-      const zip = new JSZip();
-      zip.file("manifest.csv",manifest(items));
-      zip.file("VERSION.json",JSON.stringify({
-        app:APP.name,
-        version:APP.version,
-        releaseDate:APP.buildDate,
-        copyright:`© 2026 ${APP.owner}. جميع الحقوق محفوظة.`,
-        count:items.length
-      },null,2));
-
-      for (let index=0;index<items.length;index++){
-        const record = items[index];
-        const filename = baseName(record);
-
-        if (format === "wav" || format === "both"){
-          zip.folder("WAV").file(`${filename}.wav`,record.wavBlob);
-        }
-
-        if (format === "mp3" || format === "both"){
-          button.textContent = `MP3 ${index+1}/${items.length}`;
-          const mp3 = await toMp3(record.wavBlob);
-          zip.folder("MP3").file(`${filename}.mp3`,mp3);
-        }
-      }
-
-      button.textContent = "إنشاء ZIP…";
-      const blob = await zip.generateAsync({
-        type:"blob",
-        compression:"DEFLATE",
-        compressionOptions:{level:6}
-      });
-
-      download(
-        blob,
-        `ney-recordings-${format}-${new Date().toISOString().replace(/[:.]/g,"-")}.zip`
-      );
-    }catch(_){
-      showMessage(
-        format === "wav"
-          ? "تعذر إنشاء ZIP. تأكد من بقاء مجلد vendor بجانب index.html."
-          : "تعذر MP3. جرّب التصدير الجماعي بصيغة WAV.",
-        true
-      );
-    }finally{
-      button.disabled = false;
-      button.textContent = original;
-      updateLibraryButtons();
-    }
-  }
-
-  function dateText(iso){
-    return new Date(iso).toLocaleString("ar-SA",{
-      year:"numeric",
-      month:"2-digit",
-      day:"2-digit",
-      hour:"2-digit",
-      minute:"2-digit"
-    });
-  }
-
-  function renderLibrary(){
-    ui.list.innerHTML = "";
-    ui.empty.style.display = records.length ? "none" : "block";
-
-    for (const record of records){
-      const item = document.createElement("article");
-      item.className = "record-item";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "record-select";
-      checkbox.checked = selected.has(record.id);
-      checkbox.addEventListener("change",()=>{
-        checkbox.checked
-          ? selected.add(record.id)
-          : selected.delete(record.id);
-        updateLibraryButtons();
-      });
-
-      const name = document.createElement("div");
-      name.className = "record-name";
-      const english = document.createElement("strong");
-      english.textContent = record.english;
-      const arabic = document.createElement("span");
-      arabic.textContent = record.arabic;
-      name.append(english,arabic);
-
-      const meta = document.createElement("div");
-      meta.className = "record-meta";
-
-      [
-        record.noteValueArabic || "روند",
-        `${record.beats ?? 4} عدّة`,
-        record.type,
-        `${Number(record.measuredHz).toFixed(2)} Hz`,
-        `${record.meanCents>0?"+":""}${Number(record.meanCents).toFixed(1)} سنت`,
-        `ثبات ${Number(record.stabilityCents).toFixed(1)}`,
-        `ثقة ${record.confidence}%`,
-        `طقطقة ${record.digitalClickEvents ?? 0}`,
-        `${record.bpm} BPM`,
-        dateText(record.createdAt)
-      ].forEach(text=>{
-        const chip = document.createElement("span");
-        chip.className = "meta-chip";
-        chip.textContent = text;
-        meta.appendChild(chip);
-      });
-
-      const actions = document.createElement("div");
-      actions.className = "record-actions";
-
-      const playButton = document.createElement("button");
-      playButton.className = "button secondary mini";
-      playButton.textContent = "▶ سماع";
-      playButton.onclick = ()=>play(record);
-
-      const wavButton = document.createElement("button");
-      wavButton.className = "button secondary mini";
-      wavButton.textContent = "WAV";
-      wavButton.onclick = ()=>download(
-        record.wavBlob,
-        `${baseName(record)}.wav`
-      );
-
-      const mp3Button = document.createElement("button");
-      mp3Button.className = "button primary mini";
-      mp3Button.textContent = "MP3";
-      mp3Button.onclick = ()=>downloadMp3(record,mp3Button);
-
-      const deleteButton = document.createElement("button");
-      deleteButton.className = "button danger mini";
-      deleteButton.textContent = "حذف";
-      deleteButton.onclick = async()=>{
-        if (!confirm(`حذف تسجيل ${record.english}؟`)) return;
-        await deleteRecord(record.id);
-        records = records.filter(item=>item.id!==record.id);
-        selected.delete(record.id);
-        renderLibrary();
-      };
-
-      actions.append(playButton,wavButton,mp3Button,deleteButton);
-      item.append(checkbox,name,meta,actions);
-      ui.list.appendChild(item);
-    }
-
-    updateLibraryButtons();
-  }
-
-  function updateLibraryButtons(){
-    ui.exportSelected.disabled = selected.size === 0;
-    ui.exportSelected.textContent =
-      selected.size ? `تصدير المحدد (${selected.size})` : "تصدير المحدد";
-    ui.exportAll.disabled = records.length === 0;
-    ui.clearAll.disabled = records.length === 0;
-    ui.selectAll.checked =
-      records.length>0 && selected.size===records.length;
-    ui.selectAll.indeterminate =
-      selected.size>0 && selected.size<records.length;
-  }
-
-  function openDb(){
-    return new Promise((resolve,reject)=>{
-      const request = indexedDB.open(APP.dbName,APP.dbVersion);
-      request.onupgradeneeded = ()=>{
-        if (!request.result.objectStoreNames.contains(APP.storeName)){
-          request.result.createObjectStore(APP.storeName,{keyPath:"id"});
-        }
-      };
-      request.onsuccess = ()=>resolve(request.result);
-      request.onerror = ()=>reject(request.error);
-    });
-  }
-
-  function dbRequest(mode,operation){
-    return new Promise((resolve,reject)=>{
-      const store = db
-        .transaction(APP.storeName,mode)
-        .objectStore(APP.storeName);
-      const request = operation(store);
-      request.onsuccess = ()=>resolve(request.result);
-      request.onerror = ()=>reject(request.error);
-    });
-  }
-
-  const put = record => dbRequest("readwrite",store=>store.put(record));
-  const deleteRecord = id => dbRequest("readwrite",store=>store.delete(id));
-  const allRecords = () => dbRequest("readonly",store=>store.getAll());
-  const clearRecords = () => dbRequest("readwrite",store=>store.clear());
-
-  async function clearAllLibrary(){
-    if (!records.length) return;
-
-    const confirmed = confirm(
-      `سيتم حذف جميع التسجيلات وعددها ${records.length}. لا يمكن التراجع. هل تريد المتابعة؟`
-    );
-    if (!confirmed) return;
-
-    closePlayer();
-    await clearRecords();
-    records = [];
-    selected.clear();
-    renderLibrary();
-    showMessage("تم مسح قائمة التسجيلات بالكامل.");
-  }
-
-  async function initialize(){
-    updateDuration();
-    resetDetector();
-    resetBeat();
-
-    try{
-      db = await openDb();
-      records = (await allRecords())
-        .sort((left,right)=>new Date(right.createdAt)-new Date(left.createdAt));
-      renderLibrary();
-    }catch(error){
-      console.error(error);
-      showMessage(
-        "تعذر فتح التخزين المحلي. قد لا تستمر التسجيلات بعد إغلاق الصفحة.",
-        true
-      );
-    }
-
-    if (!window.isSecureContext && location.protocol !== "file:"){
-      showMessage("تشغيل AudioWorklet والميكروفون يحتاج إلى HTTPS أو localhost.",true);
-    }
-  }
-
-  ui.mic.onclick = ()=>listening ? stopMic() : startMic();
-  ui.calibrate.onclick = beginCalibration;
-  ui.arm.onclick = armRecording;
-  ui.cancel.onclick = ()=>abortCapture("ألغاه المستخدم");
-
-  ui.bpm.oninput = updateDuration;
-  ui.bpm.onchange = updateDuration;
-  ui.noteValue.onchange = updateDuration;
-  ui.a4.onchange = ()=>{
-    ui.a4.value = String(a4());
-    resetDetector();
-  };
-  ui.division.onchange = resetDetector;
-
-  ui.selectAll.onchange = ()=>{
-    selected.clear();
-    if (ui.selectAll.checked){
-      records.forEach(record=>selected.add(record.id));
-    }
-    renderLibrary();
-  };
-
-  ui.exportSelected.onclick = ()=>bulkExport(
-    records.filter(record=>selected.has(record.id)),
-    ui.bulk.value,
-    ui.exportSelected
-  );
-
-  ui.exportAll.onclick = ()=>bulkExport(
-    records,
-    ui.bulk.value,
-    ui.exportAll
-  );
-
-  ui.clearAll.onclick = clearAllLibrary;
-  ui.closePlayer.onclick = closePlayer;
-
-  window.addEventListener("beforeunload",()=>{
-    stream?.getTracks().forEach(track=>track.stop());
-    if (playbackUrl) URL.revokeObjectURL(playbackUrl);
-  });
-
-  initialize();
-})();
-</script>
+    </section>
+
+    <section class="bottom-grid" aria-label="التسجيل والميزان والمكتبة">
+      <article class="panel recordings-panel">
+        <header class="panel-header recordings-header">
+          <div class="panel-title panel-title--plain">
+            <div>
+              <h2>التسجيلات المحفوظة</h2>
+              <p>آخر التسجيلات مع التصدير للداخل</p>
+            </div>
+          </div>
+          <div class="recordings-actions">
+            <button class="ghost-button export-all-button" id="exportAllButton" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg><span>تصدير الكل</span>
+            </button>
+            <button class="icon-button more-button" id="libraryMenuButton" type="button" aria-label="قائمة التسجيلات"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+          </div>
+        </header>
+        <div class="recordings-list" id="recordingsList" aria-live="polite"></div>
+      </article>
+
+      <article class="panel recording-panel">
+        <header class="panel-header">
+          <div class="panel-title">
+            <span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path></svg></span>
+            <div><h2>التسجيل</h2><p>ابدأ بعد استقرار النغمة</p></div>
+          </div>
+        </header>
+        <div class="recording-actions-stack">
+          <button class="primary-button" id="micButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path></svg><span>تشغيل الميكروفون</span></button>
+          <button class="gold-button" id="prepareButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle></svg><span>تجهيز تسجيل النغمة</span></button>
+        </div>
+        <div class="readiness-list">
+          <div><span class="mini-dot" id="micReadyDot"></span><span>الميكروفون</span></div>
+          <div><span class="mini-dot" id="pitchReadyDot"></span><span>ثبات النغمة</span></div>
+          <div><span class="mini-dot" id="qualityReadyDot"></span><span>جودة التسجيل</span></div>
+        </div>
+      </article>
+
+      <article class="panel metronome-panel">
+        <header class="panel-header">
+          <div class="panel-title">
+            <span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2l2-7 4 14 3-9 2 5h5"></path></svg></span>
+            <div><h2>الميزان الصامت</h2><p>العد المرئي</p></div>
+          </div>
+        </header>
+        <div class="metronome-orb" id="metronomeOrb" aria-live="polite"><span id="beatValue">—</span><i aria-hidden="true"></i></div>
+        <div class="metronome-caption"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span id="metronomeCaption">ثابتة في نوار · 1.000 · BPM 60</span></div>
+      </article>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="menu-popover" id="menuPopover" hidden>
+    <button type="button" data-action="rename">إعادة تسمية</button>
+    <button type="button" data-action="download">تنزيل</button>
+    <button type="button" data-action="delete" class="danger-text">حذف</button>
+  </div>
+
+  <dialog class="modal" id="helpDialog">
+    <form method="dialog">
+      <header><h2>طريقة الاستخدام</h2><button class="icon-button" value="cancel" aria-label="إغلاق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button></header>
+      <p>شغّل الميكروفون، ثم اعزف نغمة ثابتة. سيعرض المعيار التردد والانحراف والاسم الموسيقي وفق نظام 12-TET أو 24-TET.</p>
+      <button class="primary-button modal-close" value="default">حسنًا</button>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="advancedDialog">
+    <form method="dialog">
+      <header><h2>الإعدادات المتقدمة</h2><button class="icon-button" value="cancel" aria-label="إغلاق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button></header>
+      <label>حساسية النغمة<input id="sensitivityRange" type="range" min="0.01" max="0.08" step="0.005" value="0.025"></label>
+      <label>هامش الضبط بالسنت<input id="toleranceRange" type="range" min="5" max="25" step="1" value="12"></label>
+      <button class="primary-button modal-close" value="default">حفظ</button>
+    </form>
+  </dialog>
+
+  <audio id="recordingPlayer" preload="none"></audio>
 </body>
 </html>
