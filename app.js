@@ -24,6 +24,13 @@
     isPitchStable: false,
     recordingArmed: false,
     recordingQualifyingFrames: 0,
+    lastQualificationSampleAt: 0,
+    recordingMode: 'single',
+    recordingQualityThreshold: .90,
+    chromaticNotes: [],
+    chromaticIndex: 0,
+    chromaticActive: false,
+    chromaticPaused: false,
     recordingCandidateKey: null,
     recordingStats: null,
     discardRecording: false,
@@ -91,7 +98,16 @@
     tunerLowLimit: $('#tunerLowLimit'),
     tunerHighLimit: $('#tunerHighLimit'),
     tunerLowLabel: $('#tunerLowLabel'),
-    tunerHighLabel: $('#tunerHighLabel')
+    tunerHighLabel: $('#tunerHighLabel'),
+    tunerNeedleValue: $('#tunerNeedleValue'),
+    tuningStateText: $('#tuningStateText'),
+    deviationMetric: $('#deviationMetric'),
+    signalMeterFill: $('#signalMeterFill'),
+    aboutDialog: $('#aboutDialog'),
+    recordingPhase: $('#recordingPhase'),
+    qualificationCount: $('#qualificationCount'),
+    liveAccuracy: $('#liveAccuracy'),
+    liveClarity: $('#liveClarity')
   };
 
   function showToast(message) {
@@ -279,6 +295,12 @@
     ui.cents.innerHTML = `${note.cents > 0 ? '+' : ''}${note.cents.toFixed(1)} <small>سنت</small>`;
     ui.signal.textContent = `${Math.round(result.clarity * 100)}%`;
     ui.needle.style.left = `${50 + cents}%`;
+    const tuningState = Math.abs(note.cents) <= tolerance ? 'tuned' : note.cents < -tolerance ? 'flat' : 'sharp';
+    const tuningLabel = tuningState === 'tuned' ? 'مضبوط' : tuningState === 'flat' ? 'منخفض' : 'مرتفع';
+    ui.tunerNeedleValue.textContent = `${note.cents > 0 ? '+' : ''}${note.cents.toFixed(1)}`;
+    ui.tuningStateText.textContent = tuningLabel;
+    ui.deviationMetric.dataset.state = tuningState;
+    ui.signalMeterFill.style.width = `${Math.round(result.clarity * 100)}%`;
     ui.noteName.textContent = note.english;
     ui.noteArabic.textContent = note.arabic;
     ui.clarity.textContent = `${Math.round(result.clarity * 100)}%`;
@@ -296,6 +318,10 @@
     ui.cents.innerHTML = '0 <small>سنت</small>';
     ui.signal.textContent = '—';
     ui.needle.style.left = '50%';
+    ui.tunerNeedleValue.textContent = '0.0';
+    ui.tuningStateText.textContent = 'بانتظار النغمة';
+    ui.deviationMetric.dataset.state = 'idle';
+    ui.signalMeterFill.style.width = '0%';
     $('.tuner-panel')?.classList.remove('is-in-tune', 'is-flat', 'is-sharp');
     ui.noteName.textContent = 'بانتظار النغمة';
     ui.noteArabic.textContent = 'شغّل الميكروفون واعزف نغمة ثابتة';
@@ -380,6 +406,17 @@
   function resetRecordingQualification() {
     state.recordingQualifyingFrames = 0;
     state.recordingCandidateKey = null;
+    state.lastQualificationSampleAt = 0;
+    if (ui.qualificationCount) ui.qualificationCount.textContent = '0 / 3';
+  }
+
+  function updateRecordingStatus(phase, stats = state.recordingStats) {
+    if (ui.recordingPhase) ui.recordingPhase.textContent = phase;
+    if (!stats) { if (ui.liveAccuracy) ui.liveAccuracy.textContent = '—'; if (ui.liveClarity) ui.liveClarity.textContent = '—'; return; }
+    const ratio = stats.totalFrames ? Math.round(stats.validFrames / stats.totalFrames * 100) : 0;
+    const clarity = stats.measuredFrames ? Math.round(stats.claritySumAll / stats.measuredFrames * 100) : 0;
+    if (ui.liveAccuracy) ui.liveAccuracy.textContent = `${ratio}%`;
+    if (ui.liveClarity) ui.liveClarity.textContent = `${clarity}%`;
   }
 
   function setPrepareButtonState(mode, progress = 0) {
@@ -388,8 +425,9 @@
     button.classList.toggle('is-armed', mode === 'armed');
     button.classList.toggle('is-recording', mode === 'recording');
     if (mode === 'armed') label.textContent = progress > 0 ? `تثبيت النغمة ${progress}%` : 'بانتظار نغمة مضبوطة…';
-    else if (mode === 'recording') label.textContent = 'جارٍ التسجيل التلقائي…';
-    else label.textContent = 'تجهيز تسجيل النغمة';
+    if (mode === 'armed') updateRecordingStatus(progress > 0 ? 'التحقق من الثبات' : 'انتظار نغمة');
+    else if (mode === 'recording') { label.textContent = 'جارٍ التسجيل التلقائي…'; updateRecordingStatus('تسجيل'); }
+    else { label.textContent = state.recordingMode === 'chromatic' ? 'بدء جلسة السلم' : 'تجهيز تسجيل النغمة'; updateRecordingStatus('جاهز', null); }
   }
 
   function cancelAutomaticRecording() {
@@ -413,6 +451,10 @@
       cancelAutomaticRecording();
       return;
     }
+    if (state.recordingMode === 'chromatic') {
+      if (!state.chromaticNotes.length) { showToast('جهّز نطاق السلم أولًا.'); return; }
+      state.chromaticActive = true; state.chromaticPaused = false; updateChromaticProgress();
+    }
     state.recordingArmed = true;
     state.discardRecording = false;
     resetRecordingQualification();
@@ -420,32 +462,46 @@
     showToast('تم تجهيز التسجيل. سيبدأ تلقائيًا بعد ثبات النغمة ودقتها.');
   }
 
+  function expectedChromaticKey() {
+    return state.chromaticActive ? state.chromaticNotes[state.chromaticIndex]?.key : null;
+  }
+
   function evaluateAutomaticRecording(result, note, stable) {
+    const now = performance.now();
     const recorderActive = state.mediaRecorder?.state === 'recording';
     const tolerance = Number($('#toleranceRange')?.value || 12);
-    const clarityThreshold = .65;
+    const startClarityThreshold = .65;
     const key = recordingNoteKey(note);
-    const validFrame = Boolean(result && note && stable && Math.abs(note.cents) <= tolerance && result.clarity >= clarityThreshold);
+    const expectedKey = expectedChromaticKey();
+    const correctTarget = !expectedKey || key === expectedKey;
+    const validReading = Boolean(result && note && stable && correctTarget && Math.abs(note.cents) <= tolerance && result.clarity >= startClarityThreshold);
 
     if (recorderActive && state.recordingStats) {
+      if (now - state.recordingStats.lastSampleAt < 100) return;
+      state.recordingStats.lastSampleAt = now;
       const stats = state.recordingStats;
       stats.totalFrames += 1;
       const sameNote = key === stats.noteKey;
-      if (validFrame && sameNote) {
-        stats.validFrames += 1;
-        stats.centsSum += Math.abs(note.cents);
-        stats.claritySum += result.clarity;
+      if (result && note && sameNote) {
+        stats.measuredFrames += 1;
+        stats.centsSumAll += Math.abs(note.cents);
+        stats.claritySumAll += result.clarity;
         stats.frequencySum += result.frequency;
-      } else {
-        stats.invalidFrames += 1;
       }
+      if (validReading && sameNote) stats.validFrames += 1;
+      else stats.invalidFrames += 1;
+      updateRecordingStatus('تسجيل ومراقبة', stats);
       return;
     }
 
-    if (!state.recordingArmed) return;
+    if (!state.recordingArmed || state.chromaticPaused) return;
+    if (now - state.lastQualificationSampleAt < 100) return;
+    state.lastQualificationSampleAt = now;
 
-    if (!validFrame) {
-      resetRecordingQualification();
+    if (!validReading) {
+      state.recordingQualifyingFrames = 0;
+      state.recordingCandidateKey = null;
+      if (ui.qualificationCount) ui.qualificationCount.textContent = '0 / 3';
       setPrepareButtonState('armed');
       return;
     }
@@ -453,14 +509,12 @@
     if (state.recordingCandidateKey !== key) {
       state.recordingCandidateKey = key;
       state.recordingQualifyingFrames = 1;
-    } else {
-      state.recordingQualifyingFrames += 1;
-    }
+    } else state.recordingQualifyingFrames += 1;
 
-    const requiredFrames = 18;
-    const progress = Math.min(100, Math.round(state.recordingQualifyingFrames / requiredFrames * 100));
+    if (ui.qualificationCount) ui.qualificationCount.textContent = `${state.recordingQualifyingFrames} / 3`;
+    const progress = Math.min(100, Math.round(state.recordingQualifyingFrames / 3 * 100));
     setPrepareButtonState('armed', progress);
-    if (state.recordingQualifyingFrames >= requiredFrames) beginAutomaticRecording(note, result);
+    if (state.recordingQualifyingFrames >= 3) beginAutomaticRecording(note, result);
   }
 
   function beginAutomaticRecording(note, result) {
@@ -473,9 +527,11 @@
       totalFrames: 0,
       validFrames: 0,
       invalidFrames: 0,
-      centsSum: 0,
-      claritySum: 0,
+      centsSumAll: 0,
+      claritySumAll: 0,
+      measuredFrames: 0,
       frequencySum: 0,
+      lastSampleAt: 0,
       initialFrequency: result.frequency
     };
     state.discardRecording = false;
@@ -519,16 +575,18 @@
 
     const tolerance = Number($('#toleranceRange')?.value || 12);
     const validRatio = stats.totalFrames ? stats.validFrames / stats.totalFrames : 0;
-    const averageCents = stats.validFrames ? stats.centsSum / stats.validFrames : Infinity;
-    const averageClarity = stats.validFrames ? stats.claritySum / stats.validFrames : 0;
-    const accepted = stats.totalFrames >= 6 && validRatio >= .85 && averageCents <= tolerance && averageClarity >= .65;
+    const averageCents = stats.measuredFrames ? stats.centsSumAll / stats.measuredFrames : Infinity;
+    const averageClarity = stats.measuredFrames ? stats.claritySumAll / stats.measuredFrames : 0;
+    const accepted = stats.totalFrames >= 3 && validRatio >= .90 && averageCents <= tolerance && averageClarity >= state.recordingQualityThreshold;
 
     if (!accepted) {
       state.recordingStats = null;
       state.recordingArmed = true;
       resetRecordingQualification();
       setPrepareButtonState('armed');
-      showToast('لم يُحفظ التسجيل لأن النغمة فقدت الدقة أو الثبات. ثبّتها وسيعاد التسجيل تلقائيًا.');
+      const reasons = [`الدقة ${Math.round(validRatio * 100)}%`, `الجودة ${Math.round(averageClarity * 100)}%`, `الانحراف ${Number.isFinite(averageCents) ? averageCents.toFixed(1) : '—'} سنت`];
+      updateRecordingStatus('مرفوض', stats);
+      showToast(`لم يعتمد التسجيل: ${reasons.join(' · ')}. ستعاد المحاولة تلقائيًا.`);
       return;
     }
 
@@ -546,6 +604,9 @@
       frequency: averageFrequency || 0,
       averageCents: Number(averageCents.toFixed(2)),
       clarity: Number((averageClarity * 100).toFixed(1)),
+      accuracy: Number((validRatio * 100).toFixed(1)),
+      recordingMode: state.recordingMode,
+      chromaticPosition: state.chromaticActive ? state.chromaticIndex + 1 : null,
       blob,
       url,
       pcm,
@@ -553,11 +614,21 @@
       sample: false
     });
     state.recordingStats = null;
-    state.recordingArmed = false;
     resetRecordingQualification();
-    setPrepareButtonState('idle');
     renderRecords();
-    showToast('تم اعتماد وحفظ التسجيل المضبوط تلقائيًا.');
+    if (state.recordingMode === 'chromatic' && state.chromaticActive) {
+      state.chromaticIndex += 1;
+      if (state.chromaticIndex >= state.chromaticNotes.length) {
+        const completed = state.chromaticNotes.length;
+        state.chromaticActive = false; state.recordingArmed = false; setPrepareButtonState('idle'); updateChromaticProgress();
+        showToast(`اكتملت جلسة السلم: ${completed} نغمة معتمدة.`);
+      } else {
+        state.recordingArmed = true; setPrepareButtonState('armed'); updateChromaticProgress();
+        showToast('تم اعتماد النغمة والانتقال تلقائيًا إلى التالية.');
+      }
+    } else {
+      state.recordingArmed = false; setPrepareButtonState('idle'); showToast('تم اعتماد وحفظ التسجيل المضبوط تلقائيًا.');
+    }
   }
 
   function playSample(record, button) {
@@ -860,6 +931,7 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
     wavBitDepth: 24,
     mp3Bitrate: 192,
     fileNamePattern: '{note}-{duration}-{date}',
+    recordingQuality: 90,
     persistSettings: true
   };
 
@@ -876,6 +948,7 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
       wavBitDepth: Number($('#wavBitDepth')?.value || state.wavBitDepth),
       mp3Bitrate: Number($('#mp3Bitrate')?.value || state.mp3Bitrate),
       fileNamePattern: $('#fileNamePattern')?.value || defaultSettings.fileNamePattern,
+      recordingQuality: Number($('#recordingQualityRange')?.value || defaultSettings.recordingQuality),
       persistSettings: Boolean($('#persistSettings')?.checked)
     };
   }
@@ -893,6 +966,8 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
     $('#wavBitDepth').value = values.wavBitDepth;
     $('#mp3Bitrate').value = values.mp3Bitrate;
     $('#fileNamePattern').value = values.fileNamePattern;
+    $('#recordingQualityRange').value = values.recordingQuality;
+    $('#recordingQualityOutput').textContent = `${values.recordingQuality}%`;
     $('#persistSettings').checked = values.persistSettings;
     $('#sensitivityOutput').textContent = Number(values.sensitivity).toFixed(3);
     $('#noiseGateOutput').textContent = Number(values.noiseGate).toFixed(3);
@@ -903,6 +978,7 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
     state.exportSampleRate = Number(values.exportSampleRate);
     state.wavBitDepth = Number(values.wavBitDepth);
     state.mp3Bitrate = Number(values.mp3Bitrate);
+    state.recordingQualityThreshold = Number(values.recordingQuality) / 100;
     ui.exportFormat.value = state.exportFormat;
     if (state.analyser) state.analyser.smoothingTimeConstant = Number(values.smoothing);
     updateToleranceVisualization();
@@ -930,11 +1006,74 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
       <div><span>مشفّر MP3</span><strong>${window.lamejs?.Mp3Encoder ? 'جاهز' : 'غير متاح'}</strong></div>`;
   }
 
+
+  function buildNoteOptions() {
+    const start = $('#chromaticStart');
+    const end = $('#chromaticEnd');
+    if (!start || !end) return;
+    const options = [];
+    for (let octave = 2; octave <= 7; octave += 1) {
+      for (let step = 0; step < state.division; step += 1) {
+        const absolute = (octave * state.division) + step;
+        const target = state.a4 * 2 ** ((absolute - (4 * state.division + (state.division === 12 ? 9 : 18))) / state.division);
+        if (target < state.minFrequency || target > state.maxFrequency) continue;
+        const note = noteFromFrequency(target);
+        options.push({ key: recordingNoteKey(note), note, absolute });
+      }
+    }
+    const html = options.map((item, index) => `<option value="${index}">${item.note.arabic} — ${item.note.english}</option>`).join('');
+    start.innerHTML = html; end.innerHTML = html;
+    start.value = '0'; end.value = String(Math.min(options.length - 1, state.division));
+    start._noteOptions = options; end._noteOptions = options;
+  }
+
+  function buildChromaticSession() {
+    const options = $('#chromaticStart')._noteOptions || [];
+    let startIndex = Number($('#chromaticStart').value);
+    let endIndex = Number($('#chromaticEnd').value);
+    const direction = $('#chromaticDirection').value;
+    if (direction === 'up' && startIndex > endIndex) [startIndex, endIndex] = [endIndex, startIndex];
+    if (direction === 'down' && startIndex < endIndex) [startIndex, endIndex] = [endIndex, startIndex];
+    const step = direction === 'up' ? 1 : -1;
+    state.chromaticNotes = [];
+    for (let index = startIndex; direction === 'up' ? index <= endIndex : index >= endIndex; index += step) state.chromaticNotes.push(options[index]);
+    state.chromaticIndex = 0; state.chromaticActive = false; state.chromaticPaused = false;
+    updateChromaticProgress();
+    showToast(`تم تجهيز سلم من ${state.chromaticNotes.length} نغمة.`);
+  }
+
+  function updateChromaticProgress() {
+    const box = $('#chromaticProgress');
+    if (!box) return;
+    box.hidden = state.recordingMode !== 'chromatic';
+    const total = state.chromaticNotes.length;
+    const current = state.chromaticNotes[state.chromaticIndex];
+    $('#chromaticProgressBar').max = Math.max(1, total);
+    $('#chromaticProgressBar').value = Math.min(state.chromaticIndex, total);
+    $('#chromaticProgressText').textContent = total ? `${Math.min(state.chromaticIndex + 1, total)} من ${total}` : 'جهّز السلم أولًا';
+    $('#chromaticTargetText').textContent = current ? `المطلوب: ${current.note.arabic} · التالي: ${state.chromaticNotes[state.chromaticIndex + 1]?.note.arabic || 'النهاية'}` : '—';
+  }
+
+  function setRecordingMode(mode) {
+    if (state.mediaRecorder?.state === 'recording') return;
+    state.recordingMode = mode;
+    chooseExclusive($$('#recordingModeControl .segment'), $(`#recordingModeControl [data-recording-mode="${mode}"]`));
+    $('#chromaticSettings').hidden = mode !== 'chromatic';
+    if (mode === 'chromatic') { buildNoteOptions(); updateChromaticProgress(); }
+    else { state.chromaticActive = false; state.chromaticPaused = false; $('#chromaticProgress').hidden = true; }
+    setPrepareButtonState('idle');
+  }
+
   function bindEvents() {
     ui.micButton.addEventListener('click', toggleMicrophone);
     ui.headerMicButton.addEventListener('click', toggleMicrophone);
     $('#prepareButton').addEventListener('click', prepareRecording);
     $('#helpButton').addEventListener('click', () => ui.helpDialog.showModal());
+    $('#aboutButton').addEventListener('click', () => ui.aboutDialog.showModal());
+    $$('#recordingModeControl .segment').forEach(button => button.addEventListener('click', () => setRecordingMode(button.dataset.recordingMode)));
+    $('#buildChromaticButton').addEventListener('click', buildChromaticSession);
+    $('#pauseChromaticButton').addEventListener('click', () => { state.chromaticPaused = !state.chromaticPaused; $('#pauseChromaticButton').textContent = state.chromaticPaused ? 'استكمال' : 'إيقاف مؤقت'; updateRecordingStatus(state.chromaticPaused ? 'متوقف مؤقتًا' : 'انتظار نغمة'); });
+    $('#endChromaticButton').addEventListener('click', () => { const completed = state.chromaticIndex; const remaining = Math.max(0, state.chromaticNotes.length - completed); state.chromaticActive = false; state.recordingArmed = false; state.chromaticPaused = false; resetRecordingQualification(); setPrepareButtonState('idle'); updateChromaticProgress(); showToast(`انتهت الجلسة: ${completed} مكتملة · ${remaining} متبقية.`); });
     $('#advancedButton').addEventListener('click', () => { updateDiagnostics(); ui.advancedDialog.showModal(); });
     $('#qualityToggle').addEventListener('click', () => {
       const open = ui.qualityDetails.hidden;
@@ -975,6 +1114,7 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
       });
     });
     $('#toleranceRange').addEventListener('input', updateToleranceVisualization);
+    $('#recordingQualityRange').addEventListener('input', event => { $('#recordingQualityOutput').textContent = `${event.target.value}%`; state.recordingQualityThreshold = Number(event.target.value) / 100; });
     $('#saveAdvancedButton').addEventListener('click', () => { applySettings(collectSettings()); showToast('تم حفظ الإعدادات وتطبيقها.'); });
     $('#exportSettingsButton').addEventListener('click', () => triggerDownload(new Blob([JSON.stringify(collectSettings(), null, 2)], { type: 'application/json' }), `ney-standard-settings-${new Date().toISOString().slice(0,10)}.json`));
     $('#importSettingsButton').addEventListener('click', () => $('#settingsImportInput').click());
@@ -1007,6 +1147,8 @@ for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
     updateMicrophoneUI(false);
     updateToleranceVisualization();
     updateDiagnostics();
+    setRecordingMode('single');
+    buildNoteOptions();
     resetPitchUI();
   }
 
