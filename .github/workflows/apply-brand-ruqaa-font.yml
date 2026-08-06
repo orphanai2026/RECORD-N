@@ -1,0 +1,82 @@
+name: Apply Ruqaa brand typography
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-brand-ruqaa-font.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply approved typography
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          css_path = Path('digital-tuner.css')
+          css = css_path.read_text()
+          font_import = '@import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap");\n\n'
+          if not css.startswith('@import url('):
+              css = font_import + css
+
+          css = css.replace(
+              '.brand-copy h1,\n.panel-title h2,',
+              '.panel-title h2,',
+              1
+          )
+
+          css = css.replace(
+              '.brand-copy h1 {\n  font-size: clamp(2.45rem, 3vw, 3.35rem);\n  line-height: 1.12;\n  font-weight: 700;',
+              '.brand-copy h1 {\n  font-family: "Aref Ruqaa Ink", "Amiri", serif;\n  font-size: clamp(3rem, 3.4vw, 4rem);\n  line-height: .94;\n  font-weight: 700;\n  letter-spacing: 0;',
+              1
+          )
+
+          css = css.replace(
+              '.brand-copy p {\n  margin-top: 5px;',
+              '.brand-copy p {\n  margin-top: 8px;\n  font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;\n  letter-spacing: 0;',
+              1
+          )
+
+          css = css.replace(
+              '  .brand-copy h1 {\n    font-size: 2.65rem;\n  }',
+              '  .brand-copy h1 {\n    font-size: 3.2rem;\n  }',
+              1
+          )
+          css = css.replace(
+              '  .brand-copy h1 {\n    font-size: 2.28rem;\n  }',
+              '  .brand-copy h1 {\n    font-size: 2.75rem;\n  }',
+              1
+          )
+          css = css.replace(
+              '  .brand-copy h1 {\n    font-size: 1.9rem;\n    white-space: normal;\n  }',
+              '  .brand-copy h1 {\n    font-size: 2.25rem;\n    line-height: 1;\n    white-space: normal;\n  }',
+              1
+          )
+          css_path.write_text(css)
+
+          index_path = Path('index.html')
+          index = index_path.read_text()
+          index = index.replace('digital-tuner.css?v=2026-08-06-r1', 'digital-tuner.css?v=2026-08-06-r2', 1)
+          index_path.write_text(index)
+          PY
+
+          npm run check
+          rm .github/workflows/apply-brand-ruqaa-font.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add digital-tuner.css index.html .github/workflows/apply-brand-ruqaa-font.yml
+          git commit -m "style: give Ney Meyar title an expressive Ruqaa identity"
+          git push origin main
