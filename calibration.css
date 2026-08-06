@@ -263,3 +263,195 @@
     justify-self: stretch;
   }
 }
+
+
+/* Audio export and administrative controls — 2026-08-06 */
+.tuner-center-zone {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: 38%;
+  width: 24%;
+  border: 1px solid rgba(116, 255, 198, .92);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(16, 133, 91, .52), rgba(39, 211, 142, .86), rgba(16, 133, 91, .52));
+  box-shadow: 0 0 16px rgba(55, 226, 157, .42), inset 0 0 12px rgba(183, 255, 222, .18);
+  transition: left .25s ease, width .25s ease, box-shadow .25s ease;
+}
+
+.tuner-limit {
+  position: absolute;
+  top: -10px;
+  width: 2px;
+  height: 34px;
+  transform: translateX(-50%);
+  background: rgba(236, 255, 247, .9);
+  box-shadow: 0 0 8px rgba(72, 238, 175, .85);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.tuner-limit bdi {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 25px;
+  font-size: .61rem;
+  font-weight: 700;
+  color: #8debc4;
+  text-align: center;
+}
+
+.tuner-panel.is-in-tune .tuner-needle {
+  background: #effff8;
+  box-shadow: 0 0 0 3px rgba(56, 218, 150, .22), 0 0 18px rgba(69, 245, 178, .92);
+}
+
+.tuner-panel.is-in-tune .quality-state { color: #9af1cf; }
+.tuner-panel.is-flat .tuner-needle,
+.tuner-panel.is-sharp .tuner-needle { box-shadow: 0 0 0 3px rgba(239, 78, 82, .15), 0 0 15px rgba(239, 78, 82, .75); }
+
+.numeric-stepper input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--warm-white);
+  font: inherit;
+  font-size: 1.12rem;
+  font-weight: 800;
+  text-align: center;
+  direction: ltr;
+  appearance: textfield;
+}
+.numeric-stepper input::-webkit-inner-spin-button,
+.numeric-stepper input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.reference-stepper .reference-input { border: 0; background: transparent; }
+.reference-stepper .reference-input input { width: 72px; }
+.reference-stepper .reference-input span { color: var(--gold-100); }
+
+.export-format-control select,
+.settings-section select,
+.settings-section input[type="number"],
+.settings-section input[type="text"] {
+  min-height: 36px;
+  border: 1px solid rgba(215, 157, 69, .42);
+  border-radius: 10px;
+  background: rgba(0, 22, 25, .88);
+  color: var(--warm-white);
+  font: inherit;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.export-format-control select {
+  width: 132px;
+  min-height: 32px;
+  padding-block: 4px;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.export-format-control select:focus,
+.settings-section select:focus,
+.settings-section input:focus {
+  border-color: var(--turquoise);
+  box-shadow: 0 0 0 3px rgba(67, 222, 212, .13);
+}
+
+.modal--advanced form {
+  width: min(920px, calc(100vw - 24px));
+  max-height: min(90vh, 760px);
+  overflow: auto;
+}
+
+.modal--advanced header > div p {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: .78rem;
+}
+
+.advanced-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.settings-section {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(215, 157, 69, .3);
+  border-radius: 16px;
+  background: rgba(0, 28, 31, .62);
+}
+
+.settings-section h3 {
+  margin: 0 0 3px;
+  color: var(--gold-100);
+  font-size: 1rem;
+}
+
+.settings-section > label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: .8rem;
+}
+
+.range-setting span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.range-setting output { color: var(--turquoise); direction: ltr; }
+.inline-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.inline-settings label { position: relative; display: grid; gap: 5px; color: var(--text-secondary); font-size: .76rem; }
+.inline-settings small { position: absolute; left: 9px; bottom: 9px; color: var(--gold-100); }
+.settings-section--admin { grid-column: 1 / -1; }
+.admin-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.danger-action { color: #ff9b9e !important; border-color: rgba(239, 78, 82, .45) !important; }
+.switch-setting { grid-template-columns: auto 1fr !important; align-items: center; }
+
+.diagnostics-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.diagnostics-panel div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(0, 18, 21, .72);
+  color: var(--text-muted);
+  font-size: .7rem;
+}
+.diagnostics-panel strong { color: var(--warm-white); overflow-wrap: anywhere; text-align: left; }
+.advanced-footer { display: flex; justify-content: flex-start; margin-top: 12px; }
+.advanced-footer .primary-button { width: min(240px, 100%); }
+
+@media (max-width: 900px) {
+  .advanced-settings-grid { grid-template-columns: 1fr; }
+  .settings-section--admin { grid-column: auto; }
+  .admin-actions { grid-template-columns: 1fr 1fr; }
+  .diagnostics-panel { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .recordings-actions { flex-wrap: wrap; }
+  .export-format-control { flex: 1 1 100%; }
+  .export-format-control select { width: 100%; }
+  .admin-actions,
+  .inline-settings { grid-template-columns: 1fr; }
+  .tuner-limit bdi { font-size: .55rem; }
+}

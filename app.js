@@ -28,6 +28,15 @@
     currentRecordMenuId: null,
     playingRecordId: null,
     demoOscillator: null,
+    exportFormat: 'wav',
+    exportSampleRate: 48000,
+    wavBitDepth: 24,
+    mp3Bitrate: 192,
+    minFrequency: 60,
+    maxFrequency: 1800,
+    pcmChunks: [],
+    pcmProcessor: null,
+    pcmMuteGain: null,
     records: [
       { id: 'sample-1', english: 'C5', arabic: 'دو 5', durationName: 'نوار', type: 'غنة', status: 'طبيعية', frequency: 525.45, sample: true },
       { id: 'sample-2', english: 'C5', arabic: 'دو 5', durationName: 'روند', type: 'غنة', status: 'طبيعية', frequency: 522.78, sample: true }
@@ -71,7 +80,13 @@
     qualityToggle: $('#qualityToggle'),
     qualityDetails: $('#qualityDetails'),
     helpDialog: $('#helpDialog'),
-    advancedDialog: $('#advancedDialog')
+    advancedDialog: $('#advancedDialog'),
+    exportFormat: $('#exportFormat'),
+    tunerCenterZone: $('#tunerCenterZone'),
+    tunerLowLimit: $('#tunerLowLimit'),
+    tunerHighLimit: $('#tunerHighLimit'),
+    tunerLowLabel: $('#tunerLowLabel'),
+    tunerHighLabel: $('#tunerHighLabel')
   };
 
   function showToast(message) {
@@ -114,7 +129,7 @@
       state.source = state.audioContext.createMediaStreamSource(state.stream);
       state.analyser = state.audioContext.createAnalyser();
       state.analyser.fftSize = 4096;
-      state.analyser.smoothingTimeConstant = .15;
+      state.analyser.smoothingTimeConstant = Number($('#smoothingRange')?.value || .15);
       state.source.connect(state.analyser);
       updateMicrophoneUI(true);
       startMetronome();
@@ -146,8 +161,9 @@
     let rms = 0;
     for (const value of buffer) rms += value * value;
     rms = Math.sqrt(rms / buffer.length);
-    const sensitivity = Number($('#sensitivityRange').value || .025);
-    if (rms < sensitivity) return { frequency: null, rms, clarity: 0 };
+    const sensitivity = Number($('#sensitivityRange')?.value || .025);
+    const noiseGate = Number($('#noiseGateRange')?.value || .015);
+    if (rms < Math.max(sensitivity, noiseGate)) return { frequency: null, rms, clarity: 0 };
 
     let start = 0;
     let end = buffer.length - 1;
@@ -177,7 +193,7 @@
     const refined = denominator ? maxIndex + .5 * (right - left) / denominator : maxIndex;
     const frequency = sampleRate / refined;
     const clarity = Math.max(0, Math.min(1, center / (correlation[0] || 1)));
-    return { frequency: frequency >= 60 && frequency <= 1800 ? frequency : null, rms, clarity };
+    return { frequency: frequency >= state.minFrequency && frequency <= state.maxFrequency ? frequency : null, rms, clarity };
   }
 
   function noteFromFrequency(frequency) {
@@ -239,6 +255,11 @@
 
   function updatePitchUI(result, note) {
     const cents = Math.max(-50, Math.min(50, note.cents));
+    const tolerance = Number($('#toleranceRange')?.value || 12);
+    const tunerPanel = $('.tuner-panel');
+    tunerPanel.classList.toggle('is-in-tune', Math.abs(note.cents) <= tolerance);
+    tunerPanel.classList.toggle('is-flat', note.cents < -tolerance);
+    tunerPanel.classList.toggle('is-sharp', note.cents > tolerance);
     ui.frequency.innerHTML = `${result.frequency.toFixed(2)} <small>Hz</small>`;
     ui.target.textContent = `${note.target.toFixed(2)} Hz`;
     ui.cents.innerHTML = `${note.cents > 0 ? '+' : ''}${note.cents.toFixed(1)} <small>سنت</small>`;
@@ -261,6 +282,7 @@
     ui.cents.innerHTML = '0 <small>سنت</small>';
     ui.signal.textContent = '—';
     ui.needle.style.left = '50%';
+    $('.tuner-panel')?.classList.remove('is-in-tune', 'is-flat', 'is-sharp');
     ui.noteName.textContent = 'بانتظار النغمة';
     ui.noteArabic.textContent = 'شغّل الميكروفون واعزف نغمة ثابتة';
     ui.qualityText.textContent = 'بانتظار نغمة واضحة';
@@ -306,6 +328,37 @@
     });
   }
 
+  function startPcmCapture() {
+    state.pcmChunks = [];
+    if (!state.audioContext || !state.source || !state.audioContext.createScriptProcessor) return;
+    const processor = state.audioContext.createScriptProcessor(4096, 1, 1);
+    const muteGain = state.audioContext.createGain();
+    muteGain.gain.value = 0;
+    processor.onaudioprocess = event => {
+      if (state.mediaRecorder?.state === 'recording') {
+        state.pcmChunks.push(new Float32Array(event.inputBuffer.getChannelData(0)));
+      }
+    };
+    state.source.connect(processor);
+    processor.connect(muteGain).connect(state.audioContext.destination);
+    state.pcmProcessor = processor;
+    state.pcmMuteGain = muteGain;
+  }
+
+  function finishPcmCapture() {
+    const chunks = state.pcmChunks;
+    const length = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    const merged = new Float32Array(length);
+    let offset = 0;
+    chunks.forEach(chunk => { merged.set(chunk, offset); offset += chunk.length; });
+    state.pcmProcessor?.disconnect();
+    state.pcmMuteGain?.disconnect();
+    state.pcmProcessor = null;
+    state.pcmMuteGain = null;
+    state.pcmChunks = [];
+    return merged;
+  }
+
   function prepareRecording() {
     if (!state.stream) {
       showToast('شغّل الميكروفون أولًا قبل تجهيز تسجيل النغمة.');
@@ -322,6 +375,7 @@
       state.mediaRecorder.addEventListener('dataavailable', event => { if (event.data.size) state.recordingChunks.push(event.data); });
       state.mediaRecorder.addEventListener('stop', saveRecording, { once: true });
       state.mediaRecorder.start();
+      startPcmCapture();
       $('#prepareButton span').textContent = 'جارٍ تسجيل النغمة…';
       $('#prepareButton').disabled = true;
       showToast(`بدأ تسجيل ${state.durationName}. حافظ على النغمة ثابتة.`);
@@ -335,6 +389,7 @@
   }
 
   function saveRecording() {
+    const pcm = finishPcmCapture();
     const blob = new Blob(state.recordingChunks, { type: state.mediaRecorder?.mimeType || 'audio/webm' });
     const url = URL.createObjectURL(blob);
     const note = state.currentNote || { english: '—', arabic: 'نغمة غير محددة' };
@@ -348,6 +403,8 @@
       frequency: state.currentFrequency || 0,
       blob,
       url,
+      pcm,
+      sampleRate: state.audioContext?.sampleRate || 48000,
       sample: false
     });
     $('#prepareButton span').textContent = 'تجهيز تسجيل النغمة';
@@ -428,7 +485,7 @@
     Object.assign(ui.menuPopover.style, { left: `${left}px`, top: `${top}px` });
   }
 
-  function handleMenuAction(action) {
+  async function handleMenuAction(action) {
     const record = state.records.find(item => item.id === state.currentRecordMenuId);
     if (!record) return;
     if (action === 'rename') {
@@ -436,13 +493,7 @@
       if (name?.trim()) { record.arabic = name.trim(); renderRecords(); }
     }
     if (action === 'download') {
-      if (record.sample) { showToast('التسجيل التجريبي لا يحتوي ملفًا للتنزيل.'); }
-      else {
-        const anchor = document.createElement('a');
-        anchor.href = record.url;
-        anchor.download = `${record.english}-${record.durationName}.webm`;
-        anchor.click();
-      }
+      await downloadRecord(record, state.exportFormat);
     }
     if (action === 'delete') {
       if (confirm(`حذف تسجيل ${record.english}؟`)) {
@@ -454,15 +505,282 @@
     ui.menuPopover.hidden = true;
   }
 
-  function exportAll() {
-    const payload = state.records.map(({ blob, url, ...record }) => record);
-    const data = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(data);
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function setBpm(value) {
+    state.bpm = Math.round(clamp(Number(value) || 60, 30, 240));
+    ui.bpmValue.value = state.bpm;
+    updateMetronomeCaption();
+  }
+
+  function setA4(value) {
+    state.a4 = Math.round(clamp(Number(value) || 440, 400, 480) * 10) / 10;
+    ui.a4Reference.value = state.a4;
+    resetPitchUI();
+  }
+
+  function updateToleranceVisualization() {
+    const tolerance = clamp(Number($('#toleranceRange')?.value || 12), 3, 25);
+    const low = 50 - tolerance;
+    const high = 50 + tolerance;
+    ui.tunerCenterZone.style.left = `${low}%`;
+    ui.tunerCenterZone.style.width = `${tolerance * 2}%`;
+    ui.tunerLowLimit.style.left = `${low}%`;
+    ui.tunerHighLimit.style.left = `${high}%`;
+    ui.tunerLowLabel.textContent = `-${tolerance}`;
+    ui.tunerHighLabel.textContent = `+${tolerance}`;
+    const output = $('#toleranceOutput');
+    if (output) output.textContent = `±${tolerance} سنت`;
+  }
+
+  function sanitizeFilePart(value) {
+    return String(value || 'recording').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '-');
+  }
+
+  function buildFileName(record, extension) {
+    const date = new Date().toISOString().slice(0, 10);
+    const pattern = $('#fileNamePattern')?.value || '{note}-{duration}-{date}';
+    const base = pattern
+      .replaceAll('{note}', sanitizeFilePart(record.english))
+      .replaceAll('{duration}', sanitizeFilePart(record.durationName))
+      .replaceAll('{date}', date);
+    return `${base}.${extension}`;
+  }
+
+  function triggerDownload(blob, fileName) {
+    const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `ney-standard-recordings-${new Date().toISOString().slice(0,10)}.json`;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
     anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  async function recordToPcm(record) {
+    if (record.pcm?.length) return { samples: record.pcm, sampleRate: record.sampleRate || 48000 };
+    if (record.blob) {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      try {
+        const buffer = await context.decodeAudioData(await record.blob.arrayBuffer());
+        const channels = buffer.numberOfChannels;
+        const mono = new Float32Array(buffer.length);
+        for (let channel = 0; channel < channels; channel += 1) {
+const data = buffer.getChannelData(channel);
+for (let i = 0; i < data.length; i += 1) mono[i] += data[i] / channels;
+        }
+        return { samples: mono, sampleRate: buffer.sampleRate };
+      } finally {
+        await context.close();
+      }
+    }
+    const sampleRate = state.exportSampleRate;
+    const seconds = Math.max(.5, (60 / state.bpm) * (record.durationName === 'روند' ? 4 : record.durationName === 'بلانش' ? 2 : record.durationName === 'كروش' ? .5 : 1));
+    const samples = new Float32Array(Math.floor(sampleRate * seconds));
+    for (let i = 0; i < samples.length; i += 1) {
+      const envelope = Math.min(1, i / (sampleRate * .03), (samples.length - i) / (sampleRate * .06));
+      samples[i] = Math.sin(2 * Math.PI * Number(record.frequency || 440) * i / sampleRate) * .2 * Math.max(0, envelope);
+    }
+    return { samples, sampleRate };
+  }
+
+  function resampleMono(samples, sourceRate, targetRate) {
+    if (sourceRate === targetRate) return samples;
+    const targetLength = Math.max(1, Math.round(samples.length * targetRate / sourceRate));
+    const result = new Float32Array(targetLength);
+    const ratio = sourceRate / targetRate;
+    for (let i = 0; i < targetLength; i += 1) {
+      const position = i * ratio;
+      const left = Math.floor(position);
+      const right = Math.min(samples.length - 1, left + 1);
+      const fraction = position - left;
+      result[i] = samples[left] * (1 - fraction) + samples[right] * fraction;
+    }
+    return result;
+  }
+
+  function encodeWav(samples, sampleRate, bitDepth = 24) {
+    const bytesPerSample = bitDepth === 24 ? 3 : 2;
+    const dataSize = samples.length * bytesPerSample;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+    const writeText = (offset, text) => [...text].forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+    writeText(0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeText(8, 'WAVE');
+    writeText(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * bytesPerSample, true);
+    view.setUint16(32, bytesPerSample, true);
+    view.setUint16(34, bitDepth, true);
+    writeText(36, 'data');
+    view.setUint32(40, dataSize, true);
+    let offset = 44;
+    for (const input of samples) {
+      const sample = clamp(input, -1, 1);
+      if (bitDepth === 24) {
+        const value = Math.round(sample < 0 ? sample * 0x800000 : sample * 0x7fffff);
+        view.setUint8(offset, value & 0xff);
+        view.setUint8(offset + 1, (value >> 8) & 0xff);
+        view.setUint8(offset + 2, (value >> 16) & 0xff);
+        offset += 3;
+      } else {
+        view.setInt16(offset, Math.round(sample < 0 ? sample * 0x8000 : sample * 0x7fff), true);
+        offset += 2;
+      }
+    }
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  function encodeMp3(samples, sampleRate, bitrate) {
+    if (!window.lamejs?.Mp3Encoder) throw new Error('MP3 encoder unavailable');
+    const encoder = new window.lamejs.Mp3Encoder(1, sampleRate, bitrate);
+    const chunkSize = 1152;
+    const chunks = [];
+    const pcm = new Int16Array(samples.length);
+    for (let i = 0; i < samples.length; i += 1) pcm[i] = Math.round(clamp(samples[i], -1, 1) * 32767);
+    for (let offset = 0; offset < pcm.length; offset += chunkSize) {
+      const encoded = encoder.encodeBuffer(pcm.subarray(offset, offset + chunkSize));
+      if (encoded.length) chunks.push(new Int8Array(encoded));
+    }
+    const flushed = encoder.flush();
+    if (flushed.length) chunks.push(new Int8Array(flushed));
+    return new Blob(chunks, { type: 'audio/mpeg' });
+  }
+
+  function recordMetadata(record) {
+    const { blob, url, pcm, ...metadata } = record;
+    return {
+      ...metadata,
+      exportedAt: new Date().toISOString(),
+      division: `${state.division}-TET`,
+      a4: state.a4,
+      bpm: state.bpm
+    };
+  }
+
+  async function downloadRecord(record, format) {
+    try {
+      if (format === 'json') {
+        triggerDownload(new Blob([JSON.stringify(recordMetadata(record), null, 2)], { type: 'application/json' }), buildFileName(record, 'json'));
+        return;
+      }
+      showToast(`جارٍ تجهيز ${format === 'mp3' ? 'MP3' : 'WAV عالي الدقة'}…`);
+      const source = await recordToPcm(record);
+      const samples = resampleMono(source.samples, source.sampleRate, state.exportSampleRate);
+      if (format === 'mp3') {
+        const blob = encodeMp3(samples, state.exportSampleRate, state.mp3Bitrate);
+        triggerDownload(blob, buildFileName(record, 'mp3'));
+      } else {
+        const blob = encodeWav(samples, state.exportSampleRate, state.wavBitDepth);
+        triggerDownload(blob, buildFileName(record, 'wav'));
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('تعذر تجهيز ملف التصدير. جرّب صيغة أخرى.');
+    }
+  }
+
+  async function exportAll() {
+    const format = state.exportFormat;
+    if (format === 'json') {
+      const payload = state.records.map(recordMetadata);
+      triggerDownload(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `ney-standard-recordings-${new Date().toISOString().slice(0,10)}.json`);
+      return;
+    }
+    for (const record of state.records) {
+      await downloadRecord(record, format);
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    showToast(`اكتمل تصدير ${state.records.length} تسجيلات.`);
+  }
+
+  const defaultSettings = {
+    sensitivity: .025,
+    tolerance: 12,
+    noiseGate: .015,
+    smoothing: .15,
+    minFrequency: 60,
+    maxFrequency: 1800,
+    exportFormat: 'wav',
+    exportSampleRate: 48000,
+    wavBitDepth: 24,
+    mp3Bitrate: 192,
+    fileNamePattern: '{note}-{duration}-{date}',
+    persistSettings: true
+  };
+
+  function collectSettings() {
+    return {
+      sensitivity: Number($('#sensitivityRange')?.value || defaultSettings.sensitivity),
+      tolerance: Number($('#toleranceRange')?.value || defaultSettings.tolerance),
+      noiseGate: Number($('#noiseGateRange')?.value || defaultSettings.noiseGate),
+      smoothing: Number($('#smoothingRange')?.value || defaultSettings.smoothing),
+      minFrequency: Number($('#minFrequencyInput')?.value || defaultSettings.minFrequency),
+      maxFrequency: Number($('#maxFrequencyInput')?.value || defaultSettings.maxFrequency),
+      exportFormat: $('#defaultExportFormat')?.value || state.exportFormat,
+      exportSampleRate: Number($('#exportSampleRate')?.value || state.exportSampleRate),
+      wavBitDepth: Number($('#wavBitDepth')?.value || state.wavBitDepth),
+      mp3Bitrate: Number($('#mp3Bitrate')?.value || state.mp3Bitrate),
+      fileNamePattern: $('#fileNamePattern')?.value || defaultSettings.fileNamePattern,
+      persistSettings: Boolean($('#persistSettings')?.checked)
+    };
+  }
+
+  function applySettings(settings, persist = true) {
+    const values = { ...defaultSettings, ...settings };
+    $('#sensitivityRange').value = values.sensitivity;
+    $('#toleranceRange').value = values.tolerance;
+    $('#noiseGateRange').value = values.noiseGate;
+    $('#smoothingRange').value = values.smoothing;
+    $('#minFrequencyInput').value = values.minFrequency;
+    $('#maxFrequencyInput').value = values.maxFrequency;
+    $('#defaultExportFormat').value = values.exportFormat;
+    $('#exportSampleRate').value = values.exportSampleRate;
+    $('#wavBitDepth').value = values.wavBitDepth;
+    $('#mp3Bitrate').value = values.mp3Bitrate;
+    $('#fileNamePattern').value = values.fileNamePattern;
+    $('#persistSettings').checked = values.persistSettings;
+    $('#sensitivityOutput').textContent = Number(values.sensitivity).toFixed(3);
+    $('#noiseGateOutput').textContent = Number(values.noiseGate).toFixed(3);
+    $('#smoothingOutput').textContent = Number(values.smoothing).toFixed(2);
+    state.minFrequency = clamp(Number(values.minFrequency), 30, 500);
+    state.maxFrequency = clamp(Number(values.maxFrequency), 500, 4000);
+    state.exportFormat = values.exportFormat;
+    state.exportSampleRate = Number(values.exportSampleRate);
+    state.wavBitDepth = Number(values.wavBitDepth);
+    state.mp3Bitrate = Number(values.mp3Bitrate);
+    ui.exportFormat.value = state.exportFormat;
+    if (state.analyser) state.analyser.smoothingTimeConstant = Number(values.smoothing);
+    updateToleranceVisualization();
+    updateDiagnostics();
+    if (persist && values.persistSettings) localStorage.setItem('ney-standard-settings-v2', JSON.stringify(values));
+  }
+
+  function loadSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('ney-standard-settings-v2') || 'null');
+      applySettings(saved || defaultSettings, false);
+    } catch (_) {
+      applySettings(defaultSettings, false);
+    }
+  }
+
+  function updateDiagnostics() {
+    const panel = $('#diagnosticsPanel');
+    if (!panel) return;
+    const mimeTypes = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'].filter(type => window.MediaRecorder?.isTypeSupported?.(type));
+    panel.innerHTML = `
+      <div><span>المتصفح</span><strong>${navigator.userAgentData?.brands?.[0]?.brand || navigator.userAgent.split(' ').slice(-1)[0]}</strong></div>
+      <div><span>معدل الالتقاط الحالي</span><strong dir="ltr">${state.audioContext?.sampleRate || 'غير نشط'} Hz</strong></div>
+      <div><span>ترميزات التسجيل</span><strong>${mimeTypes.length ? mimeTypes.join('، ') : 'افتراضي المتصفح'}</strong></div>
+      <div><span>مشفّر MP3</span><strong>${window.lamejs?.Mp3Encoder ? 'جاهز' : 'غير متاح'}</strong></div>`;
   }
 
   function bindEvents() {
@@ -470,7 +788,7 @@
     ui.headerMicButton.addEventListener('click', toggleMicrophone);
     $('#prepareButton').addEventListener('click', prepareRecording);
     $('#helpButton').addEventListener('click', () => ui.helpDialog.showModal());
-    $('#advancedButton').addEventListener('click', () => ui.advancedDialog.showModal());
+    $('#advancedButton').addEventListener('click', () => { updateDiagnostics(); ui.advancedDialog.showModal(); });
     $('#qualityToggle').addEventListener('click', () => {
       const open = ui.qualityDetails.hidden;
       ui.qualityDetails.hidden = !open;
@@ -487,21 +805,61 @@
       state.durationName = button.dataset.name;
       updateMetronomeCaption();
     }));
-    $('#bpmMinus').addEventListener('click', () => { state.bpm = Math.max(30, state.bpm - 1); ui.bpmValue.textContent = state.bpm; updateMetronomeCaption(); });
-    $('#bpmPlus').addEventListener('click', () => { state.bpm = Math.min(240, state.bpm + 1); ui.bpmValue.textContent = state.bpm; updateMetronomeCaption(); });
-    ui.a4Reference.addEventListener('change', () => { state.a4 = Math.max(400, Math.min(480, Number(ui.a4Reference.value) || 440)); ui.a4Reference.value = state.a4; resetPitchUI(); });
+    $('#bpmMinus').addEventListener('click', () => setBpm(state.bpm - 1));
+    $('#bpmPlus').addEventListener('click', () => setBpm(state.bpm + 1));
+    ui.bpmValue.addEventListener('change', () => setBpm(ui.bpmValue.value));
+    ui.bpmValue.addEventListener('keydown', event => { if (event.key === 'Enter') { setBpm(ui.bpmValue.value); ui.bpmValue.blur(); } });
+    $('#a4Minus').addEventListener('click', () => setA4(state.a4 - .1));
+    $('#a4Plus').addEventListener('click', () => setA4(state.a4 + .1));
+    ui.a4Reference.addEventListener('change', () => setA4(ui.a4Reference.value));
+    ui.a4Reference.addEventListener('keydown', event => { if (event.key === 'Enter') { setA4(ui.a4Reference.value); ui.a4Reference.blur(); } });
+    ui.exportFormat.addEventListener('change', () => {
+      state.exportFormat = ui.exportFormat.value;
+      $('#defaultExportFormat').value = state.exportFormat;
+      applySettings(collectSettings());
+    });
     $('#exportAllButton').addEventListener('click', exportAll);
     $('#libraryMenuButton').addEventListener('click', event => openRecordMenu(state.records[0]?.id, event.currentTarget));
     ui.menuPopover.addEventListener('click', event => { const action = event.target.closest('[data-action]')?.dataset.action; if (action) handleMenuAction(action); });
+    ['sensitivityRange', 'noiseGateRange', 'smoothingRange'].forEach(id => {
+      $(`#${id}`).addEventListener('input', event => {
+        const output = $(`#${id.replace('Range', 'Output')}`);
+        if (output) output.textContent = Number(event.target.value).toFixed(id === 'smoothingRange' ? 2 : 3);
+      });
+    });
+    $('#toleranceRange').addEventListener('input', updateToleranceVisualization);
+    $('#saveAdvancedButton').addEventListener('click', () => { applySettings(collectSettings()); showToast('تم حفظ الإعدادات وتطبيقها.'); });
+    $('#exportSettingsButton').addEventListener('click', () => triggerDownload(new Blob([JSON.stringify(collectSettings(), null, 2)], { type: 'application/json' }), `ney-standard-settings-${new Date().toISOString().slice(0,10)}.json`));
+    $('#importSettingsButton').addEventListener('click', () => $('#settingsImportInput').click());
+    $('#settingsImportInput').addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try { applySettings(JSON.parse(await file.text())); showToast('تم استيراد الإعدادات.'); }
+      catch (error) { console.error(error); showToast('ملف الإعدادات غير صالح.'); }
+      event.target.value = '';
+    });
+    $('#resetSettingsButton').addEventListener('click', () => { if (confirm('استعادة جميع الإعدادات الافتراضية؟')) { applySettings(defaultSettings); showToast('تمت استعادة الإعدادات الافتراضية.'); } });
+    $('#clearRecordsButton').addEventListener('click', () => {
+      if (!confirm('مسح جميع التسجيلات المحفوظة؟ لا يمكن التراجع عن ذلك.')) return;
+      state.records.forEach(record => record.url && URL.revokeObjectURL(record.url));
+      state.records = [];
+      renderRecords();
+      showToast('تم مسح جميع التسجيلات.');
+    });
     document.addEventListener('click', event => { if (!ui.menuPopover.hidden && !ui.menuPopover.contains(event.target) && !event.target.closest('.record-menu-button') && event.target !== $('#libraryMenuButton')) ui.menuPopover.hidden = true; });
     window.addEventListener('beforeunload', () => { state.stream?.getTracks().forEach(track => track.stop()); state.records.forEach(record => record.url && URL.revokeObjectURL(record.url)); });
   }
 
   function initialize() {
+    loadSettings();
     bindEvents();
+    setBpm(state.bpm);
+    setA4(state.a4);
     renderRecords();
     updateMetronomeCaption();
     updateMicrophoneUI(false);
+    updateToleranceVisualization();
+    updateDiagnostics();
     resetPitchUI();
   }
 
