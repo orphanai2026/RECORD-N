@@ -1,0 +1,63 @@
+name: Create latest restore point
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/create-restore-point.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG_NAME: checkpoint-2026.08.06-r1
+      TARGET_SHA: 377ec8950605197fd69962dcac41fbf4df5d2047
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create restore release
+        shell: bash
+        run: |
+          cat > /tmp/restore-notes.md <<'EOF'
+          ## نقطة استعادة معتمدة لمشروع معيار الناي
+
+          تمثل هذه النسخة آخر حالة معتمدة للمشروع بتاريخ 6 أغسطس 2026 قبل مواصلة التطوير.
+
+          **Commit المثبت:** `377ec8950605197fd69962dcac41fbf4df5d2047`
+
+          ### أهم ما تتضمنه
+          - المعيار اللحظي ودعم 12-TET و24-TET.
+          - التسجيل التلقائي المشروط بالدقة والثبات وجودة الإشارة.
+          - وضع التسجيل المنفصل والسلم الكروماتك.
+          - التصدير بصيغ WAV عالي الدقة وMP3 وJSON.
+          - العرض الرقمي وتصحيح ألوان منخفض/مضبوط/مرتفع.
+          - إعادة بناء نافذتي طريقة الاستخدام ومن نحن.
+          - تحسين الخطوط وتوزيع الكتل.
+          - اعتماد خط Aref Ruqaa Ink لاسم معيار الناي وخط IBM Plex Sans Arabic للوصف.
+
+          يمكن الرجوع إلى هذه النقطة عبر العلامة `checkpoint-2026.08.06-r1` أو تنزيل Source code بصيغة ZIP/TAR من صفحة الإصدار.
+          EOF
+
+          gh release create "$TAG_NAME" \
+            --repo "${{ github.repository }}" \
+            --target "$TARGET_SHA" \
+            --title "نقطة استعادة معيار الناي — 6 أغسطس 2026" \
+            --notes-file /tmp/restore-notes.md \
+            --latest=false
+
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/create-restore-point.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/create-restore-point.yml
+          git commit -m "chore: finalize restore point checkpoint-2026.08.06-r1"
+          git push origin main
