@@ -1,0 +1,369 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;600;700;800&display=swap");
+
+:root {
+  --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-display: "Noto Kufi Arabic", "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font: var(--font-body);
+  --gap: 14px;
+}
+
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+
+.brand-copy h1,
+.panel-title h2,
+.quick-controls h2,
+.recording-workflow h3,
+.modal h2,
+.settings-section h3 {
+  font-family: var(--font-display);
+  letter-spacing: -.025em;
+}
+
+.app-shell {
+  width: min(1520px, calc(100% - 36px));
+  padding-top: 10px;
+}
+
+.app-header {
+  min-height: 116px;
+  grid-template-columns: minmax(260px, 1fr) auto minmax(260px, 1fr);
+  gap: 24px;
+  padding: 10px 32px 16px;
+}
+
+.brand {
+  min-width: 430px;
+  gap: 14px;
+}
+
+.brand-logo {
+  width: 76px;
+  height: 76px;
+  flex-basis: 76px;
+}
+
+.brand-copy h1 {
+  font-size: clamp(2.45rem, 3vw, 3.35rem);
+  line-height: 1.12;
+  font-weight: 700;
+  white-space: nowrap;
+  text-shadow: 0 7px 22px rgba(0, 0, 0, .34), 0 0 16px rgba(215, 157, 69, .1);
+}
+
+.brand-copy p {
+  margin-top: 5px;
+  font-size: .9rem;
+  line-height: 1.55;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.header-tabs {
+  justify-self: end;
+  gap: 8px;
+}
+
+.header-tab {
+  min-height: 44px;
+  padding: 8px 17px;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.microphone-status {
+  justify-self: start;
+  min-width: 244px;
+  min-height: 46px;
+  padding-inline: 18px;
+  font-size: .88rem;
+  font-weight: 600;
+}
+
+.top-grid {
+  grid-template-columns: minmax(0, 57fr) minmax(0, 43fr);
+  gap: var(--gap);
+}
+
+.tuner-panel,
+.detected-panel {
+  height: auto;
+  min-height: 360px;
+  padding: 17px 20px;
+}
+
+.panel-header {
+  min-height: 62px;
+  padding-bottom: 10px;
+}
+
+.panel-title {
+  gap: 11px;
+}
+
+.panel-title h2,
+.quick-controls h2 {
+  font-size: clamp(1.28rem, 1.55vw, 1.58rem);
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.panel-title p,
+.quick-controls p {
+  margin-top: 3px;
+  font-size: .76rem;
+  line-height: 1.55;
+  font-weight: 400;
+}
+
+.icon-disc {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
+
+.metric-card span,
+.control-label,
+.control-group legend,
+.recording-session-status span {
+  font-weight: 500;
+}
+
+.metric-card strong,
+.stepper output,
+.reference-input input,
+.record-frequency,
+.record-note strong {
+  font-weight: 700;
+}
+
+.quick-controls {
+  margin-top: var(--gap);
+  padding: 14px 16px 15px;
+}
+
+.quick-controls__header {
+  min-height: 51px;
+  padding-bottom: 8px;
+}
+
+.controls-grid {
+  gap: 10px;
+  align-items: stretch;
+}
+
+.control-group {
+  min-height: 84px;
+  padding: 9px 10px;
+}
+
+.segment,
+.duration-option,
+.ghost-button,
+.primary-button,
+.gold-button,
+.play-button {
+  font-weight: 600;
+}
+
+.bottom-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(370px, 1.32fr) minmax(250px, .72fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+.bottom-grid > .panel {
+  height: auto;
+  min-height: 305px;
+  padding: 14px 16px;
+}
+
+.recordings-panel {
+  min-width: 0;
+}
+
+.recordings-list {
+  max-height: 225px;
+  padding-top: 10px;
+}
+
+.record-row {
+  min-height: 72px;
+  padding: 9px 11px;
+}
+
+.recording-panel {
+  min-width: 0;
+}
+
+.recording-workflow {
+  padding: .85rem;
+}
+
+.recording-workflow__header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.recording-workflow__header p {
+  font-size: .7rem;
+  line-height: 1.6;
+}
+
+.recording-session-status > div {
+  min-height: 58px;
+  display: grid;
+  align-content: center;
+}
+
+.metronome-panel {
+  min-width: 0;
+  min-height: 305px;
+}
+
+.metronome-orb {
+  width: 116px;
+  height: 116px;
+}
+
+.modal p,
+.information-content,
+.settings-section {
+  line-height: 1.8;
+}
+
+@media (max-width: 1240px) {
+  .app-shell {
+    width: min(1180px, calc(100% - 24px));
+  }
+
+  .app-header {
+    grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr);
+    gap: 14px;
+    padding-inline: 14px;
+  }
+
+  .brand {
+    min-width: 370px;
+  }
+
+  .brand-copy h1 {
+    font-size: 2.65rem;
+  }
+
+  .bottom-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(340px, 1fr);
+  }
+
+  .metronome-panel {
+    grid-column: 1 / -1;
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-header {
+    min-height: 106px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-copy h1 {
+    font-size: 2.28rem;
+  }
+
+  .brand-copy p {
+    font-size: .72rem;
+  }
+
+  .top-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bottom-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recordings-panel {
+    grid-column: 1 / -1;
+  }
+
+  .recording-panel,
+  .metronome-panel {
+    grid-column: auto;
+    min-height: 285px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: calc(100% - 12px);
+  }
+
+  .app-header {
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 6px 2px 12px;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-logo {
+    width: 54px;
+    height: 54px;
+    flex-basis: 54px;
+  }
+
+  .brand-copy h1 {
+    font-size: 1.9rem;
+    white-space: normal;
+  }
+
+  .brand-copy p {
+    font-size: .65rem;
+    white-space: normal;
+  }
+
+  .header-tab {
+    min-height: 40px;
+    padding-inline: 10px;
+    font-size: .77rem;
+  }
+
+  .top-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tuner-panel,
+  .detected-panel,
+  .bottom-grid > .panel {
+    min-height: 0;
+  }
+
+  .recording-panel,
+  .metronome-panel,
+  .recordings-panel {
+    grid-column: 1;
+  }
+
+  .panel-title h2,
+  .quick-controls h2 {
+    font-size: 1.18rem;
+  }
+}
