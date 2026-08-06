@@ -28,6 +28,15 @@ script, count = re.subn(
 if count != 1:
     raise SystemExit('Could not replace replace_once helper')
 
+script = script.replace(
+    'advanced_pattern.subn(advanced_replacement, index, count=1)',
+    'advanced_pattern.subn(lambda match: advanced_replacement, index, count=1)',
+)
+script = script.replace(
+    'export_pattern.subn(export_replacement, app, count=1)',
+    'export_pattern.subn(lambda match: export_replacement, app, count=1)',
+)
+
 exec(compile(script, 'embedded-audio-admin-update.py', 'exec'), {'re': re})
 workflow_path.unlink(missing_ok=True)
 Path('.github/workflows/recover-audio-admin-controls.yml').unlink(missing_ok=True)
