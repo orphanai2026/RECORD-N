@@ -1,0 +1,23 @@
+name: Fix dialog asset loading
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-dialog-asset-loading.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Link
