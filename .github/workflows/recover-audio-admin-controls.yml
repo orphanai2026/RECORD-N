@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: record-n-audio-admin-recovery-final
+  group: record-n-audio-admin-recovery-final-2
   cancel-in-progress: false
 
 jobs:
