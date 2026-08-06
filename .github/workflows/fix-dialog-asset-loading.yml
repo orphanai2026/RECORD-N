@@ -20,4 +20,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Link
+      - name: Link updated dialog assets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          if 'modal-content.css' not in s:
+              s = s.replace('<link rel="stylesheet" href="digital-tuner.css?v=2026-08-06-r1">', '<link rel="stylesheet" href="digital-tuner.css?v=2026-08-06-r1">\n  <link rel="stylesheet" href="modal-content.css?v=2026-08-06-r1">')
+          s = s.replace('digital-tuner.js?v=2026-08-06-r1', 'digital-tuner.js?v=2026-08-06-r2')
+          p.write_text(s)
+          PY
+          npm run check
+          rm .github/workflows/fix-dialog-asset-loading.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-dialog-asset-loading.yml
+          git commit -m "fix: load rebuilt help and about dialogs"
+          git push origin main
