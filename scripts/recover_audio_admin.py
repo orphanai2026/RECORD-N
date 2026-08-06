@@ -21,7 +21,7 @@ tolerant_helper = '''def replace_once(text, old, new, label):
 
 script, count = re.subn(
     r"def replace_once\(text, old, new, label\):\n\s+if old not in text:\n\s+raise SystemExit\(f'Missing replacement target: \{label\}'\)\n\s+return text\.replace\(old, new, 1\)",
-    tolerant_helper,
+    lambda match: tolerant_helper,
     script,
     count=1,
 )
