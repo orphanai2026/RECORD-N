@@ -40,6 +40,25 @@ jobs:
           end = source.index("\n          PY", start)
           lines = source[start:end].splitlines()
           script = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines)
+
+          original = """def replace_once(text, old, new, label):
+    if old not in text:
+        raise SystemExit(f'Missing replacement target: {label}')
+    return text.replace(old, new, 1)"""
+          tolerant = """def replace_once(text, old, new, label):
+    if old in text:
+        return text.replace(old, new, 1)
+    import re
+    parts = [part for part in re.split(r'\\s+', old.strip()) if part]
+    pattern = r'\\s+'.join(re.escape(part) for part in parts)
+    updated, count = re.subn(pattern, lambda match: new, text, count=1)
+    if count != 1:
+        raise SystemExit(f'Missing replacement target: {label}')
+    return updated"""
+          if original not in script:
+              raise SystemExit('Could not patch replace_once helper')
+          script = script.replace(original, tolerant, 1)
+
           exec(compile(script, 'embedded-audio-admin-update.py', 'exec'), {})
           Path('.github/workflows/expand-audio-admin-controls.yml').unlink(missing_ok=True)
           Path('.github/workflows/recover-audio-admin-controls.yml').unlink(missing_ok=True)
