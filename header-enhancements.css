@@ -1,0 +1,470 @@
+/* Approved header hierarchy and Eastern edge atmosphere — 2026-08-06 */
+:root {
+  --ney-edge-gold: rgba(215, 157, 69, .10);
+  --ney-edge-teal: rgba(67, 222, 212, .08);
+}
+
+/* Keep the working area clear; identity appears only along the outer edges. */
+.background-ornament {
+  top: 0;
+  bottom: 0;
+  width: clamp(170px, 16vw, 265px);
+  height: auto;
+  overflow: hidden;
+  opacity: 1;
+  background: none;
+  mask-image: none;
+  z-index: 0;
+}
+
+.background-ornament--right { right: 0; }
+.background-ornament--left { left: 0; transform: none; }
+
+.background-ornament::before,
+.background-ornament::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  will-change: opacity, background-position;
+}
+
+/* Flexible geometric arabesque: gold, restrained, and confined to corners. */
+.background-ornament::before {
+  top: -54px;
+  width: 265px;
+  height: 265px;
+  opacity: .5;
+  background:
+    repeating-conic-gradient(from 22.5deg, transparent 0 12deg, var(--ney-edge-gold) 13deg 14.2deg, transparent 15deg 29deg),
+    radial-gradient(circle, transparent 0 49%, var(--ney-edge-gold) 50% 51%, transparent 52% 61%, var(--ney-edge-gold) 62% 63%, transparent 64%),
+    repeating-radial-gradient(circle, transparent 0 27px, rgba(215, 157, 69, .055) 28px 29px, transparent 30px 45px);
+  mask-image: radial-gradient(circle at 50% 50%, #000 0 58%, rgba(0, 0, 0, .72) 68%, transparent 82%);
+}
+
+.background-ornament--right::before { right: -72px; }
+.background-ornament--left::before { left: -72px; }
+
+/* Hybrid sound/breath wave: regular enough for a tuner, organic enough for ney breath. */
+.background-ornament::after {
+  top: 12%;
+  bottom: 5%;
+  width: 100%;
+  opacity: .5;
+  background-size: 100% 150px;
+  background-repeat: repeat-y;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 82%, transparent 100%);
+}
+
+.background-ornament--right::after {
+  right: -32%;
+  background-image:
+    repeating-radial-gradient(ellipse at 100% 50%, transparent 0 20px, var(--ney-edge-teal) 21px 22px, transparent 23px 38px),
+    repeating-radial-gradient(ellipse at 94% 48%, transparent 0 31px, rgba(67, 222, 212, .045) 32px 33px, transparent 34px 54px);
+}
+
+.background-ornament--left::after {
+  left: -32%;
+  background-image:
+    repeating-radial-gradient(ellipse at 0 50%, transparent 0 20px, var(--ney-edge-teal) 21px 22px, transparent 23px 38px),
+    repeating-radial-gradient(ellipse at 6% 48%, transparent 0 31px, rgba(67, 222, 212, .045) 32px 33px, transparent 34px 54px);
+}
+
+.brand-copy {
+  min-width: 0;
+  text-align: center;
+}
+
+.brand-copy h1 {
+  white-space: nowrap;
+}
+
+.brand-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+.brand-description {
+  color: #eadfc8;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.brand-reference {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 14px;
+  border: 1px solid rgba(67, 222, 212, .52);
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(5, 58, 59, .76), rgba(1, 29, 32, .94));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035), 0 0 18px rgba(67, 222, 212, .08);
+  color: #a9f4ec;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Desktop: the title leads, the logo supports, and side controls align optically. */
+@media (min-width: 1200px) {
+  .app-header {
+    height: 124px;
+    min-height: 124px;
+    grid-template-rows: 1fr;
+    gap: 24px;
+    padding: 10px 18px 14px;
+  }
+
+  .brand {
+    min-width: 520px;
+    gap: 16px;
+  }
+
+  .brand-logo {
+    width: 68px;
+    height: 68px;
+    flex-basis: 68px;
+  }
+
+  .brand-logo__ney {
+    width: 21px;
+    height: 52px;
+  }
+
+  .brand-copy h1 {
+    font-size: 3.875rem;
+    line-height: .94;
+  }
+
+  .app-header > .header-tabs,
+  .app-header > .microphone-status {
+    translate: 0 -7px;
+  }
+}
+
+/* Tablet: identity owns the first row; tools share the second row. */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .app-header {
+    height: auto;
+    min-height: 154px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 10px 20px;
+    padding: 10px 18px 14px;
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-self: center;
+    min-width: 0;
+    gap: 14px;
+  }
+
+  .brand-logo {
+    width: 60px;
+    height: 60px;
+    flex-basis: 60px;
+  }
+
+  .brand-logo__ney {
+    width: 19px;
+    height: 46px;
+  }
+
+  .brand-copy h1 {
+    font-size: clamp(3.125rem, 5.5vw, 3.25rem);
+    line-height: .95;
+  }
+
+  .brand-description { font-size: 16px; }
+  .brand-reference { min-height: 31px; padding: 6px 12px; font-size: 14px; }
+
+  .header-tabs {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: end;
+    align-self: center;
+    translate: none;
+  }
+
+  .microphone-status {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    align-self: center;
+    width: auto;
+    min-width: 220px;
+    translate: none;
+  }
+
+  .microphone-status span:not(.status-dot) {
+    display: inline;
+  }
+
+  .background-ornament::before,
+  .background-ornament::after { opacity: .25; }
+}
+
+/* Mobile: identity above, then a compact three-column tool strip. */
+@media (max-width: 767px) {
+  .app-header {
+    direction: ltr;
+    height: auto;
+    min-height: 176px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-rows: auto 44px;
+    align-items: center;
+    gap: 10px 7px;
+    padding: 9px 4px 12px;
+  }
+
+  .brand {
+    direction: ltr;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-self: center;
+    display: grid;
+    grid-template-columns: 52px auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    justify-content: center;
+    column-gap: 12px;
+    row-gap: 7px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .brand-logo {
+    grid-column: 1;
+    grid-row: 1;
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+  }
+
+  .brand-logo__ney {
+    width: 17px;
+    height: 40px;
+  }
+
+  .brand-copy { display: contents; }
+
+  .brand-copy h1 {
+    direction: rtl;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    font-size: clamp(2.5rem, 10.7vw, 2.625rem);
+    line-height: .94;
+    text-align: center;
+  }
+
+  .brand-meta {
+    direction: rtl;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 0;
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  .brand-description {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .brand-reference {
+    min-height: 29px;
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+
+  .header-tabs { display: contents; }
+
+  .header-tab,
+  .microphone-status {
+    direction: rtl;
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    translate: none;
+  }
+
+  .header-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 5px;
+    color: transparent;
+    font-size: 0;
+  }
+
+  .header-tab::before,
+  .header-tab::after {
+    color: var(--gold-100);
+    font-size: .76rem;
+    line-height: 1;
+  }
+
+  #aboutButton {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #aboutButton::before { content: "ⓘ"; font-size: .88rem; }
+  #aboutButton::after { content: "عن الأداة"; }
+
+  #headerMicButton {
+    grid-column: 2;
+    grid-row: 2;
+    display: inline-flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 6px;
+    font-size: .68rem;
+  }
+
+  #headerMicButton span:not(.status-dot) {
+    display: inline;
+    font-size: .68rem;
+    white-space: nowrap;
+  }
+
+  #headerMicButton svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  #helpButton {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  #helpButton::before { content: "؟"; font-size: .88rem; font-weight: 800; }
+  #helpButton::after { content: "الاستخدام"; }
+
+  .background-ornament {
+    width: 150px;
+  }
+
+  .background-ornament::before {
+    width: 180px;
+    height: 180px;
+    top: -48px;
+    opacity: .28;
+  }
+
+  .background-ornament--right::before { right: -80px; }
+  .background-ornament--left::before { left: -80px; }
+
+  .background-ornament::after {
+    top: 3%;
+    bottom: auto;
+    height: 270px;
+    opacity: .18;
+    background-size: 100% 135px;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, rgba(0, 0, 0, .6) 70%, transparent);
+  }
+}
+
+/* Narrow phones: keep text readable and stack metadata only when needed. */
+@media (max-width: 389px) {
+  .app-header {
+    min-height: 194px;
+    grid-template-rows: auto 42px;
+    gap: 8px 5px;
+  }
+
+  .brand {
+    grid-template-columns: 50px auto;
+    column-gap: 9px;
+  }
+
+  .brand-logo {
+    width: 50px;
+    height: 50px;
+    flex-basis: 50px;
+  }
+
+  .brand-copy h1 { font-size: 2.5rem; }
+
+  .brand-meta {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .brand-description { font-size: 13.5px; }
+  .brand-reference { min-height: 28px; padding: 5px 10px; font-size: 12.5px; }
+
+  .header-tab::after,
+  #headerMicButton span:not(.status-dot) { font-size: .64rem; }
+
+  .header-tab::before { display: none; }
+  #headerMicButton svg { display: none; }
+}
+
+@keyframes ney-edge-recording-wave {
+  0% { opacity: .28; background-position: 0 24px; }
+  45% { opacity: 1; background-position: 0 0; }
+  100% { opacity: .5; background-position: 0 -18px; }
+}
+
+@keyframes ney-edge-preview-wave {
+  0% { opacity: .32; background-position: 0 -18px; }
+  50% { opacity: .92; background-position: 0 12px; }
+  100% { opacity: .5; background-position: 0 28px; }
+}
+
+@keyframes ney-edge-tuned-wave {
+  0% { opacity: .4; }
+  42% { opacity: 1; }
+  100% { opacity: .5; }
+}
+
+@keyframes ney-edge-gold-breath {
+  0% { opacity: .5; filter: brightness(1); }
+  45% { opacity: .86; filter: brightness(1.2); }
+  100% { opacity: .5; filter: brightness(1); }
+}
+
+body.ney-motion--recording .background-ornament::after {
+  animation: ney-edge-recording-wave 1.4s ease-out 1;
+}
+
+body.ney-motion--recording .background-ornament::before {
+  animation: ney-edge-gold-breath 1.4s ease-out 1;
+}
+
+body.ney-motion--preview .background-ornament::after {
+  animation: ney-edge-preview-wave 1.4s ease-out 1;
+}
+
+body.ney-motion--tuned .background-ornament::after {
+  animation: ney-edge-tuned-wave .8s ease-out 1;
+}
+
+body.ney-motion--tuned .background-ornament::before {
+  animation: ney-edge-gold-breath .8s ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .background-ornament::before,
+  .background-ornament::after,
+  body[class*="ney-motion--"] .background-ornament::before,
+  body[class*="ney-motion--"] .background-ornament::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
