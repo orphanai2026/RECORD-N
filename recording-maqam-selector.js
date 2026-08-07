@@ -42,7 +42,33 @@
     } catch (_) {}
   }
 
-  function renderMaqams(container) {
+  function emitContext() {
+    document.dispatchEvent(new CustomEvent('ney:maqam-recording-context-change', {
+      detail: {
+        recordingMode: currentRecordingMode(),
+        singleMode: state.singleMode,
+        maqamId: state.maqamId
+      }
+    }));
+  }
+
+  function applyMaqamSelection(root, maqamId) {
+    if (!maqamId) return;
+    state.maqamId = maqamId;
+    savePreference();
+    root.dataset.selectedMaqam = maqamId;
+
+    root.querySelectorAll('[data-maqam-id]').forEach(button => {
+      const active = button.dataset.maqamId === maqamId;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    sync(root);
+    emitContext();
+  }
+
+  function renderMaqams(container, root) {
     const lib = library();
     if (!lib) {
       container.innerHTML = '<p class="recording-maqam-selector__unavailable">تعذر تحميل مكتبة المقامات.</p>';
@@ -66,15 +92,26 @@
       category.maqams.forEach(maqamId => {
         const maqam = maqams.find(item => item.id === maqamId);
         if (!maqam) return;
+
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'recording-maqam-option';
         button.dataset.maqamId = maqam.id;
+        button.setAttribute('aria-label', `اختيار مقام ${maqam.ar}`);
         button.setAttribute('aria-pressed', state.maqamId === maqam.id ? 'true' : 'false');
         button.classList.toggle('is-active', state.maqamId === maqam.id);
         button.innerHTML = `<span aria-hidden="true"></span><strong>${maqam.ar}</strong><small>${maqam.en}</small>`;
+
+        /* Direct binding avoids touch/click delegation failures on some Android Chrome layouts. */
+        button.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          applyMaqamSelection(root, maqam.id);
+        });
+
         options.append(button);
       });
+
       container.append(section);
     });
   }
@@ -89,6 +126,8 @@
 
     root.dataset.context = maqamScale ? 'scale' : 'single';
     root.dataset.singleMode = state.singleMode;
+    if (state.maqamId) root.dataset.selectedMaqam = state.maqamId;
+    else delete root.dataset.selectedMaqam;
 
     const headTitle = root.querySelector('.recording-maqam-selector__head h4');
     const headCopy = root.querySelector('.recording-maqam-selector__head p');
@@ -106,7 +145,7 @@
         summary.innerHTML = '<strong>سلم مقام شرقي كامل</strong><span>اختر المقام أولًا، ثم نحدد جذر المقام ودرجات السلم في الخطوة التالية.</span>';
       } else {
         const maqam = library()?.getMaqam?.(state.maqamId);
-        summary.innerHTML = `<strong>سلم مقام ${maqam?.ar || state.maqamId}</strong><span>المقام محدد. الخطوة التالية هي اختيار جذر المقام ثم توليد درجات السلم الكامل.</span>`;
+        summary.innerHTML = `<strong>سلم مقام ${maqam?.ar || state.maqamId}</strong><span>تم اختيار المقام. الخطوة التالية هي تحديد جذر المقام ثم توليد درجات السلم الكامل.</span>`;
       }
       return;
     }
@@ -128,18 +167,8 @@
       summary.innerHTML = '<strong>نغمات مقام شرقي</strong><span>اختر المقام المطلوب لتسجيل نغماته منفصلة.</span>';
     } else {
       const maqam = library()?.getMaqam?.(state.maqamId);
-      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>سيُستخدم هذا الاختيار لتحديد درجات المقام بعد اعتماد جذر المقام.</span>`;
+      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>تم اختيار المقام لتسجيل نغماته المنفصلة. تحديد الجذر والدرجات يأتي في الخطوة التالية.</span>`;
     }
-  }
-
-  function emitContext() {
-    document.dispatchEvent(new CustomEvent('ney:maqam-recording-context-change', {
-      detail: {
-        recordingMode: currentRecordingMode(),
-        singleMode: state.singleMode,
-        maqamId: state.maqamId
-      }
-    }));
   }
 
   function install() {
@@ -172,27 +201,14 @@
       </div>`;
 
     summary.after(root);
-    renderMaqams(root.querySelector('.recording-maqam-selector__groups'));
+    renderMaqams(root.querySelector('.recording-maqam-selector__groups'), root);
 
     root.addEventListener('click', event => {
       const modeButton = event.target.closest('[data-single-mode]');
-      if (modeButton) {
-        state.singleMode = modeButton.dataset.singleMode === 'maqam' ? 'maqam' : 'general';
-        savePreference();
-        sync(root);
-        emitContext();
-        return;
-      }
+      if (!modeButton) return;
 
-      const maqamButton = event.target.closest('[data-maqam-id]');
-      if (!maqamButton) return;
-      state.maqamId = maqamButton.dataset.maqamId;
+      state.singleMode = modeButton.dataset.singleMode === 'maqam' ? 'maqam' : 'general';
       savePreference();
-      root.querySelectorAll('[data-maqam-id]').forEach(button => {
-        const active = button.dataset.maqamId === state.maqamId;
-        button.classList.toggle('is-active', active);
-        button.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
       sync(root);
       emitContext();
     });
