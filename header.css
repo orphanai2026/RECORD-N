@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
 
 /* Approved header identity refinement — 2026-08-07 */
 .app-header {
@@ -52,19 +52,23 @@
 
 .brand-copy h1 {
   margin: 0;
-  padding-block: .03em;
+  padding: .05em .08em .14em;
   color: var(--gold-100);
-  font-family: "Aref Ruqaa", Amiri, var(--font) !important;
+  font-family: "Noto Nastaliq Urdu", Amiri, serif !important;
   font-size: clamp(3.3rem, 4.4vw, 4.45rem);
-  line-height: .96;
+  line-height: 1.08 !important;
   font-weight: 700;
   font-synthesis: none;
+  font-variant-ligatures: common-ligatures contextual;
+  font-feature-settings: "liga" 1, "calt" 1, "kern" 1;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  text-shadow:
-    0 6px 20px rgba(0, 0, 0, .38),
-    0 0 18px rgba(215, 157, 69, .10),
-    0 0 34px rgba(245, 207, 130, .055);
+  background: linear-gradient(180deg, #ffe7a8 0%, #efc36f 42%, #d29a43 72%, #a46d2c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 7px rgba(0, 0, 0, .38)) drop-shadow(0 0 10px rgba(215, 157, 69, .16));
+  text-shadow: none !important;
 }
 
 .brand-meta {
