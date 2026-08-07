@@ -297,7 +297,7 @@ if (!document.querySelector('link[data-app-shell-stabilization]')) {
 if (!document.querySelector('link[data-recording-priority]')) {
   const recordingPriorityStyles = document.createElement('link');
   recordingPriorityStyles.rel = 'stylesheet';
-  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1840';
+  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1849';
   recordingPriorityStyles.dataset.recordingPriority = 'true';
   document.head.append(recordingPriorityStyles);
 }
