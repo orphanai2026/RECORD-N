@@ -205,11 +205,15 @@
     const tonic = normalizeTonic(options.tonic || 'C4');
     const rootAbs24 = tonicAbs24(tonic);
     const useExtended = maqam.id === 'saba' && options.extended === true && Array.isArray(variant.extendedOffsets24);
-    const offsets = useExtended ? variant.extendedOffsets24 : variant.offsets24;
-    const adjustmentMap = options.intonationAdjustmentsCents || {};
+    const ascendingOffsets = useExtended ? variant.extendedOffsets24 : variant.offsets24;
+    const descendingOffsets = useExtended && Array.isArray(variant.extendedDescendingOffsets24)
+      ? variant.extendedDescendingOffsets24
+      : (Array.isArray(variant.descendingOffsets24) ? variant.descendingOffsets24 : ascendingOffsets);
+    const ascendingAdjustments = options.intonationAdjustmentsCents || {};
+    const descendingAdjustments = options.descendingIntonationAdjustmentsCents || ascendingAdjustments;
     const a4 = Number(options.a4) || 440;
 
-    const ascending = offsets.map((offset24, index) => {
+    const buildDefinedPath = (offsets, adjustmentMap) => offsets.map((offset24, index) => {
       const abs24 = rootAbs24 + offset24;
       const adjustmentCents = Number(adjustmentMap[index + 1] ?? 0) || 0;
       const spelling = spellDegree(tonic, index, abs24);
@@ -225,10 +229,14 @@
       });
     });
 
+    const ascending = buildDefinedPath(ascendingOffsets, ascendingAdjustments);
+    const descendingDefinition = buildDefinedPath(descendingOffsets, descendingAdjustments);
+    const descending = [...descendingDefinition].reverse();
+
     const direction = options.direction || 'ascending';
     let notes = ascending;
-    if (direction === 'descending') notes = [...ascending].reverse();
-    if (direction === 'both') notes = [...ascending, ...ascending.slice(0, -1).reverse()];
+    if (direction === 'descending') notes = descending;
+    if (direction === 'both') notes = [...ascending, ...descending.slice(1)];
 
     return Object.freeze({
       mode: 'maqam',
@@ -257,7 +265,13 @@
   function getMaqams() {
     return Object.values(MAQAMS).map(maqam => ({
       ...maqam,
-      variants: maqam.variants.map(variant => ({ ...variant, offsets24: [...variant.offsets24], extendedOffsets24: variant.extendedOffsets24 ? [...variant.extendedOffsets24] : undefined }))
+      variants: maqam.variants.map(variant => ({
+        ...variant,
+        offsets24: [...variant.offsets24],
+        descendingOffsets24: variant.descendingOffsets24 ? [...variant.descendingOffsets24] : undefined,
+        extendedOffsets24: variant.extendedOffsets24 ? [...variant.extendedOffsets24] : undefined,
+        extendedDescendingOffsets24: variant.extendedDescendingOffsets24 ? [...variant.extendedDescendingOffsets24] : undefined
+      }))
     }));
   }
 
