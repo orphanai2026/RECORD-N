@@ -98,3 +98,15 @@ if (!document.querySelector('link[data-app-shell-frame]')) {
 }
 import('./app-shell-frame.js?v=2026-08-07-1832')
   .catch(error => console.error('App Shell frame load failed', error));
+
+/* Stage 12.1: force the latest recording priority/containment layer through the no-cache bootstrap. */
+const existingRecordingPriority = document.querySelector('link[data-recording-priority]');
+if (existingRecordingPriority) {
+  existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1849';
+} else {
+  const recordingPriorityStyles = document.createElement('link');
+  recordingPriorityStyles.rel = 'stylesheet';
+  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1849';
+  recordingPriorityStyles.dataset.recordingPriority = 'true';
+  document.head.append(recordingPriorityStyles);
+}
