@@ -60,7 +60,7 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.7: maqam-scale sequential capture flow. */
+/* Stage 15.8: target-gated maqam-scale sequential capture. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
@@ -81,7 +81,8 @@ if (!document.querySelector('link[data-recording-maqam-selector]')) {
 }
 import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2133'))
-  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2143'))
+  .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
+  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2206'))
   .catch(error => console.error('Recording maqam selector load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
