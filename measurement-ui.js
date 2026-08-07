@@ -284,5 +284,14 @@ if (!document.querySelector('link[data-app-shell-stage]')) {
 }
 import('./app-shell-stage.js?v=2026-08-07-1818').catch(error => console.error('App Shell load failed', error));
 
+/* Stage 11.1: App Shell stabilization after tablet review. Layout only. */
+if (!document.querySelector('link[data-app-shell-stabilization]')) {
+  const stabilizationStyles = document.createElement('link');
+  stabilizationStyles.rel = 'stylesheet';
+  stabilizationStyles.href = './app-shell-stabilization.css?v=2026-08-07-1827';
+  stabilizationStyles.dataset.appShellStabilization = 'true';
+  document.head.append(stabilizationStyles);
+}
+
 /* Build bootstrap must always be fresh during development so nested module versions cannot be pinned by browser cache. */
 import(`./build-meta.js?ts=${Date.now()}`).catch(error => console.error('Build metadata load failed', error));
