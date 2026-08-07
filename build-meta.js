@@ -41,7 +41,7 @@ import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('M
 import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
   .then(() => import('./performance-pack-store.js?v=2026-08-07-1707'))
-  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1734'))
+  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1742'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 /* Stage 7 ney-specific continuous capture with clean-reference persistence. */
