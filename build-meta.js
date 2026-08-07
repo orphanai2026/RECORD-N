@@ -83,3 +83,7 @@ if (!document.querySelector('link[data-recording-modernization]')) {
   modernizationStyles.dataset.recordingModernization = 'true';
   document.head.append(modernizationStyles);
 }
+
+/* Stage 11 bridge: keeps the compact recording metronome synchronized with the training engine regardless of load order. */
+import('./app-shell-metronome-bridge.js?v=2026-08-07-1818')
+  .catch(error => console.error('App Shell metronome bridge load failed', error));
