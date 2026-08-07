@@ -10,6 +10,57 @@
   white-space: nowrap;
 }
 
+.ney-educational-capture-status {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 11px 12px;
+  border: 1px solid rgba(216,184,106,.16);
+  border-radius: 13px;
+  background: rgba(1,34,36,.5);
+}
+
+.ney-educational-capture-status__copy {
+  display: grid;
+  gap: 2px;
+}
+
+.ney-educational-capture-status__copy strong {
+  color: #efe9d9;
+  font-size: .78rem;
+}
+
+.ney-educational-capture-status__copy span {
+  color: rgba(230,238,234,.64);
+  font-size: .68rem;
+}
+
+.ney-educational-capture-status__progress {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+
+.ney-educational-capture-status__progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(216,184,106,.75), rgba(82,221,207,.9));
+  transition: width 120ms linear;
+}
+
+.ney-educational-capture-status[data-state="success"] {
+  border-color: rgba(82,221,207,.36);
+  background: rgba(11,76,70,.28);
+}
+
+.ney-educational-capture-status[data-state="warning"] {
+  border-color: rgba(229,172,93,.34);
+  background: rgba(82,56,18,.18);
+}
+
 .record-row--educational {
   border-inline-start: 3px solid rgba(83, 213, 193, .72);
 }
