@@ -154,3 +154,6 @@
     initializeNavigation();
   }
 })();
+
+/* Stage 3 training metronome is isolated from navigation and pitch logic. */
+import('./metronome-training.js?v=2026-08-07-1420').catch(error => console.error('Training metronome load failed', error));
