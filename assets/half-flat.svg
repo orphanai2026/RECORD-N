@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 64" role="img" aria-label="نصف بيمول">
+  <path d="M12 4v48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M12 31c5-5 13-5 16 .5 3 5-1 13-9 17-3 1.5-5 2-7 2" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M5 19l15-7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+</svg>
