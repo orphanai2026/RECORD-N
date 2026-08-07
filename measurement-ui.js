@@ -173,6 +173,18 @@
       if (needleValue.textContent.trim() !== '—') needleValue.textContent = '—';
     }
 
+    function syncNeedleReadingColor() {
+      const state = deviationMetric.dataset.state || 'idle';
+      const colors = {
+        tuned: '#70f0b1',
+        flat: '#ffd166',
+        sharp: '#ff756d',
+        idle: '#b9c3c0'
+      };
+      needleValue.style.color = colors[state] || colors.idle;
+      needleValue.dataset.tuningState = state;
+    }
+
     function protectNeedleReadingAtEdges() {
       if (!needle || !tunerBar || !needleValue) return;
       needleValue.classList.remove('is-edge-left', 'is-edge-right');
@@ -196,6 +208,7 @@
         updateNote();
         updateQualityFromSource();
         updateNeutralValues();
+        syncNeedleReadingColor();
         requestAnimationFrame(protectNeedleReadingAtEdges);
       } finally {
         queueMicrotask(() => { refreshing = false; });
