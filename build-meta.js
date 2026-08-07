@@ -33,3 +33,6 @@
     loadBuildMeta();
   }
 })();
+
+/* Metronome reset control is isolated from the metronome engine. */
+import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
