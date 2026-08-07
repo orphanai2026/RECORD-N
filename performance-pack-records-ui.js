@@ -12,6 +12,7 @@
     countBadge: null
   };
 
+  const DURATION_ORDER = Object.freeze({ whole: 1, half: 2, quarter: 3, eighth: 4, sixteenth: 5 });
   const escapeHtml = value => String(value ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -29,7 +30,7 @@
     if (!title) return null;
     const badge = document.createElement('span');
     badge.className = 'performance-pack-library-count';
-    badge.setAttribute('aria-label', 'عدد العينات المحفوظة');
+    badge.setAttribute('aria-label', 'ملخص مكتبة العينات');
     badge.textContent = '0';
     title.appendChild(badge);
     state.countBadge = badge;
@@ -56,9 +57,14 @@
     return pack?.note?.english || '—';
   }
 
-  function qualityLabel(sample) {
+  function qualityValue(sample) {
     const clarity = Number(sample?.metrics?.meanClarity ?? sample?.meanClarity ?? 0);
-    return Number.isFinite(clarity) ? `${Math.round(clarity * 100)}%` : '—';
+    return Number.isFinite(clarity) ? Math.round(clarity * 100) : null;
+  }
+
+  function qualityLabel(sample) {
+    const value = qualityValue(sample);
+    return value == null ? '—' : `${value}%`;
   }
 
   function centsLabel(sample) {
@@ -71,30 +77,45 @@
     return Number.isFinite(value) ? value : 0;
   }
 
-  function contextText(pack, sample, type) {
-    const context = pack?.context || {};
-    const parts = [type === 'clean' ? 'صافية / مرجعية' : 'تعليمية زمنية'];
-    if (type === 'educational') {
-      parts.push(sample.durationName || 'قيمة زمنية');
-      if (Number.isFinite(Number(sample.beats))) parts.push(`${sample.beats} زمن`);
-      if (Number.isFinite(Number(sample.bpm))) parts.push(`BPM ${sample.bpm}`);
+  function sampleKey(pack, sample, type, durationKey = '') {
+    return `${pack.packKey}::${type}::${durationKey || sample?.audioId || 'sample'}`;
+  }
+
+  function sampleTitle(sample, type) {
+    if (type === 'clean') return 'مرجعية';
+    return sample?.durationName || 'تعليمية';
+  }
+
+  function sampleMeta(sample, type) {
+    const parts = [];
+    if (type === 'clean') {
+      parts.push('صافية');
+    } else {
+      if (Number.isFinite(Number(sample?.beats))) parts.push(`${sample.beats} زمن`);
+      if (Number.isFinite(Number(sample?.bpm))) parts.push(`BPM ${sample.bpm}`);
     }
-    if (context.maqamAr) parts.push(`مقام ${context.maqamAr}`);
-    if (context.maqamDegree) parts.push(`الدرجة ${context.maqamDegree}`);
     parts.push(`جودة ${qualityLabel(sample)}`);
     parts.push(`انحراف ${centsLabel(sample)}`);
     return parts.join(' · ');
   }
 
-  function makeFileName(pack, sample, type) {
-    const note = String(englishLabel(pack)).replace(/[^a-zA-Z0-9#♯♭½_-]+/g, '-');
-    const duration = type === 'educational' ? `-${String(sample.durationName || sample.durationId || 'duration').replace(/\s+/g, '-')}-${sample.bpm || ''}` : '-reference';
-    const date = String(sample?.updatedAt || pack?.updatedAt || new Date().toISOString()).slice(0, 10);
-    return `ney-${note || 'sample'}${duration}-${date}.wav`;
+  function contextMeta(pack) {
+    const context = pack?.context || {};
+    const parts = [];
+    if (context.maqamAr) parts.push(`مقام ${context.maqamAr}`);
+    if (context.maqamDegree) parts.push(`الدرجة ${context.maqamDegree}`);
+    if (context.mode === 'chromatic-24') parts.push('كروماتك شرقي');
+    else if (context.mode === 'chromatic-12') parts.push('كروماتك غربي');
+    return parts.join(' · ');
   }
 
-  function sampleKey(pack, sample, type, durationKey = '') {
-    return `${pack.packKey}::${type}::${durationKey || sample.audioId || 'sample'}`;
+  function makeFileName(pack, sample, type) {
+    const note = String(englishLabel(pack)).replace(/[^a-zA-Z0-9#♯♭½_-]+/g, '-');
+    const duration = type === 'educational'
+      ? `-${String(sample?.durationName || sample?.durationId || 'duration').replace(/\s+/g, '-')}-${sample?.bpm || ''}`
+      : '-reference';
+    const date = String(sample?.updatedAt || pack?.updatedAt || new Date().toISOString()).slice(0, 10);
+    return `ney-${note || 'sample'}${duration}-${date}.wav`;
   }
 
   async function playSample(pack, sample, type, durationKey, button) {
@@ -112,7 +133,9 @@
     state.objectUrl = URL.createObjectURL(audioRecord.blob);
     state.audio = new Audio(state.objectUrl);
     state.playingSampleKey = key;
-    button.querySelector('span').textContent = 'إيقاف';
+    button.classList.add('is-playing');
+    const text = button.querySelector('[data-action-label]');
+    if (text) text.textContent = 'إيقاف';
     state.audio.addEventListener('ended', () => stopPlayback(), { once: true });
     state.audio.addEventListener('error', () => stopPlayback(), { once: true });
     try {
@@ -138,36 +161,78 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  function createRow(pack, sample, type, durationKey = '') {
-    if (!sample?.audioId) return null;
+  function createSampleItem(pack, sample, type, durationKey = '') {
     const key = sampleKey(pack, sample, type, durationKey);
-    const row = document.createElement('article');
-    row.className = `record-row record-row--performance-pack record-row--${type}`;
-    row.dataset.performancePackKey = pack.packKey;
-    row.dataset.performanceSampleKey = key;
-    row.setAttribute('aria-label', `${type === 'clean' ? 'عينة مرجعية' : 'عينة تعليمية'} محفوظة ${noteLabel(pack)}`);
-    row.innerHTML = `
-      <div class="record-identity">
-        <div class="record-note"><strong dir="ltr">${escapeHtml(englishLabel(pack))}</strong></div>
-        <div class="record-copy">
-          <strong>${escapeHtml(noteLabel(pack))}</strong>
-          <span>${escapeHtml(contextText(pack, sample, type))}</span>
-        </div>
+    const item = document.createElement('div');
+    item.className = `performance-note-sample performance-note-sample--${type}`;
+    item.dataset.performanceSampleKey = key;
+    item.innerHTML = `
+      <div class="performance-note-sample__copy">
+        <strong>${escapeHtml(sampleTitle(sample, type))}</strong>
+        <span>${escapeHtml(sampleMeta(sample, type))}</span>
       </div>
-      <div class="record-frequency" dir="ltr">${frequency(pack).toFixed(2)} <small>Hz</small></div>
-      <div class="record-row-actions">
-        <button class="play-button" type="button" aria-label="سماع ${escapeHtml(noteLabel(pack))}">
+      <div class="performance-note-sample__actions">
+        <button type="button" class="performance-sample-play" aria-label="سماع ${escapeHtml(noteLabel(pack))} ${escapeHtml(sampleTitle(sample, type))}">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>
-          <span>${state.playingSampleKey === key ? 'إيقاف' : 'سماع'}</span>
+          <span data-action-label>${state.playingSampleKey === key ? 'إيقاف' : 'سماع'}</span>
         </button>
-        <button class="record-menu-button performance-pack-download" type="button" aria-label="تنزيل WAV" title="تنزيل WAV">
+        <button type="button" class="performance-sample-download" aria-label="تنزيل WAV" title="تنزيل WAV">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
         </button>
       </div>`;
 
-    row.querySelector('.play-button').addEventListener('click', event => playSample(pack, sample, type, durationKey, event.currentTarget));
-    row.querySelector('.performance-pack-download').addEventListener('click', () => downloadSample(pack, sample, type));
-    return row;
+    item.querySelector('.performance-sample-play').addEventListener('click', event => playSample(pack, sample, type, durationKey, event.currentTarget));
+    item.querySelector('.performance-sample-download').addEventListener('click', () => downloadSample(pack, sample, type));
+    return item;
+  }
+
+  function samplesForPack(pack) {
+    const samples = [];
+    if (pack?.samples?.clean?.audioId) samples.push({ type: 'clean', durationKey: '', sample: pack.samples.clean, order: 0 });
+    Object.entries(pack?.samples?.educational || {}).forEach(([durationKey, sample]) => {
+      if (!sample?.audioId) return;
+      samples.push({
+        type: 'educational',
+        durationKey,
+        sample,
+        order: DURATION_ORDER[sample.durationId] || 99
+      });
+    });
+    return samples.sort((a, b) => a.order - b.order || Number(a.sample?.bpm || 0) - Number(b.sample?.bpm || 0));
+  }
+
+  function createPackCard(pack) {
+    const samples = samplesForPack(pack);
+    if (!samples.length) return null;
+
+    const card = document.createElement('article');
+    card.className = 'performance-note-card';
+    card.dataset.performancePackKey = pack.packKey;
+    card.setAttribute('aria-label', `حزمة تسجيلات ${noteLabel(pack)}؛ ${samples.length} عينات`);
+    const context = contextMeta(pack);
+    card.innerHTML = `
+      <header class="performance-note-card__header">
+        <div class="performance-note-card__identity">
+          <strong class="performance-note-card__english" dir="ltr">${escapeHtml(englishLabel(pack))}</strong>
+          <div>
+            <h3>${escapeHtml(noteLabel(pack))}</h3>
+            <p>${context ? `${escapeHtml(context)} · ` : ''}${samples.length} ${samples.length === 1 ? 'عينة' : 'عينات'}</p>
+          </div>
+        </div>
+        <div class="performance-note-card__frequency" dir="ltr">${frequency(pack).toFixed(2)} <small>Hz</small></div>
+      </header>
+      <div class="performance-note-card__samples"></div>`;
+
+    const holder = card.querySelector('.performance-note-card__samples');
+    samples.forEach(item => holder.appendChild(createSampleItem(pack, item.sample, item.type, item.durationKey)));
+    return card;
+  }
+
+  function hideLegacyRows(list) {
+    list.querySelectorAll(':scope > .record-row:not([data-performance-pack-key])').forEach(row => {
+      row.hidden = true;
+      row.dataset.legacyRecordingRow = 'true';
+    });
   }
 
   function connectObserver() {
@@ -189,28 +254,28 @@
     state.syncing = true;
     state.observer?.disconnect();
     try {
-      const packs = await packStore.listPacks();
-      const rows = [];
-      packs.forEach(pack => {
-        const clean = pack?.samples?.clean;
-        if (clean?.audioId) rows.push({ pack, sample: clean, type: 'clean', durationKey: '', updatedAt: clean.updatedAt || pack.updatedAt || '' });
-        Object.entries(pack?.samples?.educational || {}).forEach(([durationKey, sample]) => {
-          if (sample?.audioId) rows.push({ pack, sample, type: 'educational', durationKey, updatedAt: sample.updatedAt || pack.updatedAt || '' });
-        });
-      });
-      rows.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+      const packs = (await packStore.listPacks())
+        .filter(pack => samplesForPack(pack).length)
+        .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+      const sampleCount = packs.reduce((sum, pack) => sum + samplesForPack(pack).length, 0);
 
-      list.querySelectorAll('[data-performance-sample-key]').forEach(node => node.remove());
+      list.querySelectorAll(':scope > [data-performance-pack-key]').forEach(node => node.remove());
+      hideLegacyRows(list);
       const fragment = document.createDocumentFragment();
-      rows.forEach(item => {
-        const row = createRow(item.pack, item.sample, item.type, item.durationKey);
-        if (row) fragment.appendChild(row);
+      packs.forEach(pack => {
+        const card = createPackCard(pack);
+        if (card) fragment.appendChild(card);
       });
       if (fragment.childNodes.length) list.insertBefore(fragment, list.firstChild);
+
       const badge = ensureCountBadge();
-      if (badge) badge.textContent = String(rows.length);
-      list.dataset.performancePackCount = String(rows.length);
-      list.setAttribute('aria-label', `التسجيلات المحفوظة؛ ${rows.length} عينة من Ney Auto-Capture`);
+      if (badge) {
+        badge.textContent = `${packs.length} نغمات · ${sampleCount} عينات`;
+        badge.setAttribute('aria-label', `${packs.length} نغمات محفوظة و${sampleCount} عينات صوتية`);
+      }
+      list.dataset.performancePackCount = String(packs.length);
+      list.dataset.performanceSampleCount = String(sampleCount);
+      list.setAttribute('aria-label', `التسجيلات المحفوظة؛ ${packs.length} نغمات و${sampleCount} عينات من Ney Auto-Capture`);
     } catch (error) {
       console.error('Performance Pack recordings sync failed', error);
     } finally {
@@ -239,8 +304,11 @@
       refresh: () => sync(),
       stopPlayback: () => stopPlayback(),
       count: async () => {
-        const packs = await store()?.listPacks?.() || [];
-        return packs.reduce((sum, pack) => sum + (pack?.samples?.clean?.audioId ? 1 : 0) + Object.values(pack?.samples?.educational || {}).filter(sample => sample?.audioId).length, 0);
+        const packs = (await store()?.listPacks?.() || []).filter(pack => samplesForPack(pack).length);
+        return {
+          notes: packs.length,
+          samples: packs.reduce((sum, pack) => sum + samplesForPack(pack).length, 0)
+        };
       }
     });
   }
