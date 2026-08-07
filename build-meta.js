@@ -60,11 +60,11 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.3: separate single-note controls from full maqam-scale selection. */
+/* Stage 15.4: tablet alignment for recording modes and session-start controls. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
-  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2107';
+  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2120';
   sessionFlowStyles.dataset.recordingSessionFlow = 'true';
   document.head.append(sessionFlowStyles);
 }
