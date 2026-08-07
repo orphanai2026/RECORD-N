@@ -48,9 +48,10 @@ if (!document.querySelector('link[data-recording-flow]')) {
 import('./recording-flow.js?v=2026-08-07-1458').catch(error => console.error('Recording flow load failed', error));
 
 /* Stage 6 scientific maqam data and unified recording-session foundation. */
-await import('./maqam-library.js?v=2026-08-07-1614').catch(error => console.error('Maqam library load failed', error));
-await import('./recording-generator.js?v=2026-08-07-1614').catch(error => console.error('Recording generator load failed', error));
-await import('./performance-pack-store.js?v=2026-08-07-1614').catch(error => console.error('Performance pack store load failed', error));
+import('./maqam-library.js?v=2026-08-07-1614')
+  .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
+  .then(() => import('./performance-pack-store.js?v=2026-08-07-1614'))
+  .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 /* Stage 5 ney-specific continuous auto-capture monitor. */
 if (!document.querySelector('link[data-ney-auto-capture]')) {
