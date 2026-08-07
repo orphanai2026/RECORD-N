@@ -51,7 +51,7 @@ import('./recording-flow.js?v=2026-08-07-1458').catch(error => console.error('Re
 import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
   .then(() => import('./performance-pack-store.js?v=2026-08-07-1614'))
-  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1640'))
+  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1654'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 /* Stage 7 ney-specific continuous capture with clean-reference persistence. */
@@ -63,3 +63,13 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 import('./ney-auto-capture.js?v=2026-08-07-1629').catch(error => console.error('Ney Auto-Capture load failed', error));
+
+/* Stage 8: automatic first-note session start, with manual mode for advanced players. */
+if (!document.querySelector('link[data-auto-session-start]')) {
+  const sessionStartStyles = document.createElement('link');
+  sessionStartStyles.rel = 'stylesheet';
+  sessionStartStyles.href = './auto-session-start.css?v=2026-08-07-1654';
+  sessionStartStyles.dataset.autoSessionStart = 'true';
+  document.head.append(sessionStartStyles);
+}
+import('./auto-session-start.js?v=2026-08-07-1654').catch(error => console.error('Automatic session start load failed', error));
