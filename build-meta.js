@@ -60,7 +60,18 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   sessionStartStyles.dataset.autoSessionStart = 'true';
   document.head.append(sessionStartStyles);
 }
-import('./auto-session-start.js?v=2026-08-07-1654').catch(error => console.error('Automatic session start load failed', error));
+
+/* Stage 14: organized recording mode + session start hierarchy. */
+if (!document.querySelector('link[data-recording-session-flow]')) {
+  const sessionFlowStyles = document.createElement('link');
+  sessionFlowStyles.rel = 'stylesheet';
+  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2025';
+  sessionFlowStyles.dataset.recordingSessionFlow = 'true';
+  document.head.append(sessionFlowStyles);
+}
+import('./auto-session-start.js?v=2026-08-07-1654')
+  .then(() => import('./recording-session-flow.js?v=2026-08-07-2025'))
+  .catch(error => console.error('Recording session flow load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
   const durationStyles = document.createElement('link');
