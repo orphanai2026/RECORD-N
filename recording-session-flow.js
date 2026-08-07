@@ -14,8 +14,14 @@
     chromatic: {
       title: 'سلم كروماتك',
       subtitle: 'جلسة نغمات متتابعة',
-      badge: 'جلسة متتابعة',
-      description: 'سجّل سلسلة نغمات ضمن جلسة واحدة. ابدأ تلقائيًا من أول نغمة صافية، أو انتقل إلى التحديد اليدوي إذا أردت نطاقًا محددًا.'
+      badge: 'جلسة كروماتية',
+      description: 'سجّل سلسلة نغمات كروماتية ضمن جلسة واحدة. ابدأ تلقائيًا من أول نغمة صافية، أو استخدم تحديدًا يدويًا لنطاق السلم.'
+    },
+    'maqam-scale': {
+      title: 'سلم مقام شرقي',
+      subtitle: 'السلم الكامل للمقام',
+      badge: 'سلم شرقي كامل',
+      description: 'اختر مقامًا شرقيًا ثم جذر المقام لتجهيز درجاته الصحيحة وتسجيل السلم كاملًا وفق مرجع الضبط المعتمد.'
     }
   };
 
@@ -27,7 +33,43 @@
     return $('#autoSessionStartController [data-start-mode].is-active')?.dataset.startMode || 'auto';
   }
 
+  function ensureMaqamScaleButton(control) {
+    let button = control.querySelector('[data-recording-mode="maqam-scale"]');
+    if (button) return button;
+
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'segment';
+    button.dataset.recordingMode = 'maqam-scale';
+    button.setAttribute('aria-pressed', 'false');
+    button.textContent = 'سلم مقام شرقي';
+    control.append(button);
+
+    button.addEventListener('click', event => {
+      event.preventDefault();
+
+      /* Exit the native chromatic engine safely before entering the maqam-scale UI path. */
+      const singleButton = control.querySelector('[data-recording-mode="single"]');
+      if (singleButton && !singleButton.classList.contains('is-active')) singleButton.click();
+
+      queueMicrotask(() => {
+        control.querySelectorAll('[data-recording-mode]').forEach(item => {
+          const active = item === button;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        $('#chromaticSettings')?.setAttribute('hidden', '');
+        document.dispatchEvent(new CustomEvent('ney:recording-mode-ui-change', {
+          detail: { mode: 'maqam-scale', engineFallback: 'single' }
+        }));
+      });
+    });
+
+    return button;
+  }
+
   function enhanceModeButtons(control) {
+    ensureMaqamScaleButton(control);
     control.querySelectorAll('[data-recording-mode]').forEach(button => {
       if (button.dataset.flowEnhanced === 'true') return;
       const info = modeContent[button.dataset.recordingMode] || modeContent.single;
@@ -72,8 +114,7 @@
     controls.className = 'recording-manual-range__controls';
     wrapper.append(controls);
 
-    const ids = ['chromaticStart', 'chromaticEnd', 'chromaticDirection'];
-    ids.forEach(id => {
+    ['chromaticStart', 'chromaticEnd', 'chromaticDirection'].forEach(id => {
       const label = $(`#${id}`)?.closest('label');
       if (label) controls.append(label);
     });
@@ -99,11 +140,12 @@
 
     if (mode !== 'chromatic') {
       settings.dataset.startMode = 'none';
+      settings.hidden = true;
       return;
     }
 
-    const startMode = activeStartMode();
-    settings.dataset.startMode = startMode;
+    settings.hidden = false;
+    settings.dataset.startMode = activeStartMode();
   }
 
   function install() {
@@ -122,6 +164,7 @@
     settings.addEventListener('click', event => {
       if (event.target.closest('[data-start-mode]')) resync();
     });
+    document.addEventListener('ney:recording-mode-ui-change', resync);
 
     const observer = new MutationObserver(resync);
     observer.observe(control, { subtree: true, attributes: true, attributeFilter: ['class', 'aria-pressed'] });
