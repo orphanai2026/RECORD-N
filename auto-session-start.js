@@ -8,6 +8,7 @@
     sequenceKeys: new Set(),
     controller: null,
     status: null,
+    headSubtitle: null,
     autoButton: null,
     manualButton: null,
     settings: null,
@@ -67,6 +68,13 @@
     }
   }
 
+  function updateHeadGuidance(automatic) {
+    if (!state.headSubtitle) return;
+    state.headSubtitle.textContent = automatic
+      ? 'ابدأ العزف مباشرة؛ تبدأ الجلسة من أول نغمة صافية معتمدة.'
+      : 'حدد نطاق الجلسة والاتجاه، ثم جهّز السلم قبل بدء العزف.';
+  }
+
   function updateVisibility() {
     const chromatic = currentRecordingMode() === 'chromatic';
     if (state.controller) state.controller.hidden = !chromatic;
@@ -78,6 +86,7 @@
     }
 
     const automatic = state.mode === 'auto';
+    updateHeadGuidance(automatic);
     if (state.startLabel) state.startLabel.hidden = automatic;
     if (state.endLabel) state.endLabel.hidden = automatic;
     if (state.buildButton) state.buildButton.hidden = automatic;
@@ -166,7 +175,7 @@
       <div class="auto-session-start__head">
         <div>
           <strong>بداية الجلسة</strong>
-          <span>الوضع الافتراضي يبدأ من أول نغمة صافية تعزفها.</span>
+          <span id="autoSessionStartSubtitle">ابدأ العزف مباشرة؛ تبدأ الجلسة من أول نغمة صافية معتمدة.</span>
         </div>
         <div class="auto-session-start__modes" role="group" aria-label="طريقة تحديد بداية الجلسة">
           <button type="button" class="is-active" data-start-mode="auto" aria-pressed="true">اكتشاف تلقائي</button>
@@ -181,6 +190,7 @@
     settings.prepend(controller);
     state.controller = controller;
     state.status = $('#autoSessionStartStatus');
+    state.headSubtitle = $('#autoSessionStartSubtitle');
     state.autoButton = controller.querySelector('[data-start-mode="auto"]');
     state.manualButton = controller.querySelector('[data-start-mode="manual"]');
 
