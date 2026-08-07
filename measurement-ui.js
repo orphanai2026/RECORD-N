@@ -114,15 +114,10 @@
     visualFrequency.className = 'detected-note-frequency';
     noteResult.append(visualFrequency);
 
-    const measuredFrequencyCard = frequency.closest('.metric-card');
-    const targetCard = $('#targetValue')?.closest('.metric-card');
-    const signalCard = signal.closest('.metric-card');
-    if (measuredFrequencyCard) measuredFrequencyCard.dataset.metric = 'frequency';
-    if (targetCard) targetCard.dataset.metric = 'target';
-    if (signalCard) signalCard.dataset.metric = 'signal';
-
     function isWaiting() {
-      return (deviationMetric.dataset.state || 'idle') === 'idle' || noteName.textContent.trim().startsWith('بانتظار');
+      const state = deviationMetric.dataset.state || 'idle';
+      const noSignal = qualityText?.textContent.includes('بانتظار') ?? false;
+      return state === 'idle' || noSignal || noteName.textContent.trim().startsWith('بانتظار');
     }
 
     function updateNote() {
@@ -140,77 +135,64 @@
 
       const rawArabic = noteArabic.textContent.trim();
       const parsed = parseArabicNote(rawArabic);
-      if (parsed) {
-        visualNote.append(createNoteToken(parsed));
-      } else {
-        visualNote.textContent = noteName.textContent.trim();
-      }
+      if (parsed) visualNote.append(createNoteToken(parsed));
+      else visualNote.textContent = noteName.textContent.trim();
+
       visualArabic.textContent = rawArabic.replace(/\s-?\d+\s*$/, '').trim();
       visualFrequency.textContent = frequency.textContent.trim() || '—';
       visualNote.setAttribute('aria-label', `${rawArabic}${visualFrequency.textContent !== '—' ? `، ${visualFrequency.textContent}` : ''}`);
     }
 
-    function updateQuality() {
+    function renderQuality(percent) {
+      const quality = qualityLabel(percent);
+      signal.dataset.quality = quality.key;
+      if (signal.textContent !== quality.label) signal.textContent = quality.label;
+      if (Number.isFinite(percent)) signal.setAttribute('aria-label', `جودة الإشارة ${quality.label}، ${Math.round(percent)} بالمئة`);
+      else signal.removeAttribute('aria-label');
+    }
+
+    function updateQualityFromSource() {
       if (isWaiting()) {
         signal.dataset.rawQuality = '';
-        signal.dataset.quality = 'idle';
-        signal.textContent = '—';
+        renderQuality(NaN);
         return;
       }
 
-      const source = signal.dataset.rawQuality || signal.textContent;
-      const match = String(source).match(/([\d.]+)/);
-      const percent = match ? Number(match[1]) : NaN;
-      if (!Number.isFinite(percent)) return;
-      signal.dataset.rawQuality = `${Math.round(percent)}%`;
-      const quality = qualityLabel(percent);
-      signal.dataset.quality = quality.key;
-      signal.textContent = quality.label;
-      signal.setAttribute('aria-label', `جودة الإشارة ${quality.label}، ${Math.round(percent)} بالمئة`);
+      const current = signal.textContent.trim();
+      const percentMatch = current.match(/([\d.]+)%/);
+      if (percentMatch) signal.dataset.rawQuality = `${Math.round(Number(percentMatch[1]))}%`;
+      const rawMatch = String(signal.dataset.rawQuality || '').match(/([\d.]+)/);
+      renderQuality(rawMatch ? Number(rawMatch[1]) : NaN);
     }
 
     function updateNeutralValues() {
       if (!isWaiting()) return;
-      const currentFrequency = frequency.textContent.trim();
-      if (/^0(?:\.0+)?\s*Hz$/i.test(currentFrequency)) frequency.textContent = '—';
-      if (/^0(?:\.0+)?$/.test(needleValue.textContent.trim())) needleValue.textContent = '—';
+      if (frequency.textContent.trim() !== '—') frequency.textContent = '—';
+      if (needleValue.textContent.trim() !== '—') needleValue.textContent = '—';
     }
 
-    const noteObserver = new MutationObserver(() => {
-      updateNote();
-      updateQuality();
-      updateNeutralValues();
-    });
-    noteObserver.observe(noteName, { childList: true, subtree: true, characterData: true });
-    noteObserver.observe(noteArabic, { childList: true, subtree: true, characterData: true });
-    noteObserver.observe(frequency, { childList: true, subtree: true, characterData: true });
-    noteObserver.observe(deviationMetric, { attributes: true, attributeFilter: ['data-state'] });
-
-    const signalObserver = new MutationObserver(() => {
-      if (signal.dataset.presentationLock === '1') return;
-      const match = signal.textContent.match(/([\d.]+)%/);
-      if (match) signal.dataset.rawQuality = `${Math.round(Number(match[1]))}%`;
-      signal.dataset.presentationLock = '1';
-      updateQuality();
-      queueMicrotask(() => { delete signal.dataset.presentationLock; });
-    });
-    signalObserver.observe(signal, { childList: true, subtree: true, characterData: true });
-
-    if (qualityText) {
-      const qualityObserver = new MutationObserver(() => {
-        if (qualityText.textContent.includes('بانتظار')) {
-          detectedPanel.classList.add('is-waiting');
-          updateNote();
-          updateQuality();
-          updateNeutralValues();
-        }
-      });
-      qualityObserver.observe(qualityText, { childList: true, subtree: true, characterData: true });
+    let refreshing = false;
+    function refresh() {
+      if (refreshing) return;
+      refreshing = true;
+      try {
+        updateNote();
+        updateQualityFromSource();
+        updateNeutralValues();
+      } finally {
+        queueMicrotask(() => { refreshing = false; });
+      }
     }
 
-    updateNote();
-    updateQuality();
-    updateNeutralValues();
+    const sourceObserver = new MutationObserver(refresh);
+    sourceObserver.observe(noteName, { childList: true, subtree: true, characterData: true });
+    sourceObserver.observe(noteArabic, { childList: true, subtree: true, characterData: true });
+    sourceObserver.observe(frequency, { childList: true, subtree: true, characterData: true });
+    sourceObserver.observe(deviationMetric, { attributes: true, attributeFilter: ['data-state'] });
+    sourceObserver.observe(signal, { childList: true, subtree: true, characterData: true });
+    if (qualityText) sourceObserver.observe(qualityText, { childList: true, subtree: true, characterData: true });
+
+    refresh();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeMeasurementPresentation, { once: true });
