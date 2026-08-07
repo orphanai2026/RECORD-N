@@ -74,7 +74,7 @@ if (!document.querySelector('link[data-recording-modernization]')) {
   document.head.append(modernizationStyles);
 }
 
-import('./app-shell-metronome-bridge.js?v=2026-08-07-1818').catch(error => console.error('App Shell metronome bridge load failed', error));
+import('./app-shell-metronome-bridge.js?v=2026-08-07-1937').catch(error => console.error('App Shell metronome bridge load failed', error));
 
 if (!document.querySelector('link[data-app-shell-frame]')) {
   const frameStyles = document.createElement('link');
@@ -85,7 +85,7 @@ if (!document.querySelector('link[data-app-shell-frame]')) {
 }
 import('./app-shell-frame.js?v=2026-08-07-1832').catch(error => console.error('App Shell frame load failed', error));
 
-/* Stage 12.6: softened wide metronome ambient lighting. */
+/* Stage 12.7: softened ambient light + gold first-beat accent in mini metronome. */
 const existingRecordingPriority = document.querySelector('link[data-recording-priority]');
 if (existingRecordingPriority) existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1922';
 else {
