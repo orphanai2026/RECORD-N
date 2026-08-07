@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Katibeh&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap');
 
 /* Approved header identity refinement — 2026-08-07 */
-/* Katibeh title trial — preserve complete Arabic glyph visibility */
+/* Amiri title — preserve complete Arabic glyph visibility */
 .app-header {
   min-height: 114px;
   grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr);
@@ -58,10 +58,10 @@
   padding: .08em .14em .18em;
   overflow: visible;
   color: #f5cf82;
-  font-family: "Katibeh", Amiri, serif !important;
+  font-family: "Amiri", serif !important;
   font-size: clamp(3.3rem, 4.4vw, 4.45rem);
   line-height: 1.12 !important;
-  font-weight: 400;
+  font-weight: 700;
   font-synthesis: none;
   letter-spacing: 0;
   word-spacing: .03em;
