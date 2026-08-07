@@ -293,5 +293,14 @@ if (!document.querySelector('link[data-app-shell-stabilization]')) {
   document.head.append(stabilizationStyles);
 }
 
+/* Stage 12: recording-screen priority hierarchy. Visual order only. */
+if (!document.querySelector('link[data-recording-priority]')) {
+  const recordingPriorityStyles = document.createElement('link');
+  recordingPriorityStyles.rel = 'stylesheet';
+  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1840';
+  recordingPriorityStyles.dataset.recordingPriority = 'true';
+  document.head.append(recordingPriorityStyles);
+}
+
 /* Build bootstrap must always be fresh during development so nested module versions cannot be pinned by browser cache. */
 import(`./build-meta.js?ts=${Date.now()}`).catch(error => console.error('Build metadata load failed', error));
