@@ -37,21 +37,11 @@
 /* Metronome reset control is isolated from the metronome engine. */
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
 
-/* Stage 4 smart recording flow: presentation only. */
-if (!document.querySelector('link[data-recording-flow]')) {
-  const recordingFlowStyles = document.createElement('link');
-  recordingFlowStyles.rel = 'stylesheet';
-  recordingFlowStyles.href = './recording-flow.css?v=2026-08-07-1458';
-  recordingFlowStyles.dataset.recordingFlow = 'true';
-  document.head.append(recordingFlowStyles);
-}
-import('./recording-flow.js?v=2026-08-07-1458').catch(error => console.error('Recording flow load failed', error));
-
 /* Stage 6 scientific maqam data and unified recording-session foundation. */
 import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
   .then(() => import('./performance-pack-store.js?v=2026-08-07-1707'))
-  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1707'))
+  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1727'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 /* Stage 7 ney-specific continuous capture with clean-reference persistence. */
@@ -84,3 +74,12 @@ if (!document.querySelector('link[data-educational-duration]')) {
 }
 import('./educational-duration-capture.js?v=2026-08-07-1707')
   .catch(error => console.error('Educational duration capture load failed', error));
+
+/* Stage 10: modern Auto-Capture UI. Legacy qualification UI remains in source only as rollback code. */
+if (!document.querySelector('link[data-recording-modernization]')) {
+  const modernizationStyles = document.createElement('link');
+  modernizationStyles.rel = 'stylesheet';
+  modernizationStyles.href = './recording-modernization.css?v=2026-08-07-1727';
+  modernizationStyles.dataset.recordingModernization = 'true';
+  document.head.append(modernizationStyles);
+}
