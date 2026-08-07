@@ -11,8 +11,16 @@
     return Math.max(0, Math.min(100, Number(match[0])));
   }
 
+  /*
+   * Canonical UI state comes from the exact microphone status written by app.js.
+   * Do not use substring matching: "غير نشط" also contains the word "نشط".
+   */
   function microphoneActive() {
-    return String($('#headerMicText')?.textContent || '').includes('نشط');
+    const headerText = String($('#headerMicText')?.textContent || '').trim();
+    const headerDot = $('#headerStatusDot');
+    const exactTextActive = headerText === 'الميكروفون نشط';
+    const dotActive = Boolean(headerDot?.classList.contains('status-dot--success'));
+    return exactTextActive && dotActive;
   }
 
   async function resolveMicrophoneSource() {
@@ -39,6 +47,8 @@
     const source = $('#neyMicrophoneSource');
     const claritySource = $('#clarityValue');
     const signalSource = $('#signalValue');
+    const micButton = $('#micButton');
+    const micButtonLabel = micButton?.querySelector('span');
     if (!card || !status || !statusDot || !meter || !quality || !source) return;
 
     const active = microphoneActive();
@@ -46,14 +56,23 @@
     status.textContent = active ? 'الميكروفون نشط' : 'الميكروفون غير نشط';
     statusDot.dataset.state = active ? 'active' : 'idle';
 
+    /* Keep the original engine-bound button visually aligned with the same state. */
+    if (micButtonLabel) micButtonLabel.textContent = active ? 'إيقاف الميكروفون' : 'تشغيل الميكروفون';
+    if (micButton) micButton.setAttribute('aria-label', active ? 'إيقاف الميكروفون' : 'تشغيل الميكروفون');
+
     const clarity = percentageFromText(claritySource?.textContent);
     const signal = percentageFromText(signalSource?.textContent);
+    const hasReading = clarity !== null || signal !== null;
     const value = clarity ?? signal ?? 0;
-    meter.style.width = `${active ? value : 0}%`;
-    quality.textContent = active && (clarity !== null || signal !== null) ? `${Math.round(value)}%` : '—';
+    meter.style.width = `${active && hasReading ? value : 0}%`;
+
+    if (!active) quality.textContent = 'غير نشط';
+    else if (!hasReading) quality.textContent = 'بانتظار نغمة';
+    else quality.textContent = `${Math.round(value)}%`;
 
     if (!active) {
       source.textContent = 'بانتظار التشغيل';
+      source.removeAttribute('title');
       sourceResolved = false;
     } else if (!sourceResolved) {
       resolveMicrophoneSource();
@@ -87,7 +106,7 @@
         </div>
       </div>
       <div class="ney-microphone-card__quality" aria-label="جودة إشارة الميكروفون">
-        <div><span>جودة الإشارة</span><strong id="neyMicrophoneQuality">—</strong></div>
+        <div><span>جودة الإشارة</span><strong id="neyMicrophoneQuality">غير نشط</strong></div>
         <span class="ney-microphone-card__meter" aria-hidden="true"><i id="neyMicrophoneMeterFill"></i></span>
       </div>
       <div class="ney-microphone-card__action"></div>
@@ -97,11 +116,23 @@
     card.querySelector('.ney-microphone-card__action').appendChild(micButton);
 
     const observer = new MutationObserver(syncCard);
-    [$('#headerMicText'), $('#clarityValue'), $('#signalValue')].filter(Boolean).forEach(node => {
-      observer.observe(node, { childList: true, subtree: true, characterData: true });
+    [$('#headerMicText'), $('#headerStatusDot'), $('#clarityValue'), $('#signalValue')].filter(Boolean).forEach(node => {
+      observer.observe(node, {
+        attributes: node.id === 'headerStatusDot',
+        attributeFilter: node.id === 'headerStatusDot' ? ['class'] : undefined,
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
     });
 
-    micButton.addEventListener('click', () => window.setTimeout(syncCard, 200));
+    micButton.addEventListener('click', () => {
+      /* app.js changes the canonical header state after getUserMedia resolves. */
+      window.setTimeout(syncCard, 80);
+      window.setTimeout(syncCard, 350);
+      window.setTimeout(syncCard, 900);
+    });
+
     navigator.mediaDevices?.addEventListener?.('devicechange', () => {
       sourceResolved = false;
       if (microphoneActive()) resolveMicrophoneSource();
