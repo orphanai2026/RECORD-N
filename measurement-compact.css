@@ -415,6 +415,15 @@
   transition: transform .12s ease, color .16s ease;
 }
 
+/* Keep the live cents label inside the bar when the needle reaches either edge. */
+.tuner-panel .tuner-needle-value.is-edge-left {
+  transform: translateX(-8%);
+}
+
+.tuner-panel .tuner-needle-value.is-edge-right {
+  transform: translateX(-92%);
+}
+
 .tuner-panel .tuner-ticks {
   grid-row: 3;
   margin-top: 4px;
