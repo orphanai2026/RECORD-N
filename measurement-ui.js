@@ -270,3 +270,6 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeMeasurementPresentation, { once: true });
   else initializeMeasurementPresentation();
 })();
+
+/* Stage 2 navigation is isolated from measurement logic. */
+import('./navigation.js?v=2026-08-07-r1').catch(error => console.error('Navigation load failed', error));
