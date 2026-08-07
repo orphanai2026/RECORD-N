@@ -47,9 +47,12 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011')
+/* Research-informed capture acceptance policy: 90% valid frames, while keeping clarity/tolerance/style guards. */
+const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-07-2236');
+const autoCaptureReady = capturePolicyReady
+  .then(() => import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011'))
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
-  .then(() => import('./ney-auto-capture.js?v=2026-08-07-2212'))
+  .then(() => window.NeyCapturePolicyLoader.loadAutoCapture())
   .catch(error => console.error('Ney Auto-Capture load failed', error));
 
 if (!document.querySelector('link[data-auto-session-start]')) {
@@ -60,7 +63,7 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.8: target-gated maqam-scale sequential capture. */
+/* Stage 15.9: target-gated maqam capture + research-informed acceptance policy. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
@@ -68,7 +71,8 @@ if (!document.querySelector('link[data-recording-session-flow]')) {
   sessionFlowStyles.dataset.recordingSessionFlow = 'true';
   document.head.append(sessionFlowStyles);
 }
-import('./auto-session-start.js?v=2026-08-07-2043')
+autoCaptureReady
+  .then(() => window.NeyCapturePolicyLoader.loadAutoSessionStart())
   .then(() => import('./recording-session-flow.js?v=2026-08-07-2105'))
   .catch(error => console.error('Recording session flow load failed', error));
 
@@ -79,7 +83,8 @@ if (!document.querySelector('link[data-recording-maqam-selector]')) {
   maqamSelectorStyles.dataset.recordingMaqamSelector = 'true';
   document.head.append(maqamSelectorStyles);
 }
-import('./maqam-library.js?v=2026-08-07-1614')
+autoCaptureReady
+  .then(() => import('./maqam-library.js?v=2026-08-07-1614'))
   .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2133'))
   .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
   .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2206'))
@@ -92,7 +97,19 @@ if (!document.querySelector('link[data-educational-duration]')) {
   durationStyles.dataset.educationalDuration = 'true';
   document.head.append(durationStyles);
 }
-import('./educational-duration-capture.js?v=2026-08-07-1707').catch(error => console.error('Educational duration capture load failed', error));
+autoCaptureReady
+  .then(() => window.NeyCapturePolicyLoader.loadEducationalDurationCapture())
+  .catch(error => console.error('Educational duration capture load failed', error));
+
+if (!document.querySelector('link[data-about-research-note]')) {
+  const researchNoteStyles = document.createElement('link');
+  researchNoteStyles.rel = 'stylesheet';
+  researchNoteStyles.href = './about-research-note.css?v=2026-08-07-2236';
+  researchNoteStyles.dataset.aboutResearchNote = 'true';
+  document.head.append(researchNoteStyles);
+}
+import('./about-research-note.js?v=2026-08-07-2236')
+  .catch(error => console.error('About research note load failed', error));
 
 if (!document.querySelector('link[data-recording-modernization]')) {
   const modernizationStyles = document.createElement('link');
