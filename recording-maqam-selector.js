@@ -20,20 +20,17 @@
   }
 
   function categoryLabel(id) {
-    const labels = {
+    return ({
       eastern_identity: 'مقامات الربع تون · الهوية الشرقية',
       familiar_no_quarter: 'المقامات الخالية من الربع تون',
       special_intervals: 'المقامات ذات الأبعاد الخاصة'
-    };
-    return labels[id] || id;
+    })[id] || id;
   }
 
   function loadPreference() {
     try {
-      const mode = localStorage.getItem('ney-single-recording-mode');
-      const maqam = localStorage.getItem('ney-single-recording-maqam');
-      state.singleMode = mode === 'maqam' ? 'maqam' : 'general';
-      state.maqamId = maqam || null;
+      state.singleMode = localStorage.getItem('ney-single-recording-mode') === 'maqam' ? 'maqam' : 'general';
+      state.maqamId = localStorage.getItem('ney-single-recording-maqam') || null;
     } catch (_) {}
   }
 
@@ -78,56 +75,88 @@
         button.innerHTML = `<span aria-hidden="true"></span><strong>${maqam.ar}</strong><small>${maqam.en}</small>`;
         options.append(button);
       });
-
       container.append(section);
     });
   }
 
   function sync(root) {
-    const single = currentRecordingMode() === 'single';
-    root.hidden = !single;
-    if (!single) return;
+    const mode = currentRecordingMode();
+    const single = mode === 'single';
+    const maqamScale = mode === 'maqam-scale';
+    const relevant = single || maqamScale;
+    root.hidden = !relevant;
+    if (!relevant) return;
 
+    root.dataset.context = maqamScale ? 'scale' : 'single';
     root.dataset.singleMode = state.singleMode;
+
+    const headTitle = root.querySelector('.recording-maqam-selector__head h4');
+    const headCopy = root.querySelector('.recording-maqam-selector__head p');
+    const modes = root.querySelector('.recording-maqam-selector__modes');
+    const panel = root.querySelector('.recording-maqam-selector__panel');
+    const summary = root.querySelector('.recording-maqam-selector__summary');
+
+    if (maqamScale) {
+      modes.hidden = true;
+      panel.hidden = false;
+      headTitle.textContent = 'مقام السلم الشرقي';
+      headCopy.textContent = 'اختر المقام الذي تريد تسجيل سلمه كاملًا.';
+
+      if (!state.maqamId) {
+        summary.innerHTML = '<strong>سلم مقام شرقي كامل</strong><span>اختر المقام أولًا، ثم نحدد جذر المقام ودرجات السلم في الخطوة التالية.</span>';
+      } else {
+        const maqam = library()?.getMaqam?.(state.maqamId);
+        summary.innerHTML = `<strong>سلم مقام ${maqam?.ar || state.maqamId}</strong><span>المقام محدد. الخطوة التالية هي اختيار جذر المقام ثم توليد درجات السلم الكامل.</span>`;
+      }
+      return;
+    }
+
+    modes.hidden = false;
+    headTitle.textContent = 'نوع التسجيل المنفرد';
+    headCopy.textContent = 'سجّل نغمة عامة أو اربط التسجيل بمقام شرقي محدد.';
+
     root.querySelectorAll('[data-single-mode]').forEach(button => {
       const active = button.dataset.singleMode === state.singleMode;
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
 
-    const maqamPanel = root.querySelector('.recording-maqam-selector__panel');
-    maqamPanel.hidden = state.singleMode !== 'maqam';
-
-    const summary = root.querySelector('.recording-maqam-selector__summary');
+    panel.hidden = state.singleMode !== 'maqam';
     if (state.singleMode === 'general') {
       summary.innerHTML = '<strong>نغمة منفردة عامة</strong><span>التقاط أي نغمة صافية دون تقييدها بمقام محدد.</span>';
     } else if (!state.maqamId) {
       summary.innerHTML = '<strong>نغمات مقام شرقي</strong><span>اختر المقام المطلوب لتسجيل نغماته منفصلة.</span>';
     } else {
       const maqam = library()?.getMaqam?.(state.maqamId);
-      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>سيُستخدم هذا الاختيار لتحديد درجات المقام بعد اعتماد جذر المقام في الخطوة التالية.</span>`;
+      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>سيُستخدم هذا الاختيار لتحديد درجات المقام بعد اعتماد جذر المقام.</span>`;
     }
+  }
+
+  function emitContext() {
+    document.dispatchEvent(new CustomEvent('ney:maqam-recording-context-change', {
+      detail: {
+        recordingMode: currentRecordingMode(),
+        singleMode: state.singleMode,
+        maqamId: state.maqamId
+      }
+    }));
   }
 
   function install() {
     if (installed) return true;
-    const workflow = $('.ney-screen--recording .recording-workflow');
     const summary = $('#recordingModeSummary');
     const modeControl = $('#recordingModeControl');
-    if (!workflow || !summary || !modeControl || !library()) return false;
+    if (!summary || !modeControl || !library()) return false;
 
     loadPreference();
 
     const root = document.createElement('section');
     root.id = 'recordingMaqamSelector';
     root.className = 'recording-maqam-selector';
-    root.setAttribute('aria-label', 'نوع تسجيل النغمة المنفردة');
+    root.setAttribute('aria-label', 'اختيار المقام للتسجيل');
     root.innerHTML = `
       <div class="recording-maqam-selector__head">
-        <div>
-          <h4>نوع التسجيل المنفرد</h4>
-          <p>سجّل نغمة عامة أو اربط التسجيل بمقام شرقي محدد.</p>
-        </div>
+        <div><h4>نوع التسجيل المنفرد</h4><p>سجّل نغمة عامة أو اربط التسجيل بمقام شرقي محدد.</p></div>
         <div class="recording-maqam-selector__modes" role="group" aria-label="نوع التسجيل المنفرد">
           <button type="button" data-single-mode="general" aria-pressed="true">نغمة عامة</button>
           <button type="button" data-single-mode="maqam" aria-pressed="false">نغمات مقام شرقي</button>
@@ -151,9 +180,7 @@
         state.singleMode = modeButton.dataset.singleMode === 'maqam' ? 'maqam' : 'general';
         savePreference();
         sync(root);
-        document.dispatchEvent(new CustomEvent('ney:single-recording-context-change', {
-          detail: { mode: state.singleMode, maqamId: state.maqamId }
-        }));
+        emitContext();
         return;
       }
 
@@ -167,18 +194,22 @@
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
       sync(root);
-      document.dispatchEvent(new CustomEvent('ney:single-recording-context-change', {
-        detail: { mode: state.singleMode, maqamId: state.maqamId }
-      }));
+      emitContext();
     });
 
-    modeControl.addEventListener('click', () => setTimeout(() => sync(root), 0));
+    const resync = () => setTimeout(() => sync(root), 0);
+    modeControl.addEventListener('click', resync);
+    document.addEventListener('ney:recording-mode-ui-change', resync);
     sync(root);
 
     window.NeySingleRecordingContext = Object.freeze({
       getMode: () => state.singleMode,
       getMaqamId: () => state.maqamId,
       getContext: () => ({ mode: state.singleMode, maqamId: state.maqamId })
+    });
+    window.NeyMaqamRecordingContext = Object.freeze({
+      getMaqamId: () => state.maqamId,
+      getContext: () => ({ recordingMode: currentRecordingMode(), singleMode: state.singleMode, maqamId: state.maqamId })
     });
 
     installed = true;
