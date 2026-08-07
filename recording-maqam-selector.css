@@ -14,7 +14,9 @@
 .ney-screen--recording .recording-maqam-selector[hidden],
 .ney-screen--recording .recording-maqam-selector__modes[hidden],
 .ney-screen--recording .recording-maqam-selector__summary[hidden],
-.ney-screen--recording .recording-maqam-selector__panel[hidden] {
+.ney-screen--recording .recording-maqam-selector__panel[hidden],
+.ney-screen--recording .recording-maqam-tonic[hidden],
+.ney-screen--recording .recording-maqam-scale-preview[hidden] {
   display: none !important;
 }
 
@@ -168,37 +170,138 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.ney-screen--recording .recording-maqam-option > * {
-  pointer-events: none;
-}
-
+.ney-screen--recording .recording-maqam-option > * { pointer-events: none; }
 .ney-screen--recording .recording-maqam-option > span {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   border: 1px solid rgba(216,184,106,.42);
 }
-
-.ney-screen--recording .recording-maqam-option strong {
-  font-size: .84rem;
-  color: #f3efe2;
-}
-
-.ney-screen--recording .recording-maqam-option small {
-  font-size: .62rem;
-  color: rgba(229,239,235,.48);
-}
-
+.ney-screen--recording .recording-maqam-option strong { font-size: .84rem; color: #f3efe2; }
+.ney-screen--recording .recording-maqam-option small { font-size: .62rem; color: rgba(229,239,235,.48); }
 .ney-screen--recording .recording-maqam-option.is-active {
   border-color: rgba(77,222,207,.62);
   background: rgba(34,144,137,.32);
   box-shadow: inset 0 0 0 1px rgba(98,230,217,.1),0 0 0 1px rgba(77,222,207,.08);
 }
-
 .ney-screen--recording .recording-maqam-option.is-active > span {
   border-color: #72e8db;
   background: #72e8db;
   box-shadow: 0 0 8px rgba(84,222,210,.28);
+}
+
+.ney-screen--recording .recording-maqam-tonic,
+.ney-screen--recording .recording-maqam-scale-preview {
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border:1px solid rgba(216,184,106,.16);
+  border-radius:14px;
+  background:rgba(0,24,27,.44);
+}
+
+.ney-screen--recording .recording-maqam-tonic__head,
+.ney-screen--recording .recording-maqam-scale-preview__head {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.ney-screen--recording .recording-maqam-tonic__head strong,
+.ney-screen--recording .recording-maqam-scale-preview__head strong {
+  color:#efd18a;
+  font-size:.84rem;
+}
+
+.ney-screen--recording .recording-maqam-tonic__head span,
+.ney-screen--recording .recording-maqam-scale-preview__head span {
+  color:rgba(229,239,235,.58);
+  font-size:.68rem;
+}
+
+.ney-screen--recording .recording-maqam-tonic__controls {
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(150px,.6fr);
+  gap:9px;
+}
+
+.ney-screen--recording .recording-maqam-tonic__controls label {
+  display:grid;
+  gap:5px;
+  color:rgba(231,239,235,.68);
+  font-size:.72rem;
+}
+
+.ney-screen--recording .recording-maqam-tonic__controls select {
+  width:100%;
+  min-height:42px;
+  border:1px solid rgba(216,184,106,.24);
+  border-radius:11px;
+  background:rgba(0,22,25,.78);
+  color:#f2efe3;
+  padding:7px 10px;
+  font:inherit;
+}
+
+.ney-screen--recording .recording-maqam-scale-preview__grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+}
+
+.ney-screen--recording .recording-maqam-degree {
+  min-width:0;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  grid-template-areas:
+    "number copy"
+    "number frequency";
+  align-items:center;
+  gap:2px 8px;
+  min-height:68px;
+  padding:9px 10px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;
+  background:rgba(0,28,30,.55);
+}
+
+.ney-screen--recording .recording-maqam-degree__number {
+  grid-area:number;
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(216,184,106,.24);
+  border-radius:50%;
+  color:#efd18a;
+  font-size:.7rem;
+  font-weight:800;
+}
+
+.ney-screen--recording .recording-maqam-degree__copy {
+  grid-area:copy;
+  min-width:0;
+  display:grid;
+  gap:1px;
+}
+.ney-screen--recording .recording-maqam-degree__copy strong {
+  color:#f3efe3;
+  font-size:.77rem;
+  overflow-wrap:anywhere;
+}
+.ney-screen--recording .recording-maqam-degree__copy small {
+  color:rgba(229,239,235,.48);
+  font-size:.58rem;
+  overflow-wrap:anywhere;
+}
+.ney-screen--recording .recording-maqam-degree__frequency {
+  grid-area:frequency;
+  color:rgba(114,232,219,.82);
+  font-size:.62rem;
+  direction:ltr;
+  justify-self:start;
 }
 
 .ney-screen--recording .recording-maqam-selector__unavailable {
@@ -207,14 +310,16 @@
   font-size: .72rem;
 }
 
-@media (max-width: 900px) {
-  .ney-screen--recording .recording-maqam-selector__head {
-    grid-template-columns: 1fr;
+@media (max-width: 1100px) {
+  .ney-screen--recording .recording-maqam-scale-preview__grid {
+    grid-template-columns:repeat(3,minmax(0,1fr));
   }
+}
 
-  .ney-screen--recording .recording-maqam-selector__modes {
-    width: 100%;
-  }
+@media (max-width: 900px) {
+  .ney-screen--recording .recording-maqam-selector__head { grid-template-columns: 1fr; }
+  .ney-screen--recording .recording-maqam-selector__modes { width: 100%; }
+  .ney-screen--recording .recording-maqam-scale-preview__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 
 @media (max-width: 620px) {
@@ -222,8 +327,9 @@
   .ney-screen--recording .recording-maqam-group:last-child .recording-maqam-group__options {
     grid-template-columns: repeat(2,minmax(0,1fr));
   }
-
-  .ney-screen--recording .recording-maqam-selector__modes {
+  .ney-screen--recording .recording-maqam-selector__modes,
+  .ney-screen--recording .recording-maqam-tonic__controls {
     grid-template-columns: 1fr;
   }
+  .ney-screen--recording .recording-maqam-scale-preview__grid { grid-template-columns:1fr; }
 }
