@@ -173,6 +173,7 @@
     document.addEventListener('ney:recording-mode-ui-change', () => setTimeout(() => sync(), 0));
     document.addEventListener('ney:auto-capture-candidate', event => handleCandidate(event.detail));
     document.addEventListener('ney:educational-duration-saved', advanceFromSaved);
+    document.addEventListener('ney:educational-duration-retained', advanceFromSaved);
     document.addEventListener('ney:educational-duration-rejected', reopenAfterRejected);
 
     const context = window.NeyMaqamRecordingContext?.getContext?.();
