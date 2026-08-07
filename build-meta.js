@@ -47,8 +47,7 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-/* Research-informed capture acceptance policy: 90% valid frames, while keeping clarity/tolerance/style guards. */
-const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-07-2236');
+const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-07-2256');
 const autoCaptureReady = capturePolicyReady
   .then(() => import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011'))
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
@@ -63,7 +62,6 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.9: target-gated maqam capture + research-informed acceptance policy. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
