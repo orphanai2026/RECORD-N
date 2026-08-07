@@ -5,6 +5,7 @@
   const DB_VERSION = 1;
   const PACK_STORE = 'packs';
   const AUDIO_STORE = 'audio';
+  const REQUIRED_PASS_RATIO = 0.90;
 
   let dbPromise = null;
 
@@ -60,10 +61,19 @@
     };
   }
 
+  function tonicKey(tonic) {
+    if (!tonic) return 'none';
+    if (typeof tonic === 'string') return tonic.trim() || 'none';
+    const letter = String(tonic.letter || '').toUpperCase() || 'C';
+    const accidental = Number(tonic.accidentalQuarterSteps || 0);
+    const octave = Number.isFinite(Number(tonic.octave)) ? Number(tonic.octave) : 4;
+    return `${letter}:${accidental}:${octave}`;
+  }
+
   function makePackKey({ note = {}, context = {} } = {}) {
     const c = normalizeContext(context);
     const noteKey = note.noteKey || note.english || note.arabic || `${note.abs24 ?? 'na'}`;
-    return [c.mode, c.maqamId || 'none', c.tonic?.letter || c.tonic || 'none', c.maqamDegree || 'none', c.variantId || 'default', c.division, c.a4, noteKey].join('|');
+    return [c.mode, c.maqamId || 'none', tonicKey(c.tonic), c.maqamDegree || 'none', c.variantId || 'default', c.division, c.a4, noteKey].join('|');
   }
 
   function qualityScore(sample = {}) {
@@ -73,6 +83,13 @@
     const tolerance = Math.max(1, Number(sample.metrics?.tolerance ?? sample.tolerance ?? 12));
     const pitchScore = Math.max(0, 1 - Math.min(1, absCents / tolerance));
     return Math.max(0, Math.min(1, clarity * 0.62 + pitchScore * 0.38));
+  }
+
+  function assertPassRatio(sample, label) {
+    const ratio = Number(sample?.passRatio);
+    if (!Number.isFinite(ratio) || ratio < REQUIRED_PASS_RATIO) {
+      throw new Error(`${label} requires at least ${Math.round(REQUIRED_PASS_RATIO * 100)}% passing frames`);
+    }
   }
 
   async function getPack(packKey) {
@@ -120,7 +137,7 @@
   async function upsertCleanReference({ note, context, sample } = {}) {
     if (!note || !sample) throw new Error('note and sample are required');
     if (sample.style && sample.style !== 'clean') throw new Error('Only clean reference samples can be auto-approved in this release');
-    if (Number(sample.passRatio) !== 1) throw new Error('Clean reference requires 100% passing frames');
+    assertPassRatio(sample, 'Clean reference');
 
     const db = await openDb();
     const normalizedContext = normalizeContext(context);
@@ -152,7 +169,7 @@
           style: 'clean',
           score: incomingScore,
           approvedAutomatically: true,
-          acceptanceRule: '100-percent-valid-window',
+          acceptanceRule: 'at-least-90-percent-valid-window',
           updatedAt: timestamp
         }
       },
@@ -169,7 +186,7 @@
   async function upsertEducationalSample({ note, context, sample } = {}) {
     if (!note || !sample) throw new Error('note and sample are required');
     if (sample.style && sample.style !== 'clean') throw new Error('Educational duration samples must be clean in this release');
-    if (Number(sample.passRatio) !== 1) throw new Error('Educational duration sample requires 100% passing frames');
+    assertPassRatio(sample, 'Educational duration sample');
     if (!sample.durationId || !sample.durationName || !Number.isFinite(Number(sample.beats))) throw new Error('duration metadata is required');
     if (!Number.isFinite(Number(sample.bpm)) || Number(sample.bpm) <= 0) throw new Error('bpm is required');
 
@@ -199,7 +216,7 @@
         style: 'clean',
         score: incomingScore,
         approvedAutomatically: true,
-        acceptanceRule: '100-percent-valid-duration-window',
+        acceptanceRule: 'at-least-90-percent-valid-duration-window',
         updatedAt: timestamp
       }
     };
@@ -237,7 +254,9 @@
   window.NeyPerformancePackStore = Object.freeze({
     dbName: DB_NAME,
     schemaVersion: DB_VERSION,
+    requiredPassRatio: REQUIRED_PASS_RATIO,
     makePackKey,
+    tonicKey,
     qualityScore,
     getPack,
     listPacks,
