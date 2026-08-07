@@ -1,0 +1,93 @@
+/*
+ * Wide, stable metronome lighting.
+ * Beat feedback fills the metronome panel softly without scaling or shifting UI geometry.
+ */
+
+.ney-mini-metronome,
+.metronome-panel.is-training-metronome {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ney-mini-metronome > *,
+.metronome-panel.is-training-metronome > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ambient layer: opacity only — no transform, no layout movement. */
+.ney-mini-metronome::after,
+.metronome-panel.is-training-metronome::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: -18%;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(79, 230, 213, .22) 0%, rgba(49, 192, 183, .12) 34%, rgba(20, 111, 110, .055) 58%, transparent 78%),
+    linear-gradient(90deg, transparent 0%, rgba(70, 222, 208, .055) 20%, rgba(70, 222, 208, .09) 50%, rgba(70, 222, 208, .055) 80%, transparent 100%);
+}
+
+/* Ordinary beat: wide turquoise illumination. */
+.ney-mini-metronome.is-beat:not(.is-accent)::after,
+.metronome-panel.is-training-metronome.metronome-flash::after {
+  animation: neyMetronomeAmbientBeat 210ms ease-out;
+}
+
+/* First beat / accent: wider warm gold illumination. */
+.ney-mini-metronome.is-beat.is-accent::after,
+.metronome-panel.is-training-metronome.metronome-flash-accent::after {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(244, 205, 123, .27) 0%, rgba(216, 170, 79, .15) 36%, rgba(130, 91, 30, .07) 60%, transparent 80%),
+    linear-gradient(90deg, transparent 0%, rgba(239, 199, 112, .065) 18%, rgba(239, 199, 112, .11) 50%, rgba(239, 199, 112, .065) 82%, transparent 100%);
+  animation: neyMetronomeAmbientAccent 250ms ease-out;
+}
+
+@keyframes neyMetronomeAmbientBeat {
+  0% { opacity: 0; }
+  28% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes neyMetronomeAmbientAccent {
+  0% { opacity: 0; }
+  24% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Remove geometry-changing beat effects that caused the shake impression. */
+.ney-mini-metronome.is-beat .ney-mini-metronome__pulse,
+.metronome-dial.is-beat,
+.metronome-dial.is-accent,
+.metronome-dial.is-group-accent,
+.metronome-light.is-current,
+.metronome-light.is-current.is-accent,
+.metronome-light.is-current.is-group-accent {
+  transform: none !important;
+}
+
+/* Keep a local indicator too, but without changing its size. */
+.ney-mini-metronome.is-beat .ney-mini-metronome__pulse {
+  background: #86ebbc;
+  box-shadow: 0 0 0 4px rgba(117,223,173,.14), 0 0 13px rgba(117,223,173,.25);
+}
+
+.ney-mini-metronome.is-beat.is-accent .ney-mini-metronome__pulse {
+  background: #f0cc7d;
+  box-shadow: 0 0 0 4px rgba(240,204,125,.14), 0 0 14px rgba(240,204,125,.28);
+}
+
+/* The full training screen may illuminate the whole panel, but never change dimensions. */
+.metronome-panel.metronome-flash,
+.metronome-panel.metronome-flash-accent {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ney-mini-metronome::after,
+  .metronome-panel.is-training-metronome::after {
+    animation-duration: 90ms !important;
+  }
+}
