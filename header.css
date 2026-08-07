@@ -2,6 +2,7 @@
 @import url('measurement.css?v=2026-08-07-r2');
 @import url('measurement-compact.css?v=2026-08-07-r4');
 @import url('navigation.css?v=2026-08-07-r1');
+@import url('stage2-fix.css?v=2026-08-07-r1');
 
 /* Stage 2 consolidated identity header. */
 .app-header {
