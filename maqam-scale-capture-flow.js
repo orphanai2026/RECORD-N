@@ -119,15 +119,25 @@
     }
 
     state.pending = true;
-    setStatus(`تمت مطابقة ${note.arabic}. جارٍ تسجيل المدة التعليمية والتحقق منها.`);
+    setStatus(`تمت مطابقة ${note.arabic}. بدأ تسجيل المدة التعليمية من لحظة القبول؛ استمر حتى اكتمالها.`);
+  }
+
+  function matchingContext(event) {
+    const packContext = event.detail?.pack?.context || {};
+    const eventCandidateContext = event.detail?.candidate?.captureContext || {};
+    const context = Object.keys(packContext).length ? packContext : eventCandidateContext;
+    const note = expected();
+    if (!state.active || !note) return null;
+    if (context.mode !== 'maqam-scale') return null;
+    if (context.maqamId && context.maqamId !== state.scale?.maqamId) return null;
+    if (context.tonic && context.tonic !== state.scale?.tonic) return null;
+    if (Number(context.maqamDegree) !== Number(note.degree)) return null;
+    return { context, note };
   }
 
   function advanceFromSaved(event) {
-    if (!state.active || !state.pending) return;
-    const context = event.detail?.pack?.context || {};
-    const note = expected();
-    if (context.mode !== 'maqam-scale' || !note) return;
-    if (Number(context.maqamDegree) !== Number(note.degree)) return;
+    const match = matchingContext(event);
+    if (!match) return;
 
     state.pending = false;
     state.index += 1;
@@ -141,15 +151,18 @@
 
     setCaptureContext();
     paint();
+    setStatus(`تم حفظ الدرجة السابقة. انتقل الآن إلى ${expected()?.arabic || 'الدرجة التالية'}.`);
   }
 
   function reopenAfterRejected(event) {
-    if (!state.active || !state.pending || currentMode() !== 'maqam-scale') return;
+    if (!state.active || currentMode() !== 'maqam-scale') return;
     const candidate = event.detail?.candidate;
     const note = expected();
     if (!note || !candidate) return;
     const context = candidate.captureContext || {};
     if (context.mode && context.mode !== 'maqam-scale') return;
+    if (context.maqamId && context.maqamId !== state.scale?.maqamId) return;
+    if (context.tonic && context.tonic !== state.scale?.tonic) return;
     if (context.maqamDegree && Number(context.maqamDegree) !== Number(note.degree)) return;
 
     state.pending = false;
