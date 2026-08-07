@@ -12,37 +12,22 @@
   min-width: 0;
 }
 
-/* Primary performance flow: microphone → capture → recording mode/session. */
+/* Primary performance flow: metronome → microphone → capture → recording mode/session. */
 .ney-screen--recording .recording-actions-stack {
   display: grid;
   gap: 14px;
 }
 
-.ney-screen--recording #micButton {
-  order: 10;
-}
-
-.ney-screen--recording #neyAutoCapturePanel {
-  order: 20;
-}
-
-.ney-screen--recording .recording-workflow {
-  order: 30;
-}
-
-.ney-screen--recording #prepareButton {
-  order: 40;
-}
-
-.ney-screen--recording .ney-auto-capture {
-  margin: 0;
-}
+.ney-screen--recording #micButton { order: 10; }
+.ney-screen--recording #neyAutoCapturePanel { order: 20; }
+.ney-screen--recording .recording-workflow { order: 30; }
+.ney-screen--recording #prepareButton { order: 40; }
+.ney-screen--recording .ney-auto-capture { margin: 0; }
 
 .ney-screen--recording .ney-auto-capture__metrics {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-/* Give the user's mode choice more visual priority than technical controls. */
 .ney-screen--recording .recording-workflow__header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(250px, auto);
@@ -56,15 +41,72 @@
   justify-self: end;
 }
 
-.ney-screen--recording .chromatic-settings {
-  margin-top: 14px;
+.ney-screen--recording .chromatic-settings { margin-top: 14px; }
+.ney-screen--recording .auto-session-start { margin-bottom: 14px; }
+
+/* Top compact metronome: same shared engine, presented before recording begins. */
+.ney-screen--recording .ney-mini-metronome--top {
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 96px;
+  margin: 0 0 14px;
+  padding: 14px 16px;
 }
 
-.ney-screen--recording .auto-session-start {
-  margin-bottom: 14px;
+.ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__head {
+  margin: 0;
+  min-width: 0;
 }
 
-/* Secondary performance controls: duration first, then BPM, then tuning context. */
+.ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__body {
+  display: grid;
+  grid-template-columns: 40px 56px minmax(110px, auto) 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__beat {
+  width: 52px;
+  height: 52px;
+  flex-basis: 52px;
+}
+
+.ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__tempo {
+  min-width: 110px;
+  text-align: center;
+}
+
+.ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__actions {
+  margin: 0;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.ney-screen--recording .ney-mini-metronome__bpm-button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(216,184,106,.28);
+  border-radius: 11px;
+  background: rgba(216,184,106,.07);
+  color: #efd98f;
+  font: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.ney-screen--recording .ney-mini-metronome__title strong::after {
+  content: " · للاسترشاد أثناء التسجيل";
+  color: var(--ney-shell-muted, #9fb2ae);
+  font-size: .78em;
+  font-weight: 500;
+}
+
+/* Quick controls: duration + division + A4 only. BPM lives in the top metronome. */
 .ney-screen--recording .quick-controls {
   height: auto !important;
   min-height: 0 !important;
@@ -77,13 +119,16 @@
   margin-bottom: 10px;
 }
 
+.ney-screen--recording .bpm-group {
+  display: none !important;
+}
+
 .ney-screen--recording .controls-grid {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   grid-template-areas:
     "duration duration"
-    "bpm division"
-    "reference reference";
+    "division reference";
   gap: 10px !important;
   padding-top: 4px !important;
 }
@@ -93,25 +138,9 @@
   min-height: 70px !important;
 }
 
-.ney-screen--recording .duration-group {
-  grid-area: duration;
-  order: 1;
-}
-
-.ney-screen--recording .bpm-group {
-  grid-area: bpm;
-  order: 2;
-}
-
-.ney-screen--recording .division-group {
-  grid-area: division;
-  order: 3;
-}
-
-.ney-screen--recording .reference-group {
-  grid-area: reference;
-  order: 4;
-}
+.ney-screen--recording .duration-group { grid-area: duration; }
+.ney-screen--recording .division-group { grid-area: division; }
+.ney-screen--recording .reference-group { grid-area: reference; }
 
 .ney-screen--recording .duration-control {
   display: grid !important;
@@ -124,9 +153,7 @@
   padding-inline: 5px;
 }
 
-.ney-screen--recording .duration-option .music-symbol {
-  margin-inline: auto;
-}
+.ney-screen--recording .duration-option .music-symbol { margin-inline: auto; }
 
 .ney-screen--recording .duration-option strong,
 .ney-screen--recording .duration-option small {
@@ -134,27 +161,14 @@
   text-align: center;
 }
 
-/* The metronome is guidance, not the main task, so it closes the recording flow. */
-.ney-screen--recording .ney-mini-metronome {
-  margin-top: 0;
-}
-
-.ney-screen--recording .ney-mini-metronome__title strong::after {
-  content: " · للاسترشاد أثناء التسجيل";
-  color: var(--ney-shell-muted, #9fb2ae);
-  font-size: .78em;
-  font-weight: 500;
-}
-
-/* Large screens: compact all quick controls into one performance strip. */
 @media (min-width: 1180px) {
   .ney-screen--recording .ney-recording-layout {
-    grid-template-columns: minmax(0, 1.2fr) minmax(420px, .8fr);
+    grid-template-columns: minmax(0, 1.18fr) minmax(410px, .82fr);
   }
 
   .ney-screen--recording .controls-grid {
-    grid-template-columns: minmax(390px, 1.55fr) minmax(150px, .58fr) minmax(210px, .78fr) minmax(220px, .82fr) !important;
-    grid-template-areas: "duration bpm division reference";
+    grid-template-columns: minmax(430px, 1.5fr) minmax(220px, .75fr) minmax(240px, .8fr) !important;
+    grid-template-areas: "duration division reference";
     align-items: stretch;
   }
 
@@ -163,25 +177,15 @@
   }
 }
 
-@media (max-width: 1240px) {
-  .ney-screen--recording .ney-recording-main,
-  .ney-screen--recording .ney-recording-side {
-    width: 100%;
+@media (max-width: 1100px) {
+  .ney-screen--recording .ney-mini-metronome--top {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
-  .ney-screen--recording .quick-controls {
-    margin-top: 0;
-  }
-}
-
-/* Tablet: retain two columns so the quick controls remain compact but readable. */
-@media (max-width: 1179px) and (min-width: 721px) {
-  .ney-screen--recording .controls-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-areas:
-      "duration duration"
-      "bpm division"
-      "reference reference";
+  .ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__head,
+  .ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__actions {
+    justify-content: space-between;
   }
 }
 
@@ -199,14 +203,11 @@
   .ney-screen--recording .ney-auto-capture__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@media (max-width: 720px) {
   .ney-screen--recording .controls-grid {
     grid-template-columns: 1fr !important;
     grid-template-areas:
       "duration"
-      "bpm"
       "division"
       "reference";
   }
@@ -224,5 +225,9 @@
   .ney-screen--recording .ney-auto-capture__header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .ney-screen--recording .ney-mini-metronome--top .ney-mini-metronome__body {
+    grid-template-columns: 38px 50px minmax(90px, 1fr) 38px;
   }
 }
