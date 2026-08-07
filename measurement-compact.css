@@ -319,3 +319,147 @@
     font-size: .82rem;
   }
 }
+
+/* Approved linear indicator hierarchy — 2026-08-07 */
+/* The bar is the single visual reference: live cents above, fixed region names below. */
+.tuner-panel .tuner-scale {
+  grid-template-rows: minmax(72px, 1fr) auto auto;
+  align-content: stretch;
+}
+
+.tuner-panel .tuner-scale::before,
+.tuner-panel.is-flat .tuner-scale::before,
+.tuner-panel.is-in-tune .tuner-scale::before,
+.tuner-panel.is-sharp .tuner-scale::before {
+  content: none !important;
+  display: none !important;
+}
+
+.tuner-panel .tuner-bar {
+  grid-row: 1;
+  align-self: end;
+  margin-top: 0;
+}
+
+.tuner-panel .tuner-labels {
+  grid-row: 2;
+  direction: ltr;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  margin-top: 8px;
+  color: #d7ddd9;
+  font-size: .7rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.tuner-panel .tuner-labels > span {
+  position: relative;
+  justify-self: center;
+  padding-top: 5px;
+  white-space: nowrap;
+}
+
+.tuner-panel .tuner-labels > span::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 1px;
+  height: 5px;
+  transform: translateX(-50%);
+  background: currentColor;
+  opacity: .58;
+}
+
+.tuner-panel .tuner-label--flat,
+.tuner-panel .tuner-label--tuned,
+.tuner-panel .tuner-label--sharp {
+  justify-self: center;
+}
+
+.tuner-panel .tuner-center-zone::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Acceptance bounds become thin markers with plain numbers, no boxes. */
+.tuner-panel .tuner-limit {
+  top: -7px;
+  width: 1px;
+  height: 27px;
+  background: rgba(224,255,241,.84);
+  box-shadow: 0 0 5px rgba(72,238,175,.42);
+}
+
+.tuner-panel .tuner-limit bdi {
+  top: 21px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #91ddbd;
+  background: transparent !important;
+  font-size: .58rem;
+  line-height: 1;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+
+/* The live reading is numeric only and follows the moving needle. */
+.tuner-panel .tuner-needle-value {
+  top: -3.05rem;
+  transform: translateX(-50%);
+  transition: transform .12s ease, color .16s ease;
+}
+
+.tuner-panel .tuner-ticks {
+  grid-row: 3;
+  margin-top: 4px;
+}
+
+@media (max-width: 760px) {
+  .tuner-panel .tuner-scale {
+    grid-template-rows: minmax(55px, 1fr) auto auto;
+  }
+
+  .tuner-panel .tuner-labels {
+    margin-top: 7px;
+    font-size: .64rem;
+  }
+
+  .tuner-panel .tuner-labels > span {
+    padding-top: 4px;
+  }
+
+  .tuner-panel .tuner-labels > span::before {
+    top: -6px;
+    height: 4px;
+  }
+
+  .tuner-panel .tuner-needle-value {
+    top: -2.8rem;
+  }
+
+  .tuner-panel .tuner-limit {
+    top: -6px;
+    height: 24px;
+  }
+
+  .tuner-panel .tuner-limit bdi {
+    top: 19px;
+    font-size: .55rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .tuner-panel .tuner-labels {
+    font-size: .6rem;
+  }
+
+  .tuner-panel .tuner-ticks {
+    font-size: .58rem;
+  }
+}
