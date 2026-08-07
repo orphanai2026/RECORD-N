@@ -50,8 +50,8 @@ import('./recording-flow.js?v=2026-08-07-1458').catch(error => console.error('Re
 /* Stage 6 scientific maqam data and unified recording-session foundation. */
 import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
-  .then(() => import('./performance-pack-store.js?v=2026-08-07-1614'))
-  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1654'))
+  .then(() => import('./performance-pack-store.js?v=2026-08-07-1707'))
+  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1707'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 /* Stage 7 ney-specific continuous capture with clean-reference persistence. */
@@ -73,3 +73,14 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 import('./auto-session-start.js?v=2026-08-07-1654').catch(error => console.error('Automatic session start load failed', error));
+
+/* Stage 9: educational note values captured at real BPM duration. */
+if (!document.querySelector('link[data-educational-duration]')) {
+  const durationStyles = document.createElement('link');
+  durationStyles.rel = 'stylesheet';
+  durationStyles.href = './educational-duration-capture.css?v=2026-08-07-1707';
+  durationStyles.dataset.educationalDuration = 'true';
+  document.head.append(durationStyles);
+}
+import('./educational-duration-capture.js?v=2026-08-07-1707')
+  .catch(error => console.error('Educational duration capture load failed', error));
