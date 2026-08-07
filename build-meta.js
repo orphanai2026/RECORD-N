@@ -84,6 +84,27 @@
   window.setInterval(checkForBuildUpdate, 60000);
 })();
 
+function showAutoCaptureLoadFailure(error) {
+  console.error('Ney Auto-Capture load failed', error);
+  const install = () => {
+    if (document.querySelector('#neyAutoCapturePanel')) return;
+    const workflow = document.querySelector('.recording-panel .recording-workflow');
+    if (!workflow) return;
+    const panel = document.createElement('section');
+    panel.id = 'neyAutoCapturePanel';
+    panel.className = 'ney-auto-capture';
+    panel.innerHTML = `
+      <div class="ney-auto-capture__header">
+        <div><strong>Ney Auto-Capture</strong><span>حالة محرك الالتقاط والتسجيل</span></div>
+        <span class="ney-auto-capture__badge" data-state="danger">تعذر تحميل المحرك</span>
+      </div>
+      <div class="ney-auto-capture__status" aria-live="polite">تعذر تشغيل وحدة الالتقاط. حدّث الصفحة؛ إذا استمرت الرسالة فالمشكلة في تحميل المحرك وليست في الميكروفون.</div>`;
+    workflow.before(panel);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
+  else install();
+}
+
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
 
 const recordingFoundationReady = import('./maqam-library.js?v=2026-08-07-1614')
@@ -100,12 +121,15 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-08-0007');
+const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-08-0036');
 const autoCaptureReady = capturePolicyReady
   .then(() => import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011'))
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
   .then(() => window.NeyCapturePolicyLoader.loadAutoCapture())
-  .catch(error => console.error('Ney Auto-Capture load failed', error));
+  .catch(error => {
+    showAutoCaptureLoadFailure(error);
+    throw error;
+  });
 
 if (!document.querySelector('link[data-auto-session-start]')) {
   const sessionStartStyles = document.createElement('link');
