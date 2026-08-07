@@ -58,7 +58,7 @@
 
     if (note) {
       $('#recordingMaqamScaleCaptureTarget').textContent = `المطلوب الآن: ${note.arabic} · ${note.english} · ${note.frequency.toFixed(2)} Hz`;
-      if (!state.pending) setStatus('اعزف الدرجة المطلوبة بثبات؛ الانتقال يتم تلقائيًا بعد الحفظ.');
+      if (!state.pending) setStatus('اعزف الدرجة المطلوبة بثبات؛ الانتقال يتم تلقائيًا بعد حفظ التسجيل التعليمي.');
     } else {
       $('#recordingMaqamScaleCaptureTarget').textContent = 'اكتمل تسجيل جميع درجات السلم.';
       setStatus('الجلسة مكتملة.');
@@ -83,7 +83,10 @@
       variantId: state.scale.variantId,
       division: 24,
       a4: Number($('#a4Reference')?.value || 440),
-      expectedTargetFrequency: note.frequency
+      expectedTargetFrequency: note.frequency,
+      expectedEnglish: note.english,
+      expectedArabic: note.arabic,
+      expectedIndex: state.index
     });
   }
 
@@ -116,7 +119,7 @@
     }
 
     state.pending = true;
-    setStatus(`تمت مطابقة ${note.arabic}. بانتظار اكتمال الحفظ التلقائي.`);
+    setStatus(`تمت مطابقة ${note.arabic}. جارٍ تسجيل المدة التعليمية والتحقق منها.`);
   }
 
   function advanceFromSaved(event) {
@@ -140,6 +143,20 @@
     paint();
   }
 
+  function reopenAfterRejected(event) {
+    if (!state.active || !state.pending || currentMode() !== 'maqam-scale') return;
+    const candidate = event.detail?.candidate;
+    const note = expected();
+    if (!note || !candidate) return;
+    const context = candidate.captureContext || {};
+    if (context.mode && context.mode !== 'maqam-scale') return;
+    if (context.maqamDegree && Number(context.maqamDegree) !== Number(note.degree)) return;
+
+    state.pending = false;
+    setStatus(`لم يكتمل تسجيل ${note.arabic}. أعد عزف الدرجة نفسها؛ المحاولة التالية تبدأ تلقائيًا.`);
+    paint();
+  }
+
   function sync(detail) {
     if (currentMode() !== 'maqam-scale') {
       state.active = false;
@@ -156,6 +173,7 @@
     document.addEventListener('ney:recording-mode-ui-change', () => setTimeout(() => sync(), 0));
     document.addEventListener('ney:auto-capture-candidate', event => handleCandidate(event.detail));
     document.addEventListener('ney:educational-duration-saved', advanceFromSaved);
+    document.addEventListener('ney:educational-duration-rejected', reopenAfterRejected);
 
     const context = window.NeyMaqamRecordingContext?.getContext?.();
     if (currentMode() === 'maqam-scale' && context?.scale) reset(context.scale);
