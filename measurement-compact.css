@@ -472,3 +472,42 @@
     font-size: .58rem;
   }
 }
+
+/* Approved detected-note prominence — 2026-08-07 */
+/* Strengthen the primary note reading without changing panel or ornament dimensions. */
+.detected-panel .note-result {
+  bottom: 18px;
+}
+
+.detected-panel .detected-note-visual {
+  font-size: clamp(2.65rem, 5vw, 4.25rem);
+}
+
+/* Keep the waiting message restrained; only live note identity gets the stronger scale. */
+.detected-panel.is-waiting .detected-note-visual {
+  font-size: clamp(1.5rem, 2.3vw, 2rem);
+}
+
+@media (max-width: 760px) {
+  .detected-panel .note-result {
+    bottom: 10px;
+  }
+
+  .detected-panel .detected-note-visual {
+    font-size: clamp(2.2rem, 8.2vw, 3.3rem);
+  }
+
+  .detected-panel.is-waiting .detected-note-visual {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .detected-panel .note-result {
+    bottom: 8px;
+  }
+
+  .detected-panel .detected-note-visual {
+    font-size: clamp(2.15rem, 13vw, 3.15rem);
+  }
+}
