@@ -1,4 +1,3 @@
-@import url('refresh-v1.css?v=2026-08-07-r1');
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap');
 @import url('measurement.css?v=2026-08-07-r2');
 @import url('measurement-compact.css?v=2026-08-07-r4');
@@ -425,4 +424,91 @@
     min-width: 194px;
     font-size: .84rem;
   }
+}
+
+/* Visual refresh — stage 1: lighter density without changing behavior. */
+.background-ornament { opacity: .18; }
+body::before { opacity: .22; }
+.app-shell { width: min(1480px, calc(100% - 24px)); padding-top: 4px; }
+.app-header {
+  min-height: 84px;
+  gap: 16px;
+  padding: 4px 20px 9px;
+  margin-bottom: 10px;
+}
+.brand { min-width: 0; gap: 11px; }
+.brand-logo { width: 62px; height: 62px; flex-basis: 62px; margin-top: 1px; }
+.brand-logo__ney { width: 20px; height: 48px; }
+.brand-copy { overflow: visible; }
+.brand-copy h1 {
+  padding: .10em .18em .18em;
+  overflow: visible;
+  white-space: nowrap;
+  font-size: clamp(2.25rem, 2.9vw, 3.1rem);
+  line-height: 1.28 !important;
+}
+.brand-meta { gap: 9px; margin-top: -3px; }
+.brand-description { font-size: .78rem; }
+.brand-reference { min-height: 25px; padding: 3px 9px; font-size: .77rem; }
+.microphone-status { min-width: 198px; min-height: 42px; height: 42px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+.header-tab { min-height: 40px; padding: 7px 13px; font-size: .82rem; }
+
+.panel { border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.025); }
+.top-grid { gap: 10px; }
+.tuner-panel, .detected-panel { height: 324px; padding: 12px 15px; }
+.panel-header { min-height: 52px; padding-bottom: 6px; }
+.panel-title { gap: 9px; }
+.panel-title h2, .quick-controls h2 { font-size: 1.38rem; }
+.panel-title p, .quick-controls p { margin-top: 3px; font-size: .72rem; }
+.icon-disc { width: 41px; height: 41px; flex-basis: 41px; }
+.tuner-panel { grid-template-rows: auto 88px 72px auto auto; gap: 6px; }
+.tuner-scale { padding: 9px 15px 5px; }
+.metrics-grid { gap: 7px; }
+.metric-card { min-height: 66px; padding: 7px 6px; border-radius: 11px; }
+.note-visual { min-height: 198px; }
+.note-rosette { width: 178px; height: 178px; }
+.quick-controls { margin-top: 10px; padding: 11px 14px; }
+.quick-controls__header { min-height: 36px; }
+.controls-grid { gap: 9px; }
+.control-group { border-radius: 12px; }
+.bottom-grid { gap: 10px; margin-top: 10px; }
+.recording-workflow { border-radius: 14px; }
+
+@media (min-width: 901px) {
+  .quick-controls { height: 154px !important; min-height: 154px !important; }
+  .control-group { height: 76px !important; min-height: 76px !important; }
+  .segment, .duration-option { height: 40px !important; min-height: 40px !important; }
+  .stepper, .reference-input { height: 40px !important; }
+}
+
+@media (max-width: 900px) {
+  .app-shell { width: min(100% - 18px, 760px); }
+  .app-header { min-height: 76px; margin-bottom: 8px; padding-inline: 8px; }
+  .brand { min-width: 0; }
+  .tuner-panel, .detected-panel { height: auto; min-height: 326px; }
+}
+
+@media (max-width: 640px) {
+  .app-shell { width: calc(100% - 10px); }
+  .app-header { margin-bottom: 7px; padding: 4px 4px 7px; }
+  .brand-logo { width: 46px; height: 46px; flex-basis: 46px; }
+  .brand-logo__ney { width: 16px; height: 38px; }
+  .brand-copy h1 { font-size: 1.78rem; line-height: 1.32 !important; }
+  .brand-meta { gap: 6px; margin-top: -3px; }
+  .brand-description { font-size: .63rem; }
+  .brand-reference { min-height: 22px; padding: 2px 7px; font-size: .62rem; }
+  .header-tab { min-height: 37px; font-size: .74rem; padding-inline: 10px; }
+  .microphone-status { min-width: 180px; min-height: 38px; height: 38px; font-size: .75rem; }
+  .tuner-panel, .detected-panel { min-height: 0; padding: 10px; }
+  .panel-title h2, .quick-controls h2 { font-size: 1.18rem; }
+  .panel-title p, .quick-controls p { font-size: .65rem; }
+  .icon-disc { width: 37px; height: 37px; flex-basis: 37px; }
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .metric-card { min-height: 62px; }
+}
+
+@media (max-width: 430px) {
+  .brand-description { display: none; }
+  .brand-copy h1 { font-size: 1.62rem; }
+  .microphone-status { min-width: 160px; }
 }
