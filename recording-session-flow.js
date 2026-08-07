@@ -48,7 +48,7 @@
     button.addEventListener('click', event => {
       event.preventDefault();
 
-      /* Exit the native chromatic engine safely before entering the maqam-scale UI path. */
+      /* Keep the existing engine in a safe non-chromatic state while the maqam-scale UI path is selected. */
       const singleButton = control.querySelector('[data-recording-mode="single"]');
       if (singleButton && !singleButton.classList.contains('is-active')) singleButton.click();
 
@@ -58,7 +58,8 @@
           item.classList.toggle('is-active', active);
           item.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-        $('#chromaticSettings')?.setAttribute('hidden', '');
+        const settings = $('#chromaticSettings');
+        if (settings && !settings.hidden) settings.hidden = true;
         document.dispatchEvent(new CustomEvent('ney:recording-mode-ui-change', {
           detail: { mode: 'maqam-scale', engineFallback: 'single' }
         }));
@@ -140,11 +141,9 @@
 
     if (mode !== 'chromatic') {
       settings.dataset.startMode = 'none';
-      settings.hidden = true;
       return;
     }
 
-    settings.hidden = false;
     settings.dataset.startMode = activeStartMode();
   }
 
@@ -168,7 +167,7 @@
 
     const observer = new MutationObserver(resync);
     observer.observe(control, { subtree: true, attributes: true, attributeFilter: ['class', 'aria-pressed'] });
-    observer.observe(settings, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'aria-pressed'] });
+    observer.observe(settings, { subtree: true, attributes: true, attributeFilter: ['class', 'aria-pressed'] });
 
     sync(workflow, settings, summary);
     installed = true;
