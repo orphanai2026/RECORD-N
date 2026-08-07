@@ -9,7 +9,7 @@
   });
 
   async function importPatchedModule(path, replacements) {
-    const response = await fetch(`${path}?policy=2026-08-08-0007`, { cache: 'no-store' });
+    const response = await fetch(`${path}?policy=2026-08-08-0036`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`${path} ${response.status}`);
     let source = await response.text();
 
@@ -161,19 +161,19 @@
 
   function diagnosticsText(analysis) {
     const labels = [];
-    if (analysis.reasonCounts.unstable) labels.push(`عدم ثبات ${analysis.reasonCounts.unstable}`);
-    if (analysis.reasonCounts.cents) labels.push(`خارج هامش السنت ${analysis.reasonCounts.cents}`);
-    if (analysis.reasonCounts.clarity) labels.push(`جودة أقل من 90% ${analysis.reasonCounts.clarity}`);
-    if (analysis.reasonCounts.note) labels.push(`اختلاف النغمة ${analysis.reasonCounts.note}`);
-    if (analysis.reasonCounts.target) labels.push(`اختلاف الهدف الترددي ${analysis.reasonCounts.target}`);
-    if (analysis.reasonCounts.missing) labels.push(`قراءات مفقودة ${analysis.reasonCounts.missing}`);
+    if (analysis.reasonCounts.unstable) labels.push('عدم ثبات ' + analysis.reasonCounts.unstable);
+    if (analysis.reasonCounts.cents) labels.push('خارج هامش السنت ' + analysis.reasonCounts.cents);
+    if (analysis.reasonCounts.clarity) labels.push('جودة أقل من 90% ' + analysis.reasonCounts.clarity);
+    if (analysis.reasonCounts.note) labels.push('اختلاف النغمة ' + analysis.reasonCounts.note);
+    if (analysis.reasonCounts.target) labels.push('اختلاف الهدف الترددي ' + analysis.reasonCounts.target);
+    if (analysis.reasonCounts.missing) labels.push('قراءات مفقودة ' + analysis.reasonCounts.missing);
 
     const effective = Math.round(analysis.effectivePassRatio * 100);
     const raw = Math.round(analysis.rawPassRatio * 100);
     const transient = analysis.transientBursts
-      ? ` دُمج ${analysis.transientFrames} إطارًا عابرًا ضمن ${analysis.transientBursts} انحراف قصير (≤150 ms).`
+      ? ' دُمج ' + analysis.transientFrames + ' إطارًا عابرًا ضمن ' + analysis.transientBursts + ' انحراف قصير (≤150 ms).'
       : '';
-    return `القبول ${effective}% بعد المرشح الزمني (خام ${raw}%؛ ${analysis.rawPassed}/${analysis.totalFrames} قراءة). أسباب الرفض الرصدية: ${labels.join(' · ') || 'لا توجد'}.${transient}`;
+    return 'القبول ' + effective + '% بعد المرشح الزمني (خام ' + raw + '%؛ ' + analysis.rawPassed + '/' + analysis.totalFrames + ' قراءة). أسباب الرفض الرصدية: ' + (labels.join(' · ') || 'لا توجد') + '.' + transient;
   }`],
       [`    const passedFrames = frames.filter(frame => framePasses(frame, active.candidate)).length;
     const passRatio = frames.length ? passedFrames / frames.length : 0;`, `    const frameAnalysis = analyzeFrameSequence(frames, active.candidate);
