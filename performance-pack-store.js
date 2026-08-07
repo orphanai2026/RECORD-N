@@ -109,6 +109,14 @@
     return requestToPromise(tx.objectStore(AUDIO_STORE).get(audioId));
   }
 
+  async function removeAudio(audioId) {
+    if (!audioId) return;
+    const db = await openDb();
+    const tx = db.transaction(AUDIO_STORE, 'readwrite');
+    tx.objectStore(AUDIO_STORE).delete(audioId);
+    await transactionDone(tx);
+  }
+
   async function upsertCleanReference({ note, context, sample } = {}) {
     if (!note || !sample) throw new Error('note and sample are required');
     if (sample.style && sample.style !== 'clean') throw new Error('Only clean reference samples can be auto-approved in this release');
@@ -154,8 +162,69 @@
 
     store.put(pack);
     await transactionDone(tx);
-    document.dispatchEvent(new CustomEvent('ney:performance-pack-updated', { detail: { packKey, pack } }));
-    return { changed: true, pack };
+    document.dispatchEvent(new CustomEvent('ney:performance-pack-updated', { detail: { packKey, pack, sampleType: 'clean' } }));
+    return { changed: true, pack, replacedAudioId: current?.samples?.clean?.audioId || null };
+  }
+
+  async function upsertEducationalSample({ note, context, sample } = {}) {
+    if (!note || !sample) throw new Error('note and sample are required');
+    if (sample.style && sample.style !== 'clean') throw new Error('Educational duration samples must be clean in this release');
+    if (Number(sample.passRatio) !== 1) throw new Error('Educational duration sample requires 100% passing frames');
+    if (!sample.durationId || !sample.durationName || !Number.isFinite(Number(sample.beats))) throw new Error('duration metadata is required');
+    if (!Number.isFinite(Number(sample.bpm)) || Number(sample.bpm) <= 0) throw new Error('bpm is required');
+
+    const db = await openDb();
+    const normalizedContext = normalizeContext(context);
+    const packKey = makePackKey({ note, context: normalizedContext });
+    const durationKey = sample.durationKey || `${sample.durationId}@${Math.round(Number(sample.bpm))}`;
+    const tx = db.transaction(PACK_STORE, 'readwrite');
+    const store = tx.objectStore(PACK_STORE);
+    const current = await requestToPromise(store.get(packKey));
+    const incomingScore = qualityScore(sample);
+    const previous = current?.samples?.educational?.[durationKey] || null;
+    const previousScore = qualityScore(previous || {});
+
+    if (previous && incomingScore <= previousScore) {
+      tx.abort();
+      return { changed: false, pack: current, durationKey, reason: 'existing-educational-sample-is-better-or-equal' };
+    }
+
+    const timestamp = new Date().toISOString();
+    const educational = {
+      ...(current?.samples?.educational || {}),
+      [durationKey]: {
+        ...sample,
+        durationKey,
+        purpose: 'educational-duration',
+        style: 'clean',
+        score: incomingScore,
+        approvedAutomatically: true,
+        acceptanceRule: '100-percent-valid-duration-window',
+        updatedAt: timestamp
+      }
+    };
+
+    const pack = {
+      packKey,
+      schemaVersion: 1,
+      note: {
+        ...(current?.note || {}),
+        ...note,
+        noteKey: note.noteKey || current?.note?.noteKey || note.english || note.arabic || `${note.abs24 ?? 'na'}`
+      },
+      context: current?.context || normalizedContext,
+      samples: {
+        ...(current?.samples || {}),
+        educational
+      },
+      createdAt: current?.createdAt || timestamp,
+      updatedAt: timestamp
+    };
+
+    store.put(pack);
+    await transactionDone(tx);
+    document.dispatchEvent(new CustomEvent('ney:performance-pack-updated', { detail: { packKey, pack, sampleType: 'educational', durationKey } }));
+    return { changed: true, pack, durationKey, replacedAudioId: previous?.audioId || null };
   }
 
   async function removePack(packKey) {
@@ -174,7 +243,9 @@
     listPacks,
     saveAudio,
     getAudio,
+    removeAudio,
     upsertCleanReference,
+    upsertEducationalSample,
     removePack
   });
 })();
