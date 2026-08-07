@@ -1,0 +1,192 @@
+/*
+ * Recording screen priority layer.
+ * Visual hierarchy only — keeps all existing IDs and engine-bound DOM nodes intact.
+ */
+
+.ney-screen--recording .recording-panel,
+.ney-screen--recording .recording-actions-stack,
+.ney-screen--recording .recording-workflow,
+.ney-screen--recording .ney-auto-capture,
+.ney-screen--recording .quick-controls,
+.ney-screen--recording .ney-mini-metronome {
+  min-width: 0;
+}
+
+/* Primary performance flow: microphone → capture → recording mode/session. */
+.ney-screen--recording .recording-actions-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.ney-screen--recording #micButton {
+  order: 10;
+}
+
+.ney-screen--recording #neyAutoCapturePanel {
+  order: 20;
+}
+
+.ney-screen--recording .recording-workflow {
+  order: 30;
+}
+
+.ney-screen--recording #prepareButton {
+  order: 40;
+}
+
+.ney-screen--recording .ney-auto-capture {
+  margin: 0;
+}
+
+.ney-screen--recording .ney-auto-capture__metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Give the user's mode choice more visual priority than technical controls. */
+.ney-screen--recording .recording-workflow__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, auto);
+  align-items: center;
+  gap: 16px;
+}
+
+.ney-screen--recording .recording-mode-control {
+  width: 100%;
+  max-width: 360px;
+  justify-self: end;
+}
+
+.ney-screen--recording .chromatic-settings {
+  margin-top: 14px;
+}
+
+.ney-screen--recording .auto-session-start {
+  margin-bottom: 14px;
+}
+
+/* Secondary performance controls: duration first, then BPM, then tuning context. */
+.ney-screen--recording .quick-controls__header {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ney-screen--recording .controls-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-areas:
+    "duration duration"
+    "bpm division"
+    "reference reference";
+  gap: 12px !important;
+}
+
+.ney-screen--recording .duration-group {
+  grid-area: duration;
+  order: 1;
+}
+
+.ney-screen--recording .bpm-group {
+  grid-area: bpm;
+  order: 2;
+}
+
+.ney-screen--recording .division-group {
+  grid-area: division;
+  order: 3;
+}
+
+.ney-screen--recording .reference-group {
+  grid-area: reference;
+  order: 4;
+}
+
+.ney-screen--recording .duration-control {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ney-screen--recording .duration-option {
+  min-width: 0;
+  padding-inline: 5px;
+}
+
+.ney-screen--recording .duration-option .music-symbol {
+  margin-inline: auto;
+}
+
+.ney-screen--recording .duration-option strong,
+.ney-screen--recording .duration-option small {
+  white-space: normal;
+  text-align: center;
+}
+
+/* The metronome is guidance, not the main task, so it closes the recording flow. */
+.ney-screen--recording .ney-mini-metronome {
+  margin-top: 0;
+}
+
+.ney-screen--recording .ney-mini-metronome__title strong::after {
+  content: " · للاستـرشاد أثناء التسجيل";
+  color: var(--ney-shell-muted, #9fb2ae);
+  font-size: .78em;
+  font-weight: 500;
+}
+
+/* Better balance on large desktop: enough room for the five note-value choices. */
+@media (min-width: 1241px) {
+  .ney-screen--recording .ney-recording-layout {
+    grid-template-columns: minmax(0, 1.2fr) minmax(420px, .8fr);
+  }
+}
+
+@media (max-width: 1240px) {
+  .ney-screen--recording .ney-recording-main,
+  .ney-screen--recording .ney-recording-side {
+    width: 100%;
+  }
+
+  .ney-screen--recording .quick-controls {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 820px) {
+  .ney-screen--recording .recording-workflow__header {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .ney-screen--recording .recording-mode-control {
+    max-width: none;
+    justify-self: stretch;
+  }
+
+  .ney-screen--recording .ney-auto-capture__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ney-screen--recording .controls-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "duration"
+      "bpm"
+      "division"
+      "reference";
+  }
+}
+
+@media (max-width: 560px) {
+  .ney-screen--recording .duration-control {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ney-screen--recording .ney-auto-capture__metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ney-screen--recording .ney-auto-capture__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
