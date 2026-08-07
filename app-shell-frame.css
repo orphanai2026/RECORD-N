@@ -1,0 +1,106 @@
+/*
+ * App Shell frame — separates scrollable content from persistent navigation.
+ * Layout only: no audio, capture, persistence or metronome engine changes.
+ */
+
+body.ney-shell-frame-active {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+.ney-shell-frame {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ney-shell-scroll {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scroll-padding-block: 18px;
+}
+
+.ney-shell-scroll > #appShell {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The nav now occupies a real layout row; it never floats over content. */
+.ney-shell-frame > .ney-shell-nav {
+  position: relative !important;
+  z-index: 10;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: calc(100% - 24px);
+  max-width: 760px;
+  min-height: var(--ney-shell-nav-height, 76px);
+  margin: 8px auto max(8px, env(safe-area-inset-bottom, 0px));
+  flex: none;
+}
+
+/* Old safety padding is no longer necessary because the nav has its own row. */
+body.ney-shell-frame-active .ney-screen {
+  padding-bottom: clamp(18px, 2vw, 30px) !important;
+}
+
+body.ney-shell-frame-active .app-copyright {
+  margin: 20px auto 28px !important;
+  padding-inline: 18px;
+}
+
+/* Keep dynamically appended build metadata inside the scroll region. */
+.ney-shell-scroll > .app-copyright {
+  width: min(100%, 1480px);
+  box-sizing: border-box;
+}
+
+/* Prevent focus/scroll targets from landing flush against the navigation row. */
+.ney-shell-scroll :is(button, input, select, textarea, [tabindex]):focus {
+  scroll-margin-block: 18px;
+}
+
+@media (max-width: 700px) {
+  .ney-shell-frame > .ney-shell-nav {
+    width: calc(100% - 12px);
+    margin-top: 5px;
+    margin-bottom: max(5px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body.ney-shell-frame-active .ney-screen {
+    padding-bottom: 20px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 720px) {
+  .ney-shell-frame > .ney-shell-nav {
+    min-height: 64px;
+    margin-top: 4px;
+    margin-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .ney-shell-frame > .ney-shell-nav .ney-shell-nav__item {
+    min-height: 50px;
+  }
+
+  body.ney-shell-frame-active .ney-screen {
+    padding-bottom: 16px !important;
+  }
+}
