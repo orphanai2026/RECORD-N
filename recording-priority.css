@@ -65,9 +65,16 @@
 }
 
 /* Secondary performance controls: duration first, then BPM, then tuning context. */
+.ney-screen--recording .quick-controls {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  padding-bottom: 14px;
+}
+
 .ney-screen--recording .quick-controls__header {
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .ney-screen--recording .controls-grid {
@@ -77,7 +84,13 @@
     "duration duration"
     "bpm division"
     "reference reference";
-  gap: 12px !important;
+  gap: 10px !important;
+  padding-top: 4px !important;
+}
+
+.ney-screen--recording .control-group {
+  height: auto !important;
+  min-height: 70px !important;
 }
 
 .ney-screen--recording .duration-group {
@@ -127,16 +140,26 @@
 }
 
 .ney-screen--recording .ney-mini-metronome__title strong::after {
-  content: " · للاستـرشاد أثناء التسجيل";
+  content: " · للاسترشاد أثناء التسجيل";
   color: var(--ney-shell-muted, #9fb2ae);
   font-size: .78em;
   font-weight: 500;
 }
 
-/* Better balance on large desktop: enough room for the five note-value choices. */
-@media (min-width: 1241px) {
+/* Large screens: compact all quick controls into one performance strip. */
+@media (min-width: 1180px) {
   .ney-screen--recording .ney-recording-layout {
     grid-template-columns: minmax(0, 1.2fr) minmax(420px, .8fr);
+  }
+
+  .ney-screen--recording .controls-grid {
+    grid-template-columns: minmax(390px, 1.55fr) minmax(150px, .58fr) minmax(210px, .78fr) minmax(220px, .82fr) !important;
+    grid-template-areas: "duration bpm division reference";
+    align-items: stretch;
+  }
+
+  .ney-screen--recording .control-group {
+    min-height: 78px !important;
   }
 }
 
@@ -148,6 +171,17 @@
 
   .ney-screen--recording .quick-controls {
     margin-top: 0;
+  }
+}
+
+/* Tablet: retain two columns so the quick controls remain compact but readable. */
+@media (max-width: 1179px) and (min-width: 721px) {
+  .ney-screen--recording .controls-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "duration duration"
+      "bpm division"
+      "reference reference";
   }
 }
 
@@ -165,7 +199,9 @@
   .ney-screen--recording .ney-auto-capture__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
+@media (max-width: 720px) {
   .ney-screen--recording .controls-grid {
     grid-template-columns: 1fr !important;
     grid-template-areas:
