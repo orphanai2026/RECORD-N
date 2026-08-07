@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap');
 
 /* Approved header identity refinement — 2026-08-07 */
 .app-header {
@@ -54,7 +54,7 @@
   margin: 0;
   padding-block: .03em;
   color: var(--gold-100);
-  font-family: "Aref Ruqaa Ink", "Aref Ruqaa", Amiri, var(--font);
+  font-family: "Aref Ruqaa", Amiri, var(--font) !important;
   font-size: clamp(3.3rem, 4.4vw, 4.45rem);
   line-height: .96;
   font-weight: 700;
