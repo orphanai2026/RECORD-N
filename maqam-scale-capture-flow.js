@@ -43,7 +43,7 @@
     panel.innerHTML = `
       <div class="recording-maqam-scale-capture__top">
         <div><strong>جلسة تسجيل السلم</strong><span id="recordingMaqamScaleCaptureStatus">اختر المقام والجذر.</span></div>
-        <span id="recordingMaqamScaleCaptureCount">0 / 0</span>
+        <span id="recordingMaqamScaleCaptureCount" dir="ltr">0 / 0</span>
       </div>
       <div id="recordingMaqamScaleCaptureTarget">—</div>
       <progress id="recordingMaqamScaleCaptureBar" value="0" max="1"></progress>`;
@@ -65,7 +65,11 @@
 
     const total = state.scale.notes.length;
     const note = expected();
-    $('#recordingMaqamScaleCaptureCount').textContent = `${Math.min(state.index, total)} / ${total}`;
+    const count = $('#recordingMaqamScaleCaptureCount');
+    if (count) {
+      count.dir = 'ltr';
+      count.textContent = `${Math.min(state.index, total)} / ${total}`;
+    }
     $('#recordingMaqamScaleCaptureBar').max = Math.max(1, total);
     $('#recordingMaqamScaleCaptureBar').value = Math.min(state.index, total);
 
