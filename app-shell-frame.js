@@ -1,12 +1,14 @@
 (() => {
   'use strict';
 
+  let observer = null;
+
   function mountFrame() {
-    if (document.body.classList.contains('ney-shell-frame-active')) return;
+    if (document.body.classList.contains('ney-shell-frame-active')) return true;
 
     const app = document.getElementById('appShell');
     const nav = document.querySelector('.ney-shell-nav');
-    if (!app || !nav) return;
+    if (!app || !nav) return false;
 
     const frame = document.createElement('div');
     frame.className = 'ney-shell-frame';
@@ -17,7 +19,7 @@
     scroll.setAttribute('aria-label', 'محتوى التطبيق');
 
     const appParent = app.parentNode;
-    if (!appParent) return;
+    if (!appParent) return false;
 
     appParent.insertBefore(frame, app);
     scroll.append(app);
@@ -31,19 +33,29 @@
 
     moveCopyrightIntoScroll();
 
-    const observer = new MutationObserver(() => moveCopyrightIntoScroll());
-    observer.observe(document.body, { childList: true });
+    const copyrightObserver = new MutationObserver(() => moveCopyrightIntoScroll());
+    copyrightObserver.observe(document.body, { childList: true });
 
     window.addEventListener('ney:screenchange', () => {
       scroll.scrollTo({ top: 0, behavior: 'auto' });
     });
 
     window.NeyAppShellFrame = { frame, scroll, nav };
+    observer?.disconnect();
+    observer = null;
+    return true;
+  }
+
+  function start() {
+    if (mountFrame()) return;
+    observer = new MutationObserver(() => mountFrame());
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.setTimeout(() => observer?.disconnect(), 10000);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => requestAnimationFrame(mountFrame), { once: true });
+    document.addEventListener('DOMContentLoaded', start, { once: true });
   } else {
-    requestAnimationFrame(mountFrame);
+    start();
   }
 })();
