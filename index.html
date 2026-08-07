@@ -12,7 +12,7 @@
   <script src="vendor/lame.min.js?v=1.2.1" defer></script>
   <script src="app.js?v=2026-08-06-r5" defer></script>
   <script src="digital-tuner.js?v=2026-08-06-r3" defer></script>
-  <script src="measurement-ui.js?v=2026-08-07-1751" defer></script>
+  <script src="measurement-ui.js?v=2026-08-08-0025" defer></script>
   <link rel="stylesheet" href="calibration.css?v=2026-08-06-r5">
 </head>
 <body>
@@ -106,13 +106,8 @@
       <article class="panel detected-panel">
         <header class="panel-header">
           <div class="panel-title">
-            <span class="icon-disc" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="17" cy="16" r="3"></circle></svg>
-            </span>
-            <div>
-              <h2>النغمة المكتشفة</h2>
-              <p>الاسم والطبقة والتردد الأساسي</p>
-            </div>
+            <span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="17" cy="16" r="3"></circle></svg></span>
+            <div><h2>النغمة المكتشفة</h2><p>الاسم والطبقة والتردد الأساسي</p></div>
           </div>
         </header>
 
@@ -133,215 +128,30 @@
 
     <section class="panel quick-controls" aria-labelledby="quickControlsTitle">
       <header class="quick-controls__header">
-        <div>
-          <h2 id="quickControlsTitle">التحكم السريع</h2>
-          <p>الإعدادات المستخدمة أثناء العزف فقط</p>
-        </div>
-        <button class="ghost-button advanced-button" id="advancedButton" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M2 14h4"></path><path d="M10 8h4"></path><path d="M18 16h4"></path></svg>
-          <span>إعدادات متقدمة</span>
-        </button>
+        <div><h2 id="quickControlsTitle">التحكم السريع</h2><p>الإعدادات المستخدمة أثناء العزف فقط</p></div>
+        <button class="ghost-button advanced-button" id="advancedButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M2 14h4"></path><path d="M10 8h4"></path><path d="M18 16h4"></path></svg><span>إعدادات متقدمة</span></button>
       </header>
-
       <div class="controls-grid">
-        <fieldset class="control-group division-group">
-          <legend>التقسيم</legend>
-          <div class="segmented-control" id="divisionControl">
-            <button class="segment is-active" data-division="24" type="button" aria-pressed="true"><strong dir="ltr">24-TET</strong><span>شرقي</span></button>
-            <button class="segment" data-division="12" type="button" aria-pressed="false"><strong dir="ltr">12-TET</strong><span>غربي</span></button>
-          </div>
-        </fieldset>
-
-        <fieldset class="control-group duration-group">
-          <legend>القيمة الموسيقية</legend>
-          <div class="duration-control" id="durationControl">
-            <button class="duration-option" data-duration="4" data-name="روند" type="button" aria-pressed="false"><span class="music-symbol">𝅝</span><strong>روند</strong><small>4</small></button>
-            <button class="duration-option" data-duration="2" data-name="بلانش" type="button" aria-pressed="false"><span class="music-symbol">𝅗𝅥</span><strong>بلانش</strong><small>2</small></button>
-            <button class="duration-option is-active" data-duration="1" data-name="نوار" type="button" aria-pressed="true"><span class="music-symbol">♩</span><strong>نوار</strong><small>1</small></button>
-            <button class="duration-option" data-duration="0.5" data-name="كروش" type="button" aria-pressed="false"><span class="music-symbol">♪</span><strong>كروش</strong><small>1/2</small></button>
-          </div>
-        </fieldset>
-
-        <div class="control-group bpm-group">
-          <span class="control-label">النبض <bdi dir="ltr">BPM</bdi></span>
-          <div class="stepper numeric-stepper" role="group" aria-label="ضبط النبض">
-            <button type="button" id="bpmMinus" aria-label="خفض النبض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
-            <input id="bpmValue" type="number" min="30" max="240" step="1" value="60" inputmode="numeric" dir="ltr" aria-label="قيمة النبض BPM">
-            <button type="button" id="bpmPlus" aria-label="رفع النبض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
-          </div>
-        </div>
-
-        <div class="control-group reference-group">
-          <span class="control-label">مرجع <bdi dir="ltr">A4</bdi></span>
-          <div class="stepper numeric-stepper reference-stepper" role="group" aria-label="ضبط مرجع A4">
-            <button type="button" id="a4Minus" aria-label="خفض مرجع A4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
-            <label class="reference-input"><input id="a4Reference" type="number" min="400" max="480" step="0.1" value="440" inputmode="decimal" dir="ltr" aria-label="مرجع A4"><span>Hz</span></label>
-            <button type="button" id="a4Plus" aria-label="رفع مرجع A4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
-          </div>
-        </div>
+        <fieldset class="control-group division-group"><legend>التقسيم</legend><div class="segmented-control" id="divisionControl"><button class="segment is-active" data-division="24" type="button" aria-pressed="true"><strong dir="ltr">24-TET</strong><span>شرقي</span></button><button class="segment" data-division="12" type="button" aria-pressed="false"><strong dir="ltr">12-TET</strong><span>غربي</span></button></div></fieldset>
+        <fieldset class="control-group duration-group"><legend>القيمة الموسيقية</legend><div class="duration-control" id="durationControl"><button class="duration-option" data-duration="4" data-name="روند" type="button" aria-pressed="false"><span class="music-symbol">𝅝</span><strong>روند</strong><small>4</small></button><button class="duration-option" data-duration="2" data-name="بلانش" type="button" aria-pressed="false"><span class="music-symbol">𝅗𝅥</span><strong>بلانش</strong><small>2</small></button><button class="duration-option is-active" data-duration="1" data-name="نوار" type="button" aria-pressed="true"><span class="music-symbol">♩</span><strong>نوار</strong><small>1</small></button><button class="duration-option" data-duration="0.5" data-name="كروش" type="button" aria-pressed="false"><span class="music-symbol">♪</span><strong>كروش</strong><small>1/2</small></button></div></fieldset>
+        <div class="control-group bpm-group"><span class="control-label">النبض <bdi dir="ltr">BPM</bdi></span><div class="stepper numeric-stepper" role="group" aria-label="ضبط النبض"><button type="button" id="bpmMinus" aria-label="خفض النبض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button><input id="bpmValue" type="number" min="30" max="240" step="1" value="60" inputmode="numeric" dir="ltr" aria-label="قيمة النبض BPM"><button type="button" id="bpmPlus" aria-label="رفع النبض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button></div></div>
+        <div class="control-group reference-group"><span class="control-label">مرجع <bdi dir="ltr">A4</bdi></span><div class="stepper numeric-stepper reference-stepper" role="group" aria-label="ضبط مرجع A4"><button type="button" id="a4Minus" aria-label="خفض مرجع A4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button><label class="reference-input"><input id="a4Reference" type="number" min="400" max="480" step="0.1" value="440" inputmode="decimal" dir="ltr" aria-label="مرجع A4"><span>Hz</span></label><button type="button" id="a4Plus" aria-label="رفع مرجع A4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button></div></div>
       </div>
     </section>
 
     <section class="bottom-grid" aria-label="التسجيل والميزان والمكتبة">
-      <article class="panel recordings-panel">
-        <header class="panel-header recordings-header">
-          <div class="panel-title panel-title--plain">
-            <div>
-              <h2>التسجيلات المحفوظة</h2>
-              <p>آخر التسجيلات مع التصدير بصيغ متعددة</p>
-            </div>
-          </div>
-          <div class="recordings-actions">
-            <label class="export-format-control" aria-label="صيغة التصدير">
-              <select id="exportFormat" aria-label="اختيار صيغة التصدير">
-                <option value="wav" selected>WAV عالي الدقة</option>
-                <option value="mp3">MP3</option>
-                <option value="json">JSON</option>
-              </select>
-            </label>
-            <button class="ghost-button export-all-button" id="exportAllButton" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg><span>تصدير الكل</span>
-            </button>
-            <button class="icon-button more-button" id="libraryMenuButton" type="button" aria-label="قائمة التسجيلات"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
-          </div>
-        </header>
-        <div class="recordings-list" id="recordingsList" aria-live="polite"></div>
-      </article>
-
-      <article class="panel recording-panel">
-        <header class="panel-header">
-          <div class="panel-title">
-            <span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path></svg></span>
-            <div><h2>التسجيل</h2><p>يبدأ تلقائيًا بعد ثبات النغمة ودقتها</p></div>
-          </div>
-        </header>
-        <div class="recording-actions-stack">
-          <button class="primary-button" id="micButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path></svg><span>تشغيل الميكروفون</span></button>
-          <section class="recording-workflow" aria-labelledby="recordingModeTitle">
-            <div class="recording-workflow__header">
-              <div><h3 id="recordingModeTitle">وضع التسجيل</h3><p>اختر نغمة منفصلة أو جلسة سلم كروماتك متتابعة</p></div>
-              <div class="segmented-control recording-mode-control" id="recordingModeControl">
-                <button class="segment is-active" data-recording-mode="single" type="button" aria-pressed="true">منفصل</button>
-                <button class="segment" data-recording-mode="chromatic" type="button" aria-pressed="false">سلم كروماتك</button>
-              </div>
-            </div>
-            <div class="chromatic-settings" id="chromaticSettings" hidden>
-              <label>نغمة البداية<select id="chromaticStart"></select></label>
-              <label>نغمة النهاية<select id="chromaticEnd"></select></label>
-              <label>الاتجاه<select id="chromaticDirection"><option value="up">صاعد</option><option value="down">هابط</option></select></label>
-              <button class="ghost-button" id="buildChromaticButton" type="button">تجهيز السلم</button>
-            </div>
-            <div class="recording-session-status" id="recordingSessionStatus" aria-live="polite">
-              <div><span>الحالة</span><strong id="recordingPhase">جاهز</strong></div>
-              <div><span>التأهيل</span><strong id="qualificationCount">0 / 3</strong></div>
-              <div><span>الدقة</span><strong id="liveAccuracy">—</strong></div>
-              <div><span>الجودة</span><strong id="liveClarity">—</strong></div>
-            </div>
-            <div class="chromatic-progress" id="chromaticProgress" hidden>
-              <div><span id="chromaticProgressText">لم تبدأ الجلسة</span><strong id="chromaticTargetText">—</strong></div>
-              <progress id="chromaticProgressBar" max="1" value="0"></progress>
-              <div class="chromatic-actions"><button class="ghost-button" id="pauseChromaticButton" type="button">إيقاف مؤقت</button><button class="ghost-button" id="endChromaticButton" type="button">إنهاء الجلسة</button></div>
-            </div>
-          </section>
-          <button class="gold-button" id="prepareButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle></svg><span>تجهيز تسجيل النغمة</span></button>
-        </div>
-        <div class="readiness-list">
-          <div><span class="mini-dot" id="micReadyDot"></span><span>الميكروفون</span></div>
-          <div><span class="mini-dot" id="pitchReadyDot"></span><span>ثبات النغمة</span></div>
-          <div><span class="mini-dot" id="qualityReadyDot"></span><span>جودة التسجيل</span></div>
-        </div>
-      </article>
-
-      <article class="panel metronome-panel">
-        <header class="panel-header">
-          <div class="panel-title">
-            <span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2l2-7 4 14 3-9 2 5h5"></path></svg></span>
-            <div><h2>الميزان الصامت</h2><p>العد المرئي</p></div>
-          </div>
-        </header>
-        <div class="metronome-orb" id="metronomeOrb" aria-live="polite"><span id="beatValue">—</span><i aria-hidden="true"></i></div>
-        <div class="metronome-caption"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span id="metronomeCaption">ثابتة في نوار · 1.000 · BPM 60</span></div>
-      </article>
+      <article class="panel recordings-panel"><header class="panel-header recordings-header"><div class="panel-title panel-title--plain"><div><h2>التسجيلات المحفوظة</h2><p>آخر التسجيلات مع التصدير بصيغ متعددة</p></div></div><div class="recordings-actions"><label class="export-format-control" aria-label="صيغة التصدير"><select id="exportFormat" aria-label="اختيار صيغة التصدير"><option value="wav" selected>WAV عالي الدقة</option><option value="mp3">MP3</option><option value="json">JSON</option></select></label><button class="ghost-button export-all-button" id="exportAllButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg><span>تصدير الكل</span></button><button class="icon-button more-button" id="libraryMenuButton" type="button" aria-label="قائمة التسجيلات"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button></div></header><div class="recordings-list" id="recordingsList" aria-live="polite"></div></article>
+      <article class="panel recording-panel"><header class="panel-header"><div class="panel-title"><span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path></svg></span><div><h2>التسجيل</h2><p>يبدأ تلقائيًا بعد ثبات النغمة ودقتها</p></div></div></header><div class="recording-actions-stack"><button class="primary-button" id="micButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v5"></path></svg><span>تشغيل الميكروفون</span></button><section class="recording-workflow" aria-labelledby="recordingModeTitle"><div class="recording-workflow__header"><div><h3 id="recordingModeTitle">وضع التسجيل</h3><p>اختر نغمة منفصلة أو جلسة سلم كروماتك متتابعة</p></div><div class="segmented-control recording-mode-control" id="recordingModeControl"><button class="segment is-active" data-recording-mode="single" type="button" aria-pressed="true">منفصل</button><button class="segment" data-recording-mode="chromatic" type="button" aria-pressed="false">سلم كروماتك</button></div></div><div class="chromatic-settings" id="chromaticSettings" hidden><label>نغمة البداية<select id="chromaticStart"></select></label><label>نغمة النهاية<select id="chromaticEnd"></select></label><label>الاتجاه<select id="chromaticDirection"><option value="up">صاعد</option><option value="down">هابط</option></select></label><button class="ghost-button" id="buildChromaticButton" type="button">تجهيز السلم</button></div><div class="recording-session-status" id="recordingSessionStatus" aria-live="polite"><div><span>الحالة</span><strong id="recordingPhase">جاهز</strong></div><div><span>التأهيل</span><strong id="qualificationCount">0 / 3</strong></div><div><span>الدقة</span><strong id="liveAccuracy">—</strong></div><div><span>الجودة</span><strong id="liveClarity">—</strong></div></div><div class="chromatic-progress" id="chromaticProgress" hidden><div><span id="chromaticProgressText">لم تبدأ الجلسة</span><strong id="chromaticTargetText">—</strong></div><progress id="chromaticProgressBar" max="1" value="0"></progress><div class="chromatic-actions"><button class="ghost-button" id="pauseChromaticButton" type="button">إيقاف مؤقت</button><button class="ghost-button" id="endChromaticButton" type="button">إنهاء الجلسة</button></div></div></section><button class="gold-button" id="prepareButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle></svg><span>تجهيز تسجيل النغمة</span></button></div><div class="readiness-list"><div><span class="mini-dot" id="micReadyDot"></span><span>الميكروفون</span></div><div><span class="mini-dot" id="pitchReadyDot"></span><span>ثبات النغمة</span></div><div><span class="mini-dot" id="qualityReadyDot"></span><span>جودة التسجيل</span></div></div></article>
+      <article class="panel metronome-panel"><header class="panel-header"><div class="panel-title"><span class="icon-disc" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2l2-7 4 14 3-9 2 5h5"></path></svg></span><div><h2>الميزان الصامت</h2><p>العد المرئي</p></div></div></header><div class="metronome-orb" id="metronomeOrb" aria-live="polite"><span id="beatValue">—</span><i aria-hidden="true"></i></div><div class="metronome-caption"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span id="metronomeCaption">ثابتة في نوار · 1.000 · BPM 60</span></div></article>
     </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="menu-popover" id="menuPopover" hidden><button type="button" data-action="rename">إعادة تسمية</button><button type="button" data-action="download">تنزيل</button><button type="button" data-action="delete" class="danger-text">حذف</button></div>
 
-  <div class="menu-popover" id="menuPopover" hidden>
-    <button type="button" data-action="rename">إعادة تسمية</button>
-    <button type="button" data-action="download">تنزيل</button>
-    <button type="button" data-action="delete" class="danger-text">حذف</button>
-  </div>
-
-  <dialog class="modal" id="helpDialog">
-    <form method="dialog">
-      <header><h2>طريقة الاستخدام</h2><button class="icon-button" value="cancel" aria-label="إغلاق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button></header>
-      <p>شغّل الميكروفون، ثم اعزف نغمة ثابتة. سيعرض المعيار التردد والانحراف والاسم الموسيقي وفق نظام 12-TET أو 24-TET.</p>
-      <button class="primary-button modal-close" value="default">حسنًا</button>
-    </form>
-  </dialog>
-
-  <dialog class="app-dialog information-dialog" id="aboutDialog">
-    <form method="dialog" class="dialog-card">
-      <header><div><h2>من نحن</h2><p>مشروع عربي لإعداد وتوثيق نغمات الناي بدقة.</p></div><button class="icon-button dialog-close" value="cancel" aria-label="إغلاق">×</button></header>
-      <div class="information-content">
-        <p><strong>معيار الناي</strong> أداة متخصصة لقياس النغمات الشرقية وتسجيلها وفق مرجع قابل للضبط، مع دعم 12-TET و24-TET.</p>
-        <p>تهدف الأداة إلى إنتاج تسجيلات مرجعية دقيقة تساعد في بناء منصة تعليم الناي العربي.</p>
-        <dl><div><dt>المالك</dt><dd>محمد الزهراني</dd></div><div><dt>الإصدار</dt><dd id="aboutVersion">وفق VERSION.json</dd></div><div><dt>المستودع</dt><dd><a href="https://github.com/orphanai2026/RECORD-N" target="_blank" rel="noopener">orphanai2026/RECORD-N</a></dd></div></dl>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog class="modal modal--advanced" id="advancedDialog">
-    <form method="dialog" id="advancedSettingsForm">
-      <header><div><h2>الإعدادات المتقدمة</h2><p>تحكم تقني وإداري في القياس والتسجيل والتصدير</p></div><button class="icon-button" value="cancel" aria-label="إغلاق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button></header>
-
-      <div class="advanced-settings-grid">
-        <section class="settings-section">
-          <h3>الصوت والمعايرة</h3>
-          <label class="range-setting"><span>حساسية التقاط النغمة <output id="sensitivityOutput">0.025</output></span><input id="sensitivityRange" type="range" min="0.005" max="0.08" step="0.005" value="0.025"></label>
-          <label class="range-setting"><span>هامش الضبط المسموح <output id="toleranceOutput">±12 سنت</output></span><input id="toleranceRange" type="range" min="3" max="25" step="1" value="12"></label>
-          <label class="range-setting"><span>بوابة الضوضاء <output id="noiseGateOutput">0.015</output></span><input id="noiseGateRange" type="range" min="0.005" max="0.08" step="0.005" value="0.015"></label>
-          <label class="range-setting"><span>تنعيم القراءة <output id="smoothingOutput">0.15</output></span><input id="smoothingRange" type="range" min="0" max="0.9" step="0.05" value="0.15"></label>
-          <div class="inline-settings">
-            <label>أقل تردد<input id="minFrequencyInput" type="number" min="30" max="500" value="60"><small>Hz</small></label>
-            <label>أعلى تردد<input id="maxFrequencyInput" type="number" min="500" max="4000" value="1800"><small>Hz</small></label>
-          </div>
-        </section>
-
-        <section class="settings-section">
-          <h3>التسجيل والتصدير</h3>
-          <label>الصيغة الافتراضية<select id="defaultExportFormat"><option value="wav">WAV عالي الدقة</option><option value="mp3">MP3</option><option value="json">JSON</option></select></label>
-          <label>معدل العينة<select id="exportSampleRate"><option value="48000">48 kHz</option><option value="44100">44.1 kHz</option></select></label>
-          <label>عمق WAV<select id="wavBitDepth"><option value="24">24-bit</option><option value="16">16-bit</option></select></label>
-          <label>جودة MP3<select id="mp3Bitrate"><option value="128">128 kbps</option><option value="192" selected>192 kbps</option><option value="256">256 kbps</option><option value="320">320 kbps</option></select></label>
-          <label>قالب اسم الملف<input id="fileNamePattern" type="text" value="{note}-{duration}-{date}" autocomplete="off"></label>
-          <label class="setting-row setting-row--range">
-            <span><strong>جودة اعتماد التسجيل</strong><small>الحد الأدنى لمتوسط جودة الإشارة في التسجيل المقبول</small></span>
-            <span class="range-field"><input id="recordingQualityRange" type="range" min="65" max="100" step="1" value="90"><output id="recordingQualityOutput">90%</output></span>
-          </label>
-          <label class="switch-setting"><input id="persistSettings" type="checkbox" checked><span>حفظ الإعدادات تلقائيًا على هذا الجهاز</span></label>
-        </section>
-
-        <section class="settings-section settings-section--admin">
-          <h3>الإدارة والتشخيص</h3>
-          <div class="admin-actions">
-            <button type="button" class="ghost-button" id="exportSettingsButton">تصدير الإعدادات</button>
-            <button type="button" class="ghost-button" id="importSettingsButton">استيراد الإعدادات</button>
-            <input id="settingsImportInput" type="file" accept="application/json" hidden>
-            <button type="button" class="ghost-button" id="resetSettingsButton">استعادة الافتراضي</button>
-            <button type="button" class="ghost-button danger-action" id="clearRecordsButton">مسح التسجيلات</button>
-          </div>
-          <div class="diagnostics-panel" id="diagnosticsPanel" aria-live="polite"></div>
-        </section>
-      </div>
-
-      <footer class="advanced-footer">
-        <button class="primary-button modal-close" id="saveAdvancedButton" value="default">حفظ وتطبيق</button>
-      </footer>
-    </form>
-  </dialog>
-
+  <dialog class="modal" id="helpDialog"><form method="dialog"><header><h2>طريقة الاستخدام</h2><button class="icon-button" value="cancel" aria-label="إغلاق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button></header><p>شغّل الميكروفون، ثم اعزف نغمة ثابتة. سيعرض المعيار التردد والانحراف والاسم الموسيقي وفق نظام 12-TET أو 24-TET.</p><button class="primary-button modal-close" value="default">حسنًا</button></form></dialog>
+  <dialog class="app-dialog information-dialog" id="aboutDialog"><form method="dialog" class="dialog-card"><header><div><h2>من نحن</h2><p>مشروع عربي لإعداد وتوثيق نغمات الناي بدقة.</p></div><button class="icon-button dialog-close" value="cancel" aria-label="إغلاق">×</button></header><div class="information-content"><p><strong>معيار الناي</strong> أداة متخصصة لقياس النغمات الشرقية وتسجيلها وفق مرجع قابل للضبط، مع دعم 12-TET و24-TET.</p><p>تهدف الأداة إلى إنتاج تسجيلات مرجعية دقيقة تساعد في بناء منصة تعليم الناي العربي.</p><dl><div><dt>المالك</dt><dd>محمد الزهراني</dd></div><div><dt>الإصدار</dt><dd id="aboutVersion">وفق VERSION.json</dd></div><div><dt>المستودع</dt><dd><a href="https://github.com/orphanai2026/RECORD-N" target="_blank" rel="noopener">orphanai2026/RECORD-N</a></dd></div></dl></div></form></dialog>
+  <dialog class="modal modal--advanced" id="advancedDialog"><form method="dialog" id="advancedSettingsForm"><header><div><h2>الإعدادات المتقدمة</h2><p>تحكم تقني وإداري في القياس والتسجيل والتصدير</p></div><button class="icon-button" value="cancel" aria-label="إغلاق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button></header><div class="advanced-settings-grid"><section class="settings-section"><h3>الصوت والمعايرة</h3><label class="range-setting"><span>حساسية التقاط النغمة <output id="sensitivityOutput">0.025</output></span><input id="sensitivityRange" type="range" min="0.005" max="0.08" step="0.005" value="0.025"></label><label class="range-setting"><span>هامش الضبط المسموح <output id="toleranceOutput">±12 سنت</output></span><input id="toleranceRange" type="range" min="3" max="25" step="1" value="12"></label><label class="range-setting"><span>بوابة الضوضاء <output id="noiseGateOutput">0.015</output></span><input id="noiseGateRange" type="range" min="0.005" max="0.08" step="0.005" value="0.015"></label><label class="range-setting"><span>تنعيم القراءة <output id="smoothingOutput">0.15</output></span><input id="smoothingRange" type="range" min="0" max="0.9" step="0.05" value="0.15"></label><div class="inline-settings"><label>أقل تردد<input id="minFrequencyInput" type="number" min="30" max="500" value="60"><small>Hz</small></label><label>أعلى تردد<input id="maxFrequencyInput" type="number" min="500" max="4000" value="1800"><small>Hz</small></label></div></section><section class="settings-section"><h3>التسجيل والتصدير</h3><label>الصيغة الافتراضية<select id="defaultExportFormat"><option value="wav">WAV عالي الدقة</option><option value="mp3">MP3</option><option value="json">JSON</option></select></label><label>معدل العينة<select id="exportSampleRate"><option value="48000">48 kHz</option><option value="44100">44.1 kHz</option></select></label><label>عمق WAV<select id="wavBitDepth"><option value="24">24-bit</option><option value="16">16-bit</option></select></label><label>جودة MP3<select id="mp3Bitrate"><option value="128">128 kbps</option><option value="192" selected>192 kbps</option><option value="256">256 kbps</option><option value="320">320 kbps</option></select></label><label>قالب اسم الملف<input id="fileNamePattern" type="text" value="{note}-{duration}-{date}" autocomplete="off"></label><label class="setting-row setting-row--range"><span><strong>جودة اعتماد التسجيل</strong><small>الحد الأدنى لمتوسط جودة الإشارة في التسجيل المقبول</small></span><span class="range-field"><input id="recordingQualityRange" type="range" min="65" max="100" step="1" value="90"><output id="recordingQualityOutput">90%</output></span></label><label class="switch-setting"><input id="persistSettings" type="checkbox" checked><span>حفظ الإعدادات تلقائيًا على هذا الجهاز</span></label></section><section class="settings-section settings-section--admin"><h3>الإدارة والتشخيص</h3><div class="admin-actions"><button type="button" class="ghost-button" id="exportSettingsButton">تصدير الإعدادات</button><button type="button" class="ghost-button" id="importSettingsButton">استيراد الإعدادات</button><input id="settingsImportInput" type="file" accept="application/json" hidden><button type="button" class="ghost-button" id="resetSettingsButton">استعادة الافتراضي</button><button type="button" class="ghost-button danger-action" id="clearRecordsButton">مسح التسجيلات</button></div><div class="diagnostics-panel" id="diagnosticsPanel" aria-live="polite"></div></section></div><footer class="advanced-footer"><button class="primary-button modal-close" id="saveAdvancedButton" value="default">حفظ وتطبيق</button></footer></form></dialog>
   <audio id="recordingPlayer" preload="none"></audio>
 </body>
 </html>
