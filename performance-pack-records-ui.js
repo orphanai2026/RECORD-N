@@ -84,6 +84,56 @@
     return out.sort((a, b) => a.order - b.order || Number(a.sample?.bpm || 0) - Number(b.sample?.bpm || 0));
   }
 
+  function directionLabel(direction) {
+    return direction === 'descending' ? 'هبوط ↓' : 'صعود ↑';
+  }
+
+  function tonicKey(tonic) {
+    if (!tonic) return 'none';
+    if (typeof tonic === 'string') return tonic;
+    return `${tonic.letter || 'C'}:${Number(tonic.accidentalQuarterSteps || 0)}:${Number(tonic.octave ?? 4)}`;
+  }
+
+  function maqamGroupKey(pack) {
+    const c = pack.context || {};
+    return ['maqam-scale', c.maqamId || 'maqam', tonicKey(c.tonic), c.variantId || 'default', c.maqamDirection || 'ascending'].join('|');
+  }
+
+  function isMaqamScale(pack) {
+    return pack?.context?.mode === 'maqam-scale' && Boolean(pack?.context?.maqamId);
+  }
+
+  function buildMaqamGroups(packs) {
+    const map = new Map();
+    packs.filter(isMaqamScale).forEach(pack => {
+      const key = maqamGroupKey(pack);
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          direction: pack.context?.maqamDirection || 'ascending',
+          maqamId: pack.context?.maqamId,
+          maqamAr: pack.context?.maqamAr || pack.context?.maqamId || 'مقام',
+          tonic: pack.context?.tonic,
+          variantId: pack.context?.variantId || null,
+          packs: [],
+          updatedAt: pack.updatedAt || ''
+        });
+      }
+      const group = map.get(key);
+      group.packs.push(pack);
+      if (String(pack.updatedAt || '') > String(group.updatedAt || '')) group.updatedAt = pack.updatedAt;
+    });
+
+    return [...map.values()].map(group => {
+      group.packs.sort((a, b) => {
+        const da = Number(a.context?.maqamDegree || 0);
+        const db = Number(b.context?.maqamDegree || 0);
+        return group.direction === 'descending' ? db - da : da - db;
+      });
+      return group;
+    }).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+  }
+
   function stopPlayback(refresh = true) {
     try { state.audio?.pause(); } catch (_) {}
     if (state.url) URL.revokeObjectURL(state.url);
@@ -115,9 +165,10 @@
     if (!record?.blob) return;
     const url = URL.createObjectURL(record.blob);
     const link = document.createElement('a');
+    const direction = pack?.context?.maqamDirection ? `-${pack.context.maqamDirection}` : '';
     const suffix = item.type === 'clean' ? 'reference' : `${item.sample.durationName || item.sample.durationId}-${item.sample.bpm || ''}`;
     link.href = url;
-    link.download = `ney-${englishLabel(pack).replace(/[^a-zA-Z0-9_-]+/g, '-')}-${suffix}.wav`;
+    link.download = `ney-${englishLabel(pack).replace(/[^a-zA-Z0-9_-]+/g, '-')}${direction}-${suffix}.wav`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -146,6 +197,55 @@
     row.querySelector('.performance-sample-play').addEventListener('click', e => play(pack, item, e.currentTarget));
     row.querySelector('.performance-sample-download').addEventListener('click', () => download(pack, item));
     return row;
+  }
+
+  function createDegreeBlock(pack) {
+    const items = samplesFor(pack);
+    const block = document.createElement('section');
+    block.className = 'performance-maqam-degree';
+    block.innerHTML = `
+      <div class="performance-maqam-degree__head">
+        <span class="performance-maqam-degree__number">${esc(pack.context?.maqamDegree || '—')}</span>
+        <div class="performance-maqam-degree__identity">
+          <strong>${esc(noteLabel(pack))}</strong>
+          <small dir="ltr">${esc(englishLabel(pack))} · ${frequency(pack).toFixed(2)} Hz</small>
+        </div>
+        <span class="performance-maqam-degree__count">${items.length} ${items.length === 1 ? 'عينة' : 'عينات'}</span>
+      </div>
+      <div class="performance-maqam-degree__samples"></div>`;
+    const holder = block.querySelector('.performance-maqam-degree__samples');
+    items.forEach(item => holder.appendChild(createSample(pack, item)));
+    return block;
+  }
+
+  function createMaqamGroup(group) {
+    const expanded = state.expanded.has(group.key);
+    const totalSamples = group.packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0);
+    const card = document.createElement('article');
+    card.className = `performance-maqam-group${expanded ? ' is-expanded' : ''}`;
+    card.dataset.performancePackKey = group.key;
+    card.innerHTML = `
+      <button type="button" class="performance-maqam-group__toggle" aria-expanded="${expanded}">
+        <span class="performance-maqam-group__identity">
+          <strong>مقام ${esc(group.maqamAr)}</strong>
+          <span class="performance-maqam-group__direction performance-maqam-group__direction--${esc(group.direction)}">${esc(directionLabel(group.direction))}</span>
+        </span>
+        <span class="performance-maqam-group__summary">
+          <small>${group.packs.length} درجات · ${totalSamples} عينات</small>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
+        </span>
+      </button>
+      <div class="performance-maqam-group__degrees" ${expanded ? '' : 'hidden'}></div>`;
+    const holder = card.querySelector('.performance-maqam-group__degrees');
+    group.packs.forEach(pack => holder.appendChild(createDegreeBlock(pack)));
+    card.querySelector('.performance-maqam-group__toggle').addEventListener('click', event => {
+      const open = !state.expanded.has(group.key);
+      if (open) state.expanded.add(group.key); else state.expanded.delete(group.key);
+      card.classList.toggle('is-expanded', open);
+      holder.hidden = !open;
+      event.currentTarget.setAttribute('aria-expanded', String(open));
+    });
+    return card;
   }
 
   function createCard(pack) {
@@ -209,15 +309,21 @@
       const packs = (await packStore.listPacks())
         .filter(pack => samplesFor(pack).length)
         .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+      const maqamGroups = buildMaqamGroups(packs);
+      const regularPacks = packs.filter(pack => !isMaqamScale(pack));
       const sampleCount = packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0);
+
       list.querySelectorAll(':scope > [data-performance-pack-key]').forEach(node => node.remove());
       hideLegacy(list);
       const fragment = document.createDocumentFragment();
-      packs.forEach(pack => { const card = createCard(pack); if (card) fragment.appendChild(card); });
+      maqamGroups.forEach(group => fragment.appendChild(createMaqamGroup(group)));
+      regularPacks.forEach(pack => { const card = createCard(pack); if (card) fragment.appendChild(card); });
       if (fragment.childNodes.length) list.insertBefore(fragment, list.firstChild);
+
       const badge = ensureBadge();
-      if (badge) badge.textContent = `${packs.length} نغمات · ${sampleCount} عينات`;
-      list.dataset.performancePackCount = String(packs.length);
+      const visibleUnits = maqamGroups.length + regularPacks.length;
+      if (badge) badge.textContent = `${visibleUnits} مجموعات · ${sampleCount} عينات`;
+      list.dataset.performancePackCount = String(visibleUnits);
       list.dataset.performanceSampleCount = String(sampleCount);
     } catch (error) {
       console.error('Performance Pack recordings sync failed', error);
@@ -243,7 +349,9 @@
     window.addEventListener('beforeunload', () => stopPlayback(false), { once: true });
     window.NeyPerformancePackRecordsUI = Object.freeze({ refresh: sync, stopPlayback, count: async () => {
       const packs = (await store()?.listPacks?.() || []).filter(pack => samplesFor(pack).length);
-      return { notes: packs.length, samples: packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0) };
+      const groups = buildMaqamGroups(packs);
+      const regular = packs.filter(pack => !isMaqamScale(pack));
+      return { notes: groups.length + regular.length, samples: packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0) };
     }});
   }
 
