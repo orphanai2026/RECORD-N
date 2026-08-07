@@ -46,7 +46,11 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   autoCaptureStyles.dataset.neyAutoCapture = 'true';
   document.head.append(autoCaptureStyles);
 }
-import('./ney-auto-capture.js?v=2026-08-07-1629').catch(error => console.error('Ney Auto-Capture load failed', error));
+
+/* Stage 13.2: ensure explicit MediaStreamTrack.stop() resets Ney Auto-Capture. */
+import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011')
+  .then(() => import('./ney-auto-capture.js?v=2026-08-07-2011'))
+  .catch(error => console.error('Ney Auto-Capture load failed', error));
 
 if (!document.querySelector('link[data-auto-session-start]')) {
   const sessionStartStyles = document.createElement('link');
