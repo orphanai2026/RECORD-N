@@ -16,6 +16,19 @@
     return a > 0 && b > 0 ? 1200 * Math.log2(a / b) : Infinity;
   }
 
+  function tonicKey(tonic) {
+    if (!tonic) return 'none';
+    if (typeof tonic === 'string') return tonic.trim();
+    const letter = String(tonic.letter || '').toUpperCase();
+    const accidentalQuarterSteps = Number(tonic.accidentalQuarterSteps || 0);
+    const octave = Number.isFinite(Number(tonic.octave)) ? Number(tonic.octave) : 4;
+    return `${letter}:${accidentalQuarterSteps}:${octave}`;
+  }
+
+  function sameTonic(a, b) {
+    return tonicKey(a) === tonicKey(b);
+  }
+
   function ensurePanel() {
     let panel = $('#recordingMaqamScaleCaptureProgress');
     if (panel) return panel;
@@ -130,7 +143,7 @@
     if (!state.active || !note) return null;
     if (context.mode !== 'maqam-scale') return null;
     if (context.maqamId && context.maqamId !== state.scale?.maqamId) return null;
-    if (context.tonic && context.tonic !== state.scale?.tonic) return null;
+    if (context.tonic && !sameTonic(context.tonic, state.scale?.tonic)) return null;
     if (Number(context.maqamDegree) !== Number(note.degree)) return null;
     return { context, note };
   }
@@ -162,7 +175,7 @@
     const context = candidate.captureContext || {};
     if (context.mode && context.mode !== 'maqam-scale') return;
     if (context.maqamId && context.maqamId !== state.scale?.maqamId) return;
-    if (context.tonic && context.tonic !== state.scale?.tonic) return;
+    if (context.tonic && !sameTonic(context.tonic, state.scale?.tonic)) return;
     if (context.maqamDegree && Number(context.maqamDegree) !== Number(note.degree)) return;
 
     state.pending = false;
