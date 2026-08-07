@@ -28,6 +28,7 @@
 }
 
 .brand-logo {
+  position: relative;
   width: 58px;
   height: 58px;
   flex: 0 0 58px;
@@ -60,7 +61,10 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  text-shadow: 0 5px 18px rgba(0, 0, 0, .42), 0 0 9px rgba(215, 157, 69, .12);
+  text-shadow:
+    0 6px 20px rgba(0, 0, 0, .38),
+    0 0 18px rgba(215, 157, 69, .10),
+    0 0 34px rgba(245, 207, 130, .055);
 }
 
 .brand-meta {
@@ -68,7 +72,7 @@
   align-items: center;
   justify-content: center;
   gap: 22px;
-  margin-top: 12px;
+  margin-top: 18px;
   min-width: 0;
 }
 
@@ -193,7 +197,7 @@
 
   .brand-meta {
     gap: 18px;
-    margin-top: 10px;
+    margin-top: 15px;
   }
 
   .brand-description {
@@ -241,7 +245,7 @@
     flex-wrap: wrap;
     column-gap: 14px;
     row-gap: 7px;
-    margin-top: 9px;
+    margin-top: 13px;
   }
 
   .brand-description {
