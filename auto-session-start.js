@@ -43,10 +43,15 @@
     }
   }
 
+  function ownsChromaticContext(context) {
+    return context?.mode === 'chromatic-12' || context?.mode === 'chromatic-24';
+  }
+
   function setCaptureContext() {
     if (!window.NeyAutoCapture?.setCaptureContext) return;
     if (currentRecordingMode() !== 'chromatic') {
-      window.NeyAutoCapture.clearCaptureContext?.();
+      const currentContext = window.NeyAutoCapture.getCaptureContext?.();
+      if (ownsChromaticContext(currentContext)) window.NeyAutoCapture.clearCaptureContext?.();
       return;
     }
     const division = currentDivision();
@@ -82,6 +87,7 @@
       state.startLabel?.removeAttribute('hidden');
       state.endLabel?.removeAttribute('hidden');
       if (state.buildButton) state.buildButton.hidden = false;
+      setCaptureContext();
       return;
     }
 
