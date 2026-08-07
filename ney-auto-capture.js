@@ -376,6 +376,45 @@
     return finite.reduce((sum, value) => sum + value, 0) / finite.length;
   }
 
+  function centsBetween(a, b) {
+    const first = Number(a);
+    const second = Number(b);
+    if (!(first > 0) || !(second > 0)) return Infinity;
+    return 1200 * Math.log2(first / second);
+  }
+
+  function candidateTarget(candidate) {
+    return averageFinite(candidate.frames.map(frame => Number(frame.target)), null);
+  }
+
+  function frozenCaptureContext() {
+    return state.captureContext && typeof state.captureContext === 'object' ? { ...state.captureContext } : null;
+  }
+
+  function candidateMatchesCaptureTarget(candidate) {
+    const context = candidate.captureContext || state.captureContext;
+    if (context?.mode !== 'maqam-scale' || !(Number(context.expectedTargetFrequency) > 0)) return true;
+    const actual = candidateTarget(candidate);
+    const expected = Number(context.expectedTargetFrequency);
+    const tolerance = Math.max(1, Number(candidate.tolerance || currentTolerance()));
+    return Number.isFinite(actual) && Math.abs(centsBetween(actual, expected)) <= tolerance;
+  }
+
+  function rejectOffTargetCandidate(candidate) {
+    const context = candidate.captureContext || state.captureContext || {};
+    const expected = context.expectedArabic || context.expectedEnglish || window.NeyMaqamScaleCaptureFlow?.getExpected?.()?.arabic || 'الدرجة المطلوبة';
+    updateBadge('نغمة غير مطلوبة', 'warning');
+    updateStatus(`${candidate.arabic || candidate.english} صافية، لكنها ليست الدرجة المطلوبة الآن (${expected})؛ لم تُحفظ ولم تتقدم الجلسة.`);
+    document.dispatchEvent(new CustomEvent('ney:maqam-target-rejected', {
+      detail: {
+        candidate,
+        context: { ...context },
+        expectedTargetFrequency: Number(context.expectedTargetFrequency) || null,
+        actualTargetFrequency: candidateTarget(candidate)
+      }
+    }));
+  }
+
   function candidateNote(candidate) {
     const first = candidate.frames[0] || {};
     return {
@@ -392,11 +431,12 @@
 
   function candidateContext(candidate) {
     const first = candidate.frames[0] || {};
+    const captured = candidate.captureContext || state.captureContext || {};
     return {
       mode: 'general-note',
-      ...(state.captureContext || {}),
-      division: Number(state.captureContext?.division || first.division || currentDivision()),
-      a4: Number(state.captureContext?.a4 || first.a4 || $('#a4Reference')?.value || 440)
+      ...captured,
+      division: Number(captured.division || first.division || currentDivision()),
+      a4: Number(captured.a4 || first.a4 || $('#a4Reference')?.value || 440)
     };
   }
 
@@ -406,6 +446,11 @@
   }
 
   async function persistCleanCandidate(candidate) {
+    if (!candidateMatchesCaptureTarget(candidate)) {
+      rejectOffTargetCandidate(candidate);
+      return;
+    }
+
     const store = window.NeyPerformancePackStore;
     if (!store) {
       updateBadge('نافذة صافية ✓', 'success');
@@ -469,6 +514,10 @@
     });
 
     if (!result.changed) {
+      if (result.rejected) {
+        rejectOffTargetCandidate(candidate);
+        return;
+      }
       updateBadge('العينة الأفضل محفوظة ✓', 'success');
       updateStatus(`العينة المرجعية الحالية لـ ${candidate.arabic || candidate.english} بقيت الأفضل ولم تُستبدل.`);
       return;
@@ -538,6 +587,7 @@
       tolerance,
       startTime: windowFrames[0].time,
       endTime: windowFrames[windowFrames.length - 1].time,
+      captureContext: frozenCaptureContext(),
       frames: windowFrames.map(frame => ({
         time: frame.time,
         frequency: frame.frequency,
@@ -550,6 +600,12 @@
         tolerance: frame.tolerance
       }))
     };
+
+    if (!candidateMatchesCaptureTarget(candidate)) {
+      event.cleanCandidate = null;
+      rejectOffTargetCandidate(candidate);
+      return;
+    }
 
     event.cleanCandidate = candidate;
     const previous = state.bestByNote.get(event.key);
