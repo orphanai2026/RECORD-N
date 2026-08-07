@@ -47,7 +47,7 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-07-2356');
+const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-08-0007');
 const autoCaptureReady = capturePolicyReady
   .then(() => import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011'))
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
