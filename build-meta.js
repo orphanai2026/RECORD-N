@@ -46,3 +46,13 @@ if (!document.querySelector('link[data-recording-flow]')) {
   document.head.append(recordingFlowStyles);
 }
 import('./recording-flow.js?v=2026-08-07-1458').catch(error => console.error('Recording flow load failed', error));
+
+/* Stage 5 ney-specific continuous auto-capture monitor. */
+if (!document.querySelector('link[data-ney-auto-capture]')) {
+  const autoCaptureStyles = document.createElement('link');
+  autoCaptureStyles.rel = 'stylesheet';
+  autoCaptureStyles.href = './ney-auto-capture.css?v=2026-08-07-1516';
+  autoCaptureStyles.dataset.neyAutoCapture = 'true';
+  document.head.append(autoCaptureStyles);
+}
+import('./ney-auto-capture.js?v=2026-08-07-1516').catch(error => console.error('Ney Auto-Capture load failed', error));
