@@ -1,0 +1,247 @@
+/* Stage 4 — smart automatic-recording flow. Presentation only. */
+.recording-panel.is-smart-recording {
+  overflow: visible;
+}
+
+.recording-smart-flow {
+  display: grid;
+  gap: 10px;
+  margin: 3px 0 12px;
+  padding: 11px;
+  border: 1px solid rgba(215,157,69,.17);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(0,28,31,.62), rgba(0,18,21,.5));
+}
+
+.recording-smart-flow__headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.recording-smart-flow__headline > div {
+  min-width: 0;
+}
+
+.recording-smart-flow__headline strong {
+  display: block;
+  color: #f0d49c;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+.recording-smart-flow__headline span {
+  display: block;
+  margin-top: 2px;
+  color: rgba(221,228,224,.66);
+  font-size: .62rem;
+  line-height: 1.45;
+}
+
+.recording-smart-flow__state {
+  flex: 0 0 auto;
+  min-width: 104px;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  border: 1px solid rgba(101,225,214,.24);
+  border-radius: 999px;
+  color: #cde9e4;
+  background: rgba(47,142,137,.10);
+  font-size: .64rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.recording-smart-flow__state[data-tone="success"] {
+  color: #bff4d3;
+  border-color: rgba(112,240,177,.34);
+  background: rgba(112,240,177,.10);
+}
+
+.recording-smart-flow__state[data-tone="danger"] {
+  color: #ffb2ad;
+  border-color: rgba(255,117,109,.36);
+  background: rgba(255,117,109,.09);
+}
+
+.recording-smart-flow__state[data-tone="recording"] {
+  color: #ffe1a3;
+  border-color: rgba(239,193,101,.40);
+  background: rgba(239,193,101,.10);
+}
+
+.recording-flow-steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0,1fr));
+  gap: 6px;
+}
+
+.recording-flow-step {
+  position: relative;
+  min-width: 0;
+  min-height: 72px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  padding: 7px 4px;
+  border: 1px solid rgba(215,157,69,.11);
+  border-radius: 11px;
+  color: rgba(205,216,212,.55);
+  background: rgba(0,16,19,.33);
+  text-align: center;
+  transition: border-color .16s ease, background .16s ease, color .16s ease, transform .16s ease;
+}
+
+.recording-flow-step__marker {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(193,205,201,.20);
+  border-radius: 50%;
+  color: rgba(218,225,222,.66);
+  background: rgba(255,255,255,.025);
+  font-size: .62rem;
+  font-weight: 900;
+}
+
+.recording-flow-step__label {
+  max-width: 100%;
+  overflow: hidden;
+  color: inherit;
+  font-size: .59rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.recording-flow-step__detail {
+  min-height: 1.1em;
+  max-width: 100%;
+  overflow: hidden;
+  color: rgba(205,216,212,.42);
+  font-size: .52rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recording-flow-step.is-active {
+  color: #f2d9a6;
+  border-color: rgba(239,193,101,.46);
+  background: rgba(239,193,101,.075);
+  transform: translateY(-1px);
+}
+
+.recording-flow-step.is-active .recording-flow-step__marker {
+  color: #06211f;
+  border-color: rgba(245,207,130,.88);
+  background: #e5ba68;
+  box-shadow: 0 0 16px rgba(229,186,104,.18);
+}
+
+.recording-flow-step.is-complete {
+  color: #bcebd1;
+  border-color: rgba(112,240,177,.24);
+  background: rgba(112,240,177,.045);
+}
+
+.recording-flow-step.is-complete .recording-flow-step__marker {
+  color: #08251f;
+  border-color: rgba(112,240,177,.58);
+  background: #70dca5;
+}
+
+.recording-flow-step.is-rejected {
+  color: #ffb0aa;
+  border-color: rgba(255,117,109,.34);
+  background: rgba(255,117,109,.06);
+}
+
+.recording-flow-step.is-rejected .recording-flow-step__marker {
+  color: #3a0e0b;
+  border-color: rgba(255,117,109,.64);
+  background: #ff8279;
+}
+
+.recording-smart-flow__message {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 37px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.025);
+}
+
+.recording-smart-flow__message p {
+  margin: 0;
+  color: #d4ddda;
+  font-size: .64rem;
+  line-height: 1.5;
+}
+
+.recording-smart-flow__rules {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.recording-rule-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 7px;
+  border: 1px solid rgba(215,157,69,.14);
+  border-radius: 999px;
+  color: rgba(235,225,205,.68);
+  background: rgba(0,25,28,.46);
+  font-size: .52rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.recording-session-status {
+  margin-top: 7px;
+}
+
+.recording-session-status > div {
+  min-height: 55px;
+}
+
+@media (max-width: 900px) {
+  .recording-flow-steps {
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+  .recording-flow-step { min-height: 64px; }
+  .recording-smart-flow__message { grid-template-columns: 1fr; }
+  .recording-smart-flow__rules { justify-content: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .recording-smart-flow { padding: 9px; }
+  .recording-smart-flow__headline { align-items: flex-start; }
+  .recording-smart-flow__state { min-width: 88px; font-size: .57rem; }
+  .recording-flow-steps { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .recording-flow-step { min-height: 58px; }
+  .recording-flow-step__marker { width: 23px; height: 23px; }
+  .recording-flow-step__detail { display: none; }
+}
+
+@media (max-width: 380px) {
+  .recording-smart-flow__headline { display: grid; }
+  .recording-smart-flow__state { justify-self: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recording-flow-step { transition: none; }
+}
