@@ -47,9 +47,10 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-/* Stage 13.2: ensure explicit MediaStreamTrack.stop() resets Ney Auto-Capture. */
+/* Stage 13.3: explicit and canonical microphone stop synchronization. */
 import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011')
-  .then(() => import('./ney-auto-capture.js?v=2026-08-07-2011'))
+  .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
+  .then(() => import('./ney-auto-capture.js?v=2026-08-07-2018'))
   .catch(error => console.error('Ney Auto-Capture load failed', error));
 
 if (!document.querySelector('link[data-auto-session-start]')) {
