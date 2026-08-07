@@ -4,6 +4,8 @@
   const state = {
     mode: 'auto',
     detected: null,
+    sequence: [],
+    sequenceKeys: new Set(),
     controller: null,
     status: null,
     autoButton: null,
@@ -34,8 +36,7 @@
 
   function loadPreference() {
     try {
-      const value = localStorage.getItem('ney-session-start-mode');
-      return value === 'manual' ? 'manual' : 'auto';
+      return localStorage.getItem('ney-session-start-mode') === 'manual' ? 'manual' : 'auto';
     } catch (_) {
       return 'auto';
     }
@@ -50,6 +51,7 @@
     const division = currentDivision();
     window.NeyAutoCapture.setCaptureContext({
       mode: division === 12 ? 'chromatic-12' : 'chromatic-24',
+      sessionStart: state.mode,
       division,
       a4: currentA4()
     });
@@ -57,8 +59,10 @@
 
   function resetDetected() {
     state.detected = null;
+    state.sequence = [];
+    state.sequenceKeys.clear();
     if (state.status) {
-      state.status.innerHTML = '<strong>بانتظار أول نغمة صافية</strong><span>ابدأ العزف مباشرة؛ أول نافذة معتمدة تحدد نقطة البداية تلقائيًا.</span>';
+      state.status.innerHTML = '<strong>بانتظار أول نغمة صافية</strong><span>ابدأ العزف مباشرة؛ أول نافذة معتمدة تبدأ الجلسة تلقائيًا.</span>';
       state.status.dataset.state = 'waiting';
     }
   }
@@ -93,26 +97,57 @@
     updateVisibility();
   }
 
-  function detectStart(candidate) {
-    if (state.mode !== 'auto' || currentRecordingMode() !== 'chromatic' || state.detected) return;
-    if (!candidate || candidate.style !== 'clean' || Number(candidate.passRatio) !== 1) return;
+  function candidateIsClean(candidate) {
+    return Boolean(candidate && candidate.style === 'clean' && Number(candidate.passRatio) === 1);
+  }
 
-    state.detected = {
-      key: candidate.key,
+  function addAutomaticSessionNote(candidate) {
+    if (state.mode !== 'auto' || currentRecordingMode() !== 'chromatic' || !candidateIsClean(candidate)) return;
+
+    const key = candidate.key || `${candidate.english || ''}|${candidate.arabic || ''}`;
+    const isFirst = !state.detected;
+
+    if (isFirst) {
+      state.detected = {
+        key,
+        english: candidate.english,
+        arabic: candidate.arabic,
+        frequency: candidate.frames?.[0]?.target || candidate.frames?.[0]?.frequency || null,
+        division: candidate.frames?.[0]?.division || currentDivision(),
+        detectedAt: new Date().toISOString()
+      };
+      document.dispatchEvent(new CustomEvent('ney:auto-session-start-detected', { detail: { ...state.detected } }));
+    }
+
+    if (state.sequenceKeys.has(key)) return;
+    state.sequenceKeys.add(key);
+    state.sequence.push({
+      key,
       english: candidate.english,
       arabic: candidate.arabic,
       frequency: candidate.frames?.[0]?.target || candidate.frames?.[0]?.frequency || null,
-      division: candidate.frames?.[0]?.division || currentDivision(),
       detectedAt: new Date().toISOString()
-    };
+    });
+
+    const firstNote = state.detected?.arabic || state.detected?.english || 'النغمة الأولى';
+    const last = state.sequence[state.sequence.length - 1];
+    const lastNote = last?.arabic || last?.english || 'النغمة الحالية';
 
     if (state.status) {
-      const note = state.detected.arabic || state.detected.english || 'النغمة المكتشفة';
-      state.status.innerHTML = `<strong>تم تحديد البداية: ${note}</strong><span>استمر في العزف؛ Ney Auto-Capture يلتقط كل نغمة صافية جديدة دون إجبارك على نقطة بداية محددة.</span>`;
+      state.status.innerHTML = isFirst
+        ? `<strong>بدأت الجلسة من: ${firstNote}</strong><span>استمر في العزف كروماتيًا؛ كل نغمة صافية جديدة تُضاف تلقائيًا إلى الجلسة.</span>`
+        : `<strong>الجلسة مستمرة · ${state.sequence.length} نغمات صافية</strong><span>آخر نغمة: ${lastNote} · لا حاجة لتجهيز نطاق مسبق.</span>`;
       state.status.dataset.state = 'detected';
     }
 
-    document.dispatchEvent(new CustomEvent('ney:auto-session-start-detected', { detail: { ...state.detected } }));
+    document.dispatchEvent(new CustomEvent('ney:auto-session-note', {
+      detail: {
+        start: state.detected ? { ...state.detected } : null,
+        note: { ...last },
+        count: state.sequence.length,
+        sequence: state.sequence.map(item => ({ ...item }))
+      }
+    }));
   }
 
   function installController() {
@@ -131,7 +166,7 @@
       <div class="auto-session-start__head">
         <div>
           <strong>بداية الجلسة</strong>
-          <span>الوضع الافتراضي يحدد البداية من عزفك الفعلي.</span>
+          <span>الوضع الافتراضي يبدأ من أول نغمة صافية تعزفها.</span>
         </div>
         <div class="auto-session-start__modes" role="group" aria-label="طريقة تحديد بداية الجلسة">
           <button type="button" class="is-active" data-start-mode="auto" aria-pressed="true">اكتشاف تلقائي</button>
@@ -140,7 +175,7 @@
       </div>
       <div class="auto-session-start__status" id="autoSessionStartStatus" data-state="waiting" aria-live="polite">
         <strong>بانتظار أول نغمة صافية</strong>
-        <span>ابدأ العزف مباشرة؛ أول نافذة معتمدة تحدد نقطة البداية تلقائيًا.</span>
+        <span>ابدأ العزف مباشرة؛ أول نافذة معتمدة تبدأ الجلسة تلقائيًا.</span>
       </div>`;
 
     settings.prepend(controller);
@@ -151,8 +186,7 @@
 
     controller.addEventListener('click', event => {
       const button = event.target.closest('[data-start-mode]');
-      if (!button) return;
-      setMode(button.dataset.startMode);
+      if (button) setMode(button.dataset.startMode);
     });
 
     state.mode = loadPreference();
@@ -183,11 +217,12 @@
   function initialize() {
     installController();
     monitorModeChanges();
-    document.addEventListener('ney:auto-capture-candidate', event => detectStart(event.detail));
+    document.addEventListener('ney:auto-capture-candidate', event => addAutomaticSessionNote(event.detail));
 
     window.NeyAutoSessionStart = Object.freeze({
       getMode: () => state.mode,
       getDetectedStart: () => state.detected ? { ...state.detected } : null,
+      getSequence: () => state.sequence.map(item => ({ ...item })),
       reset: resetDetected,
       setMode
     });
