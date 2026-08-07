@@ -167,6 +167,19 @@
   box-shadow: none;
 }
 
+/* Keep both panels equal in the normal state. When inline quality details open,
+   only the tuner may grow; the detected-note panel keeps its natural compact height. */
+@media (min-width: 761px) {
+  .top-grid:has(#qualityDetails:not([hidden])) {
+    align-items: start;
+  }
+
+  .top-grid:has(#qualityDetails:not([hidden])) > .detected-panel {
+    min-height: 318px;
+    height: 318px;
+  }
+}
+
 /* Responsive goal: the measurement area should not consume the whole first viewport. */
 @media (max-width: 760px) {
   .top-grid {
