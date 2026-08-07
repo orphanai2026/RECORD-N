@@ -73,6 +73,18 @@ import('./auto-session-start.js?v=2026-08-07-2043')
   .then(() => import('./recording-session-flow.js?v=2026-08-07-2025'))
   .catch(error => console.error('Recording session flow load failed', error));
 
+/* Stage 15: maqam selection for single-note recording. */
+if (!document.querySelector('link[data-recording-maqam-selector]')) {
+  const maqamSelectorStyles = document.createElement('link');
+  maqamSelectorStyles.rel = 'stylesheet';
+  maqamSelectorStyles.href = './recording-maqam-selector.css?v=2026-08-07-2055';
+  maqamSelectorStyles.dataset.recordingMaqamSelector = 'true';
+  document.head.append(maqamSelectorStyles);
+}
+import('./maqam-library.js?v=2026-08-07-1614')
+  .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2055'))
+  .catch(error => console.error('Recording maqam selector load failed', error));
+
 if (!document.querySelector('link[data-educational-duration]')) {
   const durationStyles = document.createElement('link');
   durationStyles.rel = 'stylesheet';
