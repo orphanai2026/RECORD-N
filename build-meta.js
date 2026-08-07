@@ -53,7 +53,7 @@ import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./performance-pack-store.js?v=2026-08-07-1614'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
-/* Stage 5 ney-specific continuous auto-capture monitor. */
+/* Stage 7 ney-specific continuous capture with clean-reference persistence. */
 if (!document.querySelector('link[data-ney-auto-capture]')) {
   const autoCaptureStyles = document.createElement('link');
   autoCaptureStyles.rel = 'stylesheet';
@@ -61,4 +61,4 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   autoCaptureStyles.dataset.neyAutoCapture = 'true';
   document.head.append(autoCaptureStyles);
 }
-import('./ney-auto-capture.js?v=2026-08-07-1516').catch(error => console.error('Ney Auto-Capture load failed', error));
+import('./ney-auto-capture.js?v=2026-08-07-1629').catch(error => console.error('Ney Auto-Capture load failed', error));
