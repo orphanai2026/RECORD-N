@@ -48,6 +48,10 @@
     });
   }
 
+  function normalizeDirection(direction) {
+    return direction === 'descending' ? 'descending' : direction === 'ascending' ? 'ascending' : null;
+  }
+
   function normalizeContext(context = {}) {
     return {
       mode: context.mode || 'general-note',
@@ -55,6 +59,7 @@
       maqamAr: context.maqamAr || null,
       tonic: context.tonic || null,
       maqamDegree: context.maqamDegree || null,
+      maqamDirection: normalizeDirection(context.maqamDirection),
       variantId: context.variantId || null,
       division: Number(context.division || 24),
       a4: Number(context.a4 || 440)
@@ -73,7 +78,17 @@
   function makePackKey({ note = {}, context = {} } = {}) {
     const c = normalizeContext(context);
     const noteKey = note.noteKey || note.english || note.arabic || `${note.abs24 ?? 'na'}`;
-    return [c.mode, c.maqamId || 'none', tonicKey(c.tonic), c.maqamDegree || 'none', c.variantId || 'default', c.division, c.a4, noteKey].join('|');
+    return [
+      c.mode,
+      c.maqamId || 'none',
+      tonicKey(c.tonic),
+      c.maqamDirection || 'none',
+      c.maqamDegree || 'none',
+      c.variantId || 'default',
+      c.division,
+      c.a4,
+      noteKey
+    ].join('|');
   }
 
   function qualityScore(sample = {}) {
