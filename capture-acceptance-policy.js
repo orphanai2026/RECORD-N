@@ -8,7 +8,7 @@
   });
 
   async function importPatchedModule(path, replacements) {
-    const response = await fetch(`${path}?policy=2026-08-07-2344`, { cache: 'no-store' });
+    const response = await fetch(`${path}?policy=2026-08-07-2356`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`${path} ${response.status}`);
     let source = await response.text();
 
@@ -72,7 +72,19 @@
   }
 
   async function loadEducationalDurationCapture() {
-    return import('./educational-duration-capture.js?v=2026-08-07-2344');
+    return importPatchedModule('./educational-duration-capture.js', [
+      [`    const candidateWindowMs = Number(candidate.endTime) - Number(candidate.startTime);
+    const endTime = Number(candidate.startTime) + targetMs;
+    const baseFrames = (candidate.frames || [])
+      .filter(frame => Number(frame.time) >= Number(candidate.startTime) && Number(frame.time) <= Math.min(Number(candidate.endTime), endTime))
+      .map(frame => ({ ...frame }));`, `    /* The clean window is the acceptance gate only. Record a fresh full duration forward. */
+    const acceptedAt = now();
+    const endTime = acceptedAt + targetMs;
+    const baseFrames = [];`],
+      ['startTime: Number(candidate.startTime),', 'startTime: acceptedAt,'],
+      ["setUi('recording', 'بدأ التسجيل التعليمي', `${duration.ar} · BPM ${bpm} · استمر على النغمة حتى اكتمال المدة.`, clamp(candidateWindowMs / targetMs, 0, 1));", "setUi('recording', 'بدأ التسجيل التعليمي', `${duration.ar} · BPM ${bpm} · بدأ العد الآن من 0%؛ استمر على النغمة حتى اكتمال المدة.`, 0);"],
+      ['    if (targetMs <= candidateWindowMs) finishActive();', '    /* Full educational duration always completes after acceptance; no historical window is counted. */']
+    ]);
   }
 
   window.NeyCaptureAcceptancePolicy = policy;
