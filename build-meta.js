@@ -87,3 +87,14 @@ if (!document.querySelector('link[data-recording-modernization]')) {
 /* Stage 11 bridge: keeps the compact recording metronome synchronized with the training engine regardless of load order. */
 import('./app-shell-metronome-bridge.js?v=2026-08-07-1818')
   .catch(error => console.error('App Shell metronome bridge load failed', error));
+
+/* Stage 11.2: reserve a real viewport row for persistent navigation instead of overlaying content. */
+if (!document.querySelector('link[data-app-shell-frame]')) {
+  const frameStyles = document.createElement('link');
+  frameStyles.rel = 'stylesheet';
+  frameStyles.href = './app-shell-frame.css?v=2026-08-07-1832';
+  frameStyles.dataset.appShellFrame = 'true';
+  document.head.append(frameStyles);
+}
+import('./app-shell-frame.js?v=2026-08-07-1832')
+  .catch(error => console.error('App Shell frame load failed', error));
