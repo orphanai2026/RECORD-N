@@ -61,7 +61,7 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.1: three recording paths including full eastern maqam scale. */
+/* Stage 15.2: three recording paths + scroll freeze fix. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
@@ -70,7 +70,7 @@ if (!document.querySelector('link[data-recording-session-flow]')) {
   document.head.append(sessionFlowStyles);
 }
 import('./auto-session-start.js?v=2026-08-07-2043')
-  .then(() => import('./recording-session-flow.js?v=2026-08-07-2107'))
+  .then(() => import('./recording-session-flow.js?v=2026-08-07-2105'))
   .catch(error => console.error('Recording session flow load failed', error));
 
 if (!document.querySelector('link[data-recording-maqam-selector]')) {
