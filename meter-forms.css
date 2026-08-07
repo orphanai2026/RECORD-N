@@ -1,0 +1,80 @@
+/* Stage 3.1 — complete time-signature controls. */
+.metronome-custom-meter {
+  display: grid;
+  grid-template-columns: minmax(58px,1fr) auto minmax(58px,1fr) auto;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  direction: ltr;
+}
+.metronome-custom-meter[hidden] { display: none; }
+.metronome-custom-meter input,
+.metronome-custom-meter button,
+.metronome-grouping-input {
+  min-height: 36px;
+  border: 1px solid rgba(215,157,69,.23);
+  border-radius: 8px;
+  color: #ede5d5;
+  background: rgba(0,27,30,.72);
+  font: inherit;
+}
+.metronome-custom-meter input {
+  min-width: 0;
+  width: 100%;
+  padding: 0 7px;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.metronome-custom-meter button {
+  padding: 0 11px;
+  color: #f0d49c;
+  cursor: pointer;
+}
+.metronome-meter-slash { color: #d9c9aa; font-weight: 800; }
+.metronome-grouping-wrap { display: grid; gap: 6px; }
+.metronome-grouping-input {
+  width: 100%;
+  padding: 0 10px;
+  direction: ltr;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+.metronome-grouping-hint {
+  color: rgba(215,221,217,.58);
+  font-size: .59rem;
+  line-height: 1.35;
+}
+.metronome-grouping-input.is-invalid {
+  border-color: rgba(255,117,109,.64);
+  box-shadow: 0 0 0 2px rgba(255,117,109,.07);
+}
+.metronome-lights {
+  flex-wrap: wrap;
+  max-width: min(360px, 92%);
+}
+.metronome-light.is-group-start:not(.is-current) {
+  background: rgba(230,189,114,.52);
+  box-shadow: 0 0 7px rgba(230,189,114,.18);
+}
+.metronome-light.is-current.is-group-accent {
+  background: #a9e9c9;
+  box-shadow: 0 0 13px rgba(169,233,201,.65);
+}
+.metronome-dial.is-group-accent {
+  border-color: rgba(169,233,201,.72);
+  box-shadow: inset 0 0 30px rgba(169,233,201,.08), 0 0 26px rgba(169,233,201,.14);
+}
+.metronome-meter-caption {
+  margin-top: -4px;
+  color: rgba(234,223,200,.64);
+  font-size: .62rem;
+  text-align: center;
+  line-height: 1.35;
+}
+
+@media (max-width: 700px) {
+  .metronome-custom-meter { grid-template-columns: minmax(50px,1fr) auto minmax(50px,1fr); }
+  .metronome-custom-meter button { grid-column: 1 / -1; }
+}
