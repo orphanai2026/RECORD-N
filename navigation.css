@@ -1,0 +1,233 @@
+/* Stage 2: compact header + responsive bottom navigation. */
+:root { --app-nav-height: 70px; }
+
+body { padding-bottom: calc(var(--app-nav-height) + 18px + env(safe-area-inset-bottom)); }
+
+/* Header: identity, reference and microphone only. */
+.app-header {
+  min-height: 72px !important;
+  grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr) !important;
+  grid-template-rows: 1fr !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 7px !important;
+  padding: 3px 14px 6px !important;
+}
+.app-header > .header-tabs { display: none !important; }
+.brand {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  justify-self: center !important;
+  min-width: 0 !important;
+  gap: 9px !important;
+}
+.brand-logo {
+  width: 52px !important;
+  height: 52px !important;
+  flex-basis: 52px !important;
+  margin-top: 0 !important;
+}
+.brand-logo__ney { width: 17px !important; height: 41px !important; }
+.brand-copy h1 {
+  font-size: clamp(2rem, 2.55vw, 2.7rem) !important;
+  line-height: 1.3 !important;
+  padding: .08em .18em .16em !important;
+}
+.brand-meta { gap: 7px !important; margin-top: -4px !important; }
+.brand-description { font-size: .72rem !important; }
+.brand-reference { min-height: 23px !important; padding: 2px 8px !important; font-size: .72rem !important; }
+.microphone-status {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  justify-self: start !important;
+  min-width: 188px !important;
+  min-height: 39px !important;
+  height: 39px !important;
+  padding: 6px 11px !important;
+  font-size: .78rem !important;
+}
+
+/* Slightly reduce large cards; measurement structure remains unchanged. */
+.tuner-panel, .detected-panel { height: 294px !important; padding: 10px 13px !important; }
+.tuner-panel { grid-template-rows: auto 82px 66px auto auto !important; gap: 5px !important; }
+.panel-header { min-height: 47px !important; }
+.panel-title h2, .quick-controls h2 { font-size: 1.28rem !important; }
+.panel-title p, .quick-controls p { font-size: .68rem !important; }
+.icon-disc { width: 38px !important; height: 38px !important; flex-basis: 38px !important; }
+.metric-card { min-height: 60px !important; }
+.note-visual { min-height: 176px !important; }
+.note-rosette { width: 158px !important; height: 158px !important; }
+.quick-controls { margin-top: 8px !important; }
+.bottom-grid { margin-top: 8px !important; }
+
+/* Bottom navigation */
+.app-bottom-nav {
+  position: fixed;
+  z-index: 120;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(1000px, calc(100% - 20px));
+  min-height: var(--app-nav-height);
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0,1fr));
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgba(215,157,69,.44);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(2,40,42,.97), rgba(0,19,22,.985));
+  box-shadow: 0 18px 48px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.035);
+  backdrop-filter: blur(15px);
+}
+.app-bottom-nav__item,
+.app-bottom-nav .header-tab {
+  min-width: 0;
+  min-height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #c6cfcc;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.app-bottom-nav__item svg,
+.app-bottom-nav .header-tab svg { width: 18px; height: 18px; }
+.app-bottom-nav__item:hover,
+.app-bottom-nav__item:focus-visible,
+.app-bottom-nav .header-tab:hover,
+.app-bottom-nav .header-tab:focus-visible,
+.app-bottom-nav__item.is-active {
+  color: #f1d59b;
+  border-color: rgba(215,157,69,.22);
+  background: rgba(215,157,69,.075);
+}
+.app-bottom-nav__item--record {
+  color: #092021;
+  border-color: rgba(245,207,130,.9);
+  background: linear-gradient(180deg, #efd18f, #c99748);
+  box-shadow: 0 6px 18px rgba(201,151,72,.22);
+}
+.app-bottom-nav__item--record:hover,
+.app-bottom-nav__item--record:focus-visible,
+.app-bottom-nav__item--record.is-active {
+  color: #092021;
+  background: linear-gradient(180deg, #f5dca1, #d4a85d);
+}
+.app-bottom-nav__more { display: none; }
+
+.app-nav-more-menu {
+  position: fixed;
+  z-index: 125;
+  left: 10px;
+  right: 10px;
+  bottom: calc(var(--app-nav-height) + 17px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid rgba(215,157,69,.38);
+  border-radius: 14px;
+  background: rgba(0,25,28,.985);
+  box-shadow: 0 18px 46px rgba(0,0,0,.48);
+}
+.app-nav-more-menu[hidden] { display: none; }
+.app-nav-more-menu button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 9px;
+  color: #eadfc8;
+  background: rgba(255,255,255,.035);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.app-nav-target-pulse { animation: app-nav-target-pulse .7s ease; }
+@keyframes app-nav-target-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(67,222,212,.35); }
+  100% { box-shadow: 0 0 0 14px rgba(67,222,212,0); }
+}
+
+@media (max-width: 900px) {
+  :root { --app-nav-height: 66px; }
+  body { padding-bottom: calc(var(--app-nav-height) + 14px + env(safe-area-inset-bottom)); }
+  .app-shell { width: calc(100% - 12px) !important; max-width: none !important; }
+  .app-header {
+    grid-template-columns: minmax(120px,1fr) auto minmax(120px,1fr) !important;
+    min-height: 64px !important;
+    padding-inline: 7px !important;
+  }
+  .brand-logo { width: 46px !important; height: 46px !important; flex-basis: 46px !important; }
+  .brand-logo__ney { width: 15px !important; height: 36px !important; }
+  .brand-copy h1 { font-size: 2rem !important; }
+  .brand-description { font-size: .64rem !important; }
+  .brand-reference { font-size: .64rem !important; min-height: 21px !important; }
+  .microphone-status { min-width: 150px !important; height: 37px !important; min-height: 37px !important; font-size: .7rem !important; }
+  .tuner-panel, .detected-panel { min-height: 286px !important; height: auto !important; }
+  .app-bottom-nav { width: calc(100% - 12px); bottom: max(5px, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 640px) {
+  :root { --app-nav-height: 62px; }
+  .app-header {
+    grid-template-columns: 42px minmax(0,1fr) 42px !important;
+    min-height: 57px !important;
+    gap: 4px !important;
+    padding: 2px 3px 5px !important;
+  }
+  .brand { grid-column: 2 !important; justify-self: center !important; gap: 6px !important; }
+  .brand-logo { width: 39px !important; height: 39px !important; flex-basis: 39px !important; }
+  .brand-logo__ney { width: 13px !important; height: 31px !important; }
+  .brand-copy h1 { font-size: 1.56rem !important; }
+  .brand-meta { justify-content: center !important; gap: 4px !important; }
+  .brand-description { display: none !important; }
+  .brand-reference { min-height: 19px !important; padding: 2px 5px !important; font-size: .56rem !important; }
+  .microphone-status {
+    grid-column: 1 !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    justify-self: center !important;
+  }
+  .microphone-status span:not(.status-dot) { display: none !important; }
+  .microphone-status .status-dot { position: absolute; width: 7px; height: 7px; transform: translate(11px,-11px); }
+  .microphone-status svg { width: 18px !important; height: 18px !important; }
+  .app-bottom-nav {
+    grid-template-columns: repeat(5, minmax(0,1fr));
+    gap: 2px;
+    padding: 4px;
+    border-radius: 14px;
+  }
+  .app-bottom-nav__item,
+  .app-bottom-nav .header-tab { min-height: 50px; font-size: .59rem; padding-inline: 2px; }
+  .app-bottom-nav .nav-info,
+  .app-bottom-nav .nav-settings { display: none; }
+  .app-bottom-nav__more { display: flex; }
+}
+
+@media (max-width: 430px) {
+  .brand-logo { width: 35px !important; height: 35px !important; flex-basis: 35px !important; }
+  .brand-copy h1 { font-size: 1.42rem !important; }
+  .app-bottom-nav__item,
+  .app-bottom-nav .header-tab { font-size: .54rem; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  :root { --app-nav-height: 58px; }
+  .app-header { min-height: 54px !important; }
+  .app-bottom-nav { width: min(920px, calc(100% - 14px)); padding: 3px 5px; }
+  .app-bottom-nav__item,
+  .app-bottom-nav .header-tab { min-height: 46px; }
+}
