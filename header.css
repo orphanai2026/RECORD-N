@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
 
 /* Approved header identity refinement — 2026-08-07 */
+/* Pages redeploy marker: 2026-08-07T08:56+03:00 */
 .app-header {
   min-height: 114px;
   grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr);
