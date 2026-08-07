@@ -1,4 +1,4 @@
-/* DEV-2026.08.07-1727 — Ney Auto-Capture is the active recording path. */
+/* DEV-2026.08.07-1734 — Ney Auto-Capture active path + collapsible recording library. */
 .recording-panel #prepareButton,
 .recording-panel .recording-session-status,
 .recording-panel .readiness-list,
@@ -17,7 +17,7 @@
 .recordings-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
@@ -50,13 +50,33 @@
   overflow: hidden;
 }
 
+.performance-note-card.is-expanded {
+  border-color: rgba(224, 185, 92, .42);
+}
+
+.performance-note-card__toggle {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-align: inherit;
+}
+
+.performance-note-card.is-expanded .performance-note-card__toggle {
+  border-bottom-color: rgba(224, 185, 92, .14);
+  background: rgba(18, 107, 99, .045);
+}
+
 .performance-note-card__header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(224, 185, 92, .14);
+  gap: 14px;
+  padding: 13px 16px;
 }
 
 .performance-note-card__identity {
@@ -67,28 +87,28 @@
 }
 
 .performance-note-card__english {
-  min-width: 70px;
+  min-width: 66px;
   color: #f0ca75;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   text-align: center;
 }
 
 .performance-note-card__identity h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.08rem;
   color: #f5f0df;
 }
 
 .performance-note-card__identity p {
   margin: 2px 0 0;
   color: rgba(230, 237, 229, .67);
-  font-size: .82rem;
+  font-size: .8rem;
 }
 
 .performance-note-card__frequency {
   flex: 0 0 auto;
   color: #f2f3e9;
-  font-size: 1rem;
+  font-size: .96rem;
   font-weight: 700;
 }
 
@@ -98,17 +118,45 @@
   opacity: .72;
 }
 
+.performance-note-card__chevron {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(224, 185, 92, .28);
+  border-radius: 10px;
+  color: #e8cf91;
+  transition: transform .18s ease, background .18s ease;
+}
+
+.performance-note-card__chevron svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.performance-note-card.is-expanded .performance-note-card__chevron {
+  transform: rotate(180deg);
+  background: rgba(224, 185, 92, .08);
+}
+
 .performance-note-card__samples {
   display: grid;
   gap: 0;
+}
+
+.performance-note-card__samples[hidden] {
+  display: none !important;
 }
 
 .performance-note-sample {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
+  gap: 10px;
+  padding: 9px 14px;
   border-top: 1px solid rgba(255, 255, 255, .055);
 }
 
@@ -123,54 +171,55 @@
 .performance-note-sample__copy {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
 .performance-note-sample__copy strong {
   color: #f1d58e;
-  font-size: .93rem;
+  font-size: .88rem;
 }
 
 .performance-note-sample__copy span {
   color: rgba(232, 238, 231, .70);
-  font-size: .79rem;
-  line-height: 1.5;
+  font-size: .75rem;
+  line-height: 1.45;
 }
 
 .performance-note-sample__actions {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 
 .performance-sample-play,
 .performance-sample-download {
-  border: 1px solid rgba(224, 185, 92, .34);
-  border-radius: 12px;
+  border: 1px solid rgba(224, 185, 92, .32);
+  border-radius: 10px;
   background: rgba(0, 24, 28, .72);
   color: #f2dfaa;
-  min-height: 39px;
+  min-height: 34px;
   cursor: pointer;
 }
 
 .performance-sample-play {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 10px;
   font: inherit;
+  font-size: .8rem;
   font-weight: 650;
 }
 
 .performance-sample-download {
-  width: 39px;
-  padding: 8px;
+  width: 34px;
+  padding: 7px;
 }
 
 .performance-sample-play svg,
 .performance-sample-download svg {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -187,30 +236,56 @@
 
 @media (max-width: 760px) {
   .performance-note-card__header {
-    align-items: flex-start;
-    padding: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 10px;
+    padding: 11px 12px;
+  }
+
+  .performance-note-card__identity {
+    gap: 8px;
   }
 
   .performance-note-card__english {
-    min-width: 54px;
-    font-size: 1.2rem;
+    min-width: 48px;
+    font-size: 1.15rem;
   }
 
   .performance-note-card__identity h3 {
-    font-size: 1rem;
+    font-size: .98rem;
   }
 
   .performance-note-card__identity p,
   .performance-note-sample__copy span {
-    font-size: .74rem;
+    font-size: .71rem;
+  }
+
+  .performance-note-card__frequency {
+    font-size: .82rem;
+  }
+
+  .performance-note-card__chevron {
+    grid-column: 2;
+    grid-row: 1;
+    width: 29px;
+    height: 29px;
+  }
+
+  .performance-note-card__frequency {
+    grid-column: 2;
+    grid-row: 2;
   }
 
   .performance-note-sample {
-    grid-template-columns: 1fr;
-    padding: 10px 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 8px 11px;
   }
 
-  .performance-note-sample__actions {
-    justify-content: flex-start;
+  .performance-sample-play {
+    padding: 0 8px;
+  }
+
+  .performance-sample-play [data-action-label] {
+    display: none;
   }
 }
