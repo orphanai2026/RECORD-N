@@ -87,7 +87,6 @@
 
     nav.append(recordingsButton, metronomeButton, recordButton, calibrationButton, settingsButton);
 
-    /* Move the existing definition buttons rather than cloning them, preserving their listeners. */
     if (helpButton) {
       helpButton.classList.add('nav-info');
       helpButton.innerHTML = `${icon('<path d="M9.1 9a3 3 0 1 1 5.4 1.8c-1.3 1-2.5 1.5-2.5 3.2"></path><path d="M12 18h.01"></path><circle cx="12" cy="12" r="9"></circle>')}<span>طريقة الاستخدام</span>`;
@@ -148,12 +147,16 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeNavigation, { once: true });
-  } else {
-    initializeNavigation();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeNavigation, { once: true });
+  else initializeNavigation();
 })();
 
-/* Stage 3 training metronome is isolated from navigation and pitch logic. */
-import('./metronome-training.js?v=2026-08-07-1420').catch(error => console.error('Training metronome load failed', error));
+/* Stage 3.1 complete time-signature controls. */
+if (!document.querySelector('link[data-meter-forms]')) {
+  const meterStyles = document.createElement('link');
+  meterStyles.rel = 'stylesheet';
+  meterStyles.href = './meter-forms.css?v=2026-08-07-1442';
+  meterStyles.dataset.meterForms = 'true';
+  document.head.append(meterStyles);
+}
+import('./metronome-training.js?v=2026-08-07-1442').catch(error => console.error('Training metronome load failed', error));
