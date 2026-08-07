@@ -1,0 +1,145 @@
+/* Stage 2 visual correction — tuner readability + slimmer bottom navigation. */
+
+/* Restore enough vertical room for the live cents reading, tolerance markers,
+   fixed region labels and ticks. No measurement content is hidden. */
+.tuner-panel,
+.detected-panel {
+  height: 322px !important;
+  min-height: 322px !important;
+}
+
+.tuner-panel {
+  grid-template-rows: auto 112px 66px auto auto !important;
+  gap: 6px !important;
+}
+
+.tuner-panel .tuner-scale {
+  min-height: 112px !important;
+  padding: 9px 15px 8px !important;
+  grid-template-rows: minmax(68px, 1fr) auto auto !important;
+  overflow: visible !important;
+}
+
+.tuner-panel .tuner-bar {
+  align-self: end !important;
+  margin-top: 0 !important;
+}
+
+.tuner-panel .tuner-needle-value {
+  top: -3.15rem !important;
+}
+
+.tuner-panel .tuner-labels {
+  margin-top: 9px !important;
+  line-height: 1.15 !important;
+}
+
+.tuner-panel .tuner-limit bdi {
+  top: 22px !important;
+}
+
+.tuner-panel .tuner-ticks {
+  margin-top: 6px !important;
+}
+
+/* Slimmer navigation: ~18% less visual height on desktop/tablet. */
+:root { --app-nav-height: 58px !important; }
+
+body {
+  padding-bottom: calc(var(--app-nav-height) + 12px + env(safe-area-inset-bottom)) !important;
+}
+
+.app-bottom-nav {
+  min-height: 58px !important;
+  padding: 4px 5px !important;
+  gap: 3px !important;
+  bottom: max(5px, env(safe-area-inset-bottom)) !important;
+  border-radius: 15px !important;
+}
+
+.app-bottom-nav__item,
+.app-bottom-nav .header-tab {
+  min-height: 46px !important;
+  gap: 2px !important;
+  padding: 3px 3px !important;
+  border-radius: 10px !important;
+  font-size: .63rem !important;
+}
+
+.app-bottom-nav__item svg,
+.app-bottom-nav .header-tab svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.app-bottom-nav__item--record {
+  box-shadow: 0 4px 13px rgba(201,151,72,.18) !important;
+}
+
+.app-nav-more-menu {
+  bottom: calc(var(--app-nav-height) + 13px + env(safe-area-inset-bottom)) !important;
+}
+
+@media (max-width: 900px) {
+  :root { --app-nav-height: 56px !important; }
+
+  .tuner-panel,
+  .detected-panel {
+    height: auto !important;
+    min-height: 310px !important;
+  }
+
+  .tuner-panel {
+    grid-template-rows: auto 108px 62px auto auto !important;
+  }
+
+  .tuner-panel .tuner-scale {
+    min-height: 108px !important;
+    grid-template-rows: minmax(65px, 1fr) auto auto !important;
+  }
+
+  .app-bottom-nav {
+    min-height: 56px !important;
+    padding: 4px !important;
+  }
+
+  .app-bottom-nav__item,
+  .app-bottom-nav .header-tab {
+    min-height: 44px !important;
+    font-size: .6rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  :root { --app-nav-height: 54px !important; }
+
+  .top-grid > .tuner-panel { min-height: 282px !important; }
+  .top-grid > .detected-panel { min-height: 232px !important; }
+
+  .tuner-panel {
+    grid-template-rows: auto 104px auto auto auto !important;
+  }
+
+  .tuner-panel .tuner-scale {
+    min-height: 104px !important;
+    grid-template-rows: minmax(61px, 1fr) auto auto !important;
+    padding-inline: 10px !important;
+  }
+
+  .tuner-panel .tuner-needle-value {
+    top: -2.9rem !important;
+  }
+
+  .app-bottom-nav__item,
+  .app-bottom-nav .header-tab {
+    min-height: 43px !important;
+    font-size: .56rem !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  :root { --app-nav-height: 52px !important; }
+  .app-bottom-nav { min-height: 52px !important; padding-block: 3px !important; }
+  .app-bottom-nav__item,
+  .app-bottom-nav .header-tab { min-height: 41px !important; }
+}
