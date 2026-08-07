@@ -183,7 +183,7 @@ const maqamSelectorReady = Promise.all([
 
 Promise.all([autoCaptureReady, maqamSelectorReady])
   .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
-  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-08-0050'))
+  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-08-0120'))
   .catch(error => console.error('Recording maqam capture flow load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
