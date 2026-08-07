@@ -6,17 +6,54 @@
 
   const state = {
     singleMode: 'general',
-    maqamId: null
+    maqamId: null,
+    tonicPc: null,
+    tonicOctave: 4,
+    generatedScale: null
   };
 
   const CATEGORY_ORDER = ['eastern_identity', 'familiar_no_quarter', 'special_intervals'];
+  const TONIC_OPTIONS = Object.freeze([
+    { value: 'C', ar: 'دو', en: 'C' },
+    { value: 'C hs', ar: 'دو نصف دييز', en: 'C half-sharp' },
+    { value: 'C#', ar: 'دو دييز', en: 'C sharp' },
+    { value: 'D hb', ar: 'ري نصف بيمول', en: 'D half-flat' },
+    { value: 'D', ar: 'ري', en: 'D' },
+    { value: 'D hs', ar: 'ري نصف دييز', en: 'D half-sharp' },
+    { value: 'D#', ar: 'ري دييز', en: 'D sharp' },
+    { value: 'E hb', ar: 'مي نصف بيمول', en: 'E half-flat' },
+    { value: 'E', ar: 'مي', en: 'E' },
+    { value: 'F hb', ar: 'فا نصف بيمول', en: 'F half-flat' },
+    { value: 'F', ar: 'فا', en: 'F' },
+    { value: 'F hs', ar: 'فا نصف دييز', en: 'F half-sharp' },
+    { value: 'F#', ar: 'فا دييز', en: 'F sharp' },
+    { value: 'G hb', ar: 'صول نصف بيمول', en: 'G half-flat' },
+    { value: 'G', ar: 'صول', en: 'G' },
+    { value: 'G hs', ar: 'صول نصف دييز', en: 'G half-sharp' },
+    { value: 'G#', ar: 'صول دييز', en: 'G sharp' },
+    { value: 'A hb', ar: 'لا نصف بيمول', en: 'A half-flat' },
+    { value: 'A', ar: 'لا', en: 'A' },
+    { value: 'A hs', ar: 'لا نصف دييز', en: 'A half-sharp' },
+    { value: 'A#', ar: 'لا دييز', en: 'A sharp' },
+    { value: 'B hb', ar: 'سي نصف بيمول', en: 'B half-flat' },
+    { value: 'B', ar: 'سي', en: 'B' },
+    { value: 'C hb', ar: 'دو نصف بيمول', en: 'C half-flat' }
+  ]);
 
   function currentRecordingMode() {
     return $('#recordingModeControl .segment.is-active')?.dataset.recordingMode || 'single';
   }
 
+  function currentA4() {
+    return Number($('#a4Reference')?.value || 440) || 440;
+  }
+
   function library() {
     return window.NeyMaqamLibrary || null;
+  }
+
+  function generator() {
+    return window.NeyRecordingGenerator || null;
   }
 
   function categoryLabel(id) {
@@ -31,6 +68,9 @@
     try {
       state.singleMode = localStorage.getItem('ney-single-recording-mode') === 'maqam' ? 'maqam' : 'general';
       state.maqamId = localStorage.getItem('ney-single-recording-maqam') || null;
+      state.tonicPc = localStorage.getItem('ney-maqam-tonic-pc') || null;
+      const savedOctave = Number(localStorage.getItem('ney-maqam-tonic-octave'));
+      state.tonicOctave = Number.isInteger(savedOctave) && savedOctave >= 1 && savedOctave <= 7 ? savedOctave : 4;
     } catch (_) {}
   }
 
@@ -39,7 +79,14 @@
       localStorage.setItem('ney-single-recording-mode', state.singleMode);
       if (state.maqamId) localStorage.setItem('ney-single-recording-maqam', state.maqamId);
       else localStorage.removeItem('ney-single-recording-maqam');
+      if (state.tonicPc) localStorage.setItem('ney-maqam-tonic-pc', state.tonicPc);
+      else localStorage.removeItem('ney-maqam-tonic-pc');
+      localStorage.setItem('ney-maqam-tonic-octave', String(state.tonicOctave));
     } catch (_) {}
+  }
+
+  function tonicNotation() {
+    return state.tonicPc ? `${state.tonicPc}${state.tonicOctave}` : null;
   }
 
   function emitContext() {
@@ -47,9 +94,29 @@
       detail: {
         recordingMode: currentRecordingMode(),
         singleMode: state.singleMode,
-        maqamId: state.maqamId
+        maqamId: state.maqamId,
+        tonic: tonicNotation(),
+        scale: state.generatedScale
       }
     }));
+  }
+
+  function generateScale() {
+    state.generatedScale = null;
+    if (!state.maqamId || !state.tonicPc || !generator()?.maqamScale) return null;
+
+    try {
+      state.generatedScale = generator().maqamScale({
+        maqamId: state.maqamId,
+        tonic: tonicNotation(),
+        a4: currentA4(),
+        direction: 'ascending'
+      });
+    } catch (error) {
+      console.error('Maqam scale generation failed', error);
+      state.generatedScale = null;
+    }
+    return state.generatedScale;
   }
 
   function applyMaqamSelection(root, maqamId) {
@@ -64,6 +131,7 @@
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
 
+    generateScale();
     sync(root);
     emitContext();
   }
@@ -101,19 +169,84 @@
         button.setAttribute('aria-pressed', state.maqamId === maqam.id ? 'true' : 'false');
         button.classList.toggle('is-active', state.maqamId === maqam.id);
         button.innerHTML = `<span aria-hidden="true"></span><strong>${maqam.ar}</strong><small>${maqam.en}</small>`;
-
-        /* Direct binding avoids touch/click delegation failures on some Android Chrome layouts. */
         button.addEventListener('click', event => {
           event.preventDefault();
           event.stopPropagation();
           applyMaqamSelection(root, maqam.id);
         });
-
         options.append(button);
       });
 
       container.append(section);
     });
+  }
+
+  function installTonicControls(root) {
+    const panel = root.querySelector('.recording-maqam-tonic');
+    const pitch = root.querySelector('#recordingMaqamTonicPitch');
+    const octave = root.querySelector('#recordingMaqamTonicOctave');
+    if (!panel || !pitch || !octave) return;
+
+    pitch.innerHTML = '<option value="">اختر نغمة الجذر</option>' + TONIC_OPTIONS.map(item =>
+      `<option value="${item.value}">${item.ar} · ${item.en}</option>`
+    ).join('');
+    octave.innerHTML = [2,3,4,5,6].map(value => `<option value="${value}">الأوكتاف ${value}</option>`).join('');
+
+    if (state.tonicPc) pitch.value = state.tonicPc;
+    octave.value = String(state.tonicOctave);
+
+    const update = () => {
+      state.tonicPc = pitch.value || null;
+      state.tonicOctave = Number(octave.value) || 4;
+      savePreference();
+      generateScale();
+      sync(root);
+      emitContext();
+    };
+
+    pitch.addEventListener('change', update);
+    octave.addEventListener('change', update);
+  }
+
+  function renderScaleDegrees(root) {
+    const section = root.querySelector('.recording-maqam-scale-preview');
+    const grid = root.querySelector('.recording-maqam-scale-preview__grid');
+    const meta = root.querySelector('.recording-maqam-scale-preview__meta');
+    if (!section || !grid || !meta) return;
+
+    const showForSingle = currentRecordingMode() === 'single' && state.singleMode === 'maqam';
+    const showForScale = currentRecordingMode() === 'maqam-scale';
+    const relevant = showForSingle || showForScale;
+    section.hidden = !relevant || !state.maqamId;
+    if (section.hidden) return;
+
+    if (!state.tonicPc) {
+      meta.textContent = 'اختر نغمة الجذر والأوكتاف لعرض درجات المقام.';
+      grid.innerHTML = '';
+      return;
+    }
+
+    const scale = generateScale();
+    if (!scale) {
+      meta.textContent = 'تعذر توليد درجات المقام بهذه الإعدادات.';
+      grid.innerHTML = '';
+      return;
+    }
+
+    const maqam = library()?.getMaqam?.(state.maqamId);
+    const tonicLabel = TONIC_OPTIONS.find(item => item.value === state.tonicPc)?.ar || state.tonicPc;
+    meta.textContent = `${maqam?.ar || scale.maqamAr} من ${tonicLabel} ${state.tonicOctave} · ${scale.variantAr || 'المسار الافتراضي'} · A4=${currentA4()} Hz`;
+
+    grid.innerHTML = scale.notes.map(note => `
+      <article class="recording-maqam-degree" data-degree="${note.degree}">
+        <span class="recording-maqam-degree__number">${note.degree}</span>
+        <div class="recording-maqam-degree__copy">
+          <strong>${note.arabic}</strong>
+          <small>${note.english}</small>
+        </div>
+        <span class="recording-maqam-degree__frequency">${note.frequency.toFixed(2)} Hz</span>
+      </article>
+    `).join('');
   }
 
   function sync(root) {
@@ -134,19 +267,25 @@
     const modes = root.querySelector('.recording-maqam-selector__modes');
     const panel = root.querySelector('.recording-maqam-selector__panel');
     const summary = root.querySelector('.recording-maqam-selector__summary');
+    const tonicPanel = root.querySelector('.recording-maqam-tonic');
 
     if (maqamScale) {
       modes.hidden = true;
       panel.hidden = false;
+      tonicPanel.hidden = !state.maqamId;
       headTitle.textContent = 'مقام السلم الشرقي';
-      headCopy.textContent = 'اختر المقام الذي تريد تسجيل سلمه كاملًا.';
+      headCopy.textContent = 'اختر المقام ثم جذر السلم لعرض درجاته الكاملة.';
 
       if (!state.maqamId) {
-        summary.innerHTML = '<strong>سلم مقام شرقي كامل</strong><span>اختر المقام أولًا، ثم نحدد جذر المقام ودرجات السلم في الخطوة التالية.</span>';
+        summary.innerHTML = '<strong>سلم مقام شرقي كامل</strong><span>اختر المقام أولًا.</span>';
+      } else if (!state.tonicPc) {
+        const maqam = library()?.getMaqam?.(state.maqamId);
+        summary.innerHTML = `<strong>سلم مقام ${maqam?.ar || state.maqamId}</strong><span>اختر الآن نغمة الجذر والأوكتاف.</span>`;
       } else {
         const maqam = library()?.getMaqam?.(state.maqamId);
-        summary.innerHTML = `<strong>سلم مقام ${maqam?.ar || state.maqamId}</strong><span>تم اختيار المقام. الخطوة التالية هي تحديد جذر المقام ثم توليد درجات السلم الكامل.</span>`;
+        summary.innerHTML = `<strong>سلم مقام ${maqam?.ar || state.maqamId}</strong><span>تم توليد درجات السلم من الجذر المختار وفق المسار الافتراضي المعتمد.</span>`;
       }
+      renderScaleDegrees(root);
       return;
     }
 
@@ -161,21 +300,27 @@
     });
 
     panel.hidden = state.singleMode !== 'maqam';
+    tonicPanel.hidden = state.singleMode !== 'maqam' || !state.maqamId;
+
     if (state.singleMode === 'general') {
       summary.innerHTML = '<strong>نغمة منفردة عامة</strong><span>التقاط أي نغمة صافية دون تقييدها بمقام محدد.</span>';
     } else if (!state.maqamId) {
       summary.innerHTML = '<strong>نغمات مقام شرقي</strong><span>اختر المقام المطلوب لتسجيل نغماته منفصلة.</span>';
+    } else if (!state.tonicPc) {
+      const maqam = library()?.getMaqam?.(state.maqamId);
+      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>اختر نغمة الجذر والأوكتاف لعرض درجات المقام.</span>`;
     } else {
       const maqam = library()?.getMaqam?.(state.maqamId);
-      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>تم اختيار المقام لتسجيل نغماته المنفصلة. تحديد الجذر والدرجات يأتي في الخطوة التالية.</span>`;
+      summary.innerHTML = `<strong>المقام المختار: ${maqam?.ar || state.maqamId}</strong><span>تم توليد درجات المقام من الجذر المختار لتجهيز التسجيل المنفصل.</span>`;
     }
+    renderScaleDegrees(root);
   }
 
   function install() {
     if (installed) return true;
     const summary = $('#recordingModeSummary');
     const modeControl = $('#recordingModeControl');
-    if (!summary || !modeControl || !library()) return false;
+    if (!summary || !modeControl || !library() || !generator()) return false;
 
     loadPreference();
 
@@ -198,10 +343,29 @@
           <span>المقامات الأساسية المعتمدة لهذا الإصدار.</span>
         </div>
         <div class="recording-maqam-selector__groups"></div>
-      </div>`;
+      </div>
+      <section class="recording-maqam-tonic" hidden aria-label="جذر المقام">
+        <div class="recording-maqam-tonic__head">
+          <strong>جذر المقام</strong>
+          <span>حدد نغمة الأساس والأوكتاف؛ لا يفرض النظام جذرًا افتراضيًا.</span>
+        </div>
+        <div class="recording-maqam-tonic__controls">
+          <label>نغمة الجذر<select id="recordingMaqamTonicPitch"></select></label>
+          <label>الأوكتاف<select id="recordingMaqamTonicOctave"></select></label>
+        </div>
+      </section>
+      <section class="recording-maqam-scale-preview" hidden aria-label="درجات المقام">
+        <div class="recording-maqam-scale-preview__head">
+          <strong>درجات المقام</strong>
+          <span class="recording-maqam-scale-preview__meta"></span>
+        </div>
+        <div class="recording-maqam-scale-preview__grid"></div>
+      </section>`;
 
     summary.after(root);
     renderMaqams(root.querySelector('.recording-maqam-selector__groups'), root);
+    installTonicControls(root);
+    generateScale();
 
     root.addEventListener('click', event => {
       const modeButton = event.target.closest('[data-single-mode]');
@@ -216,16 +380,25 @@
     const resync = () => setTimeout(() => sync(root), 0);
     modeControl.addEventListener('click', resync);
     document.addEventListener('ney:recording-mode-ui-change', resync);
+    $('#a4Reference')?.addEventListener('change', () => {
+      generateScale();
+      sync(root);
+      emitContext();
+    });
     sync(root);
 
     window.NeySingleRecordingContext = Object.freeze({
       getMode: () => state.singleMode,
       getMaqamId: () => state.maqamId,
-      getContext: () => ({ mode: state.singleMode, maqamId: state.maqamId })
+      getTonic: tonicNotation,
+      getScale: () => state.generatedScale,
+      getContext: () => ({ mode: state.singleMode, maqamId: state.maqamId, tonic: tonicNotation(), scale: state.generatedScale })
     });
     window.NeyMaqamRecordingContext = Object.freeze({
       getMaqamId: () => state.maqamId,
-      getContext: () => ({ recordingMode: currentRecordingMode(), singleMode: state.singleMode, maqamId: state.maqamId })
+      getTonic: tonicNotation,
+      getScale: () => state.generatedScale,
+      getContext: () => ({ recordingMode: currentRecordingMode(), singleMode: state.singleMode, maqamId: state.maqamId, tonic: tonicNotation(), scale: state.generatedScale })
     });
 
     installed = true;
