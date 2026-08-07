@@ -169,6 +169,11 @@
   min-height: 38px;
 }
 
+/* The automatic waiting card belongs only to automatic start mode. */
+.ney-screen--recording .chromatic-settings[data-start-mode="manual"] .auto-session-start__status {
+  display: none !important;
+}
+
 .ney-screen--recording .recording-manual-range {
   display: grid;
   gap: 10px;
