@@ -271,7 +271,18 @@
   else initializeMeasurementPresentation();
 })();
 
-/* Stage 2 navigation is isolated from measurement logic. */
+/* Stage 2 legacy navigation remains as rollback code; the App Shell layer supersedes it visually. */
 import('./navigation.js?v=2026-08-07-r1').catch(error => console.error('Navigation load failed', error));
+
+/* Stage 11: structural App Shell. Adds real screens without rebuilding audio/recording engines. */
+if (!document.querySelector('link[data-app-shell-stage]')) {
+  const shellStyles = document.createElement('link');
+  shellStyles.rel = 'stylesheet';
+  shellStyles.href = './app-shell-stage.css?v=2026-08-07-1818';
+  shellStyles.dataset.appShellStage = 'true';
+  document.head.append(shellStyles);
+}
+import('./app-shell-stage.js?v=2026-08-07-1818').catch(error => console.error('App Shell load failed', error));
+
 /* Build bootstrap must always be fresh during development so nested module versions cannot be pinned by browser cache. */
 import(`./build-meta.js?ts=${Date.now()}`).catch(error => console.error('Build metadata load failed', error));
