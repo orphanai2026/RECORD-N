@@ -47,7 +47,6 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-/* Stage 13.3: explicit and canonical microphone stop synchronization. */
 import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011')
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
   .then(() => import('./ney-auto-capture.js?v=2026-08-07-2018'))
@@ -61,7 +60,7 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.2: three recording paths + scroll freeze fix. */
+/* Stage 15.3: separate single-note controls from full maqam-scale selection. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
@@ -76,7 +75,7 @@ import('./auto-session-start.js?v=2026-08-07-2043')
 if (!document.querySelector('link[data-recording-maqam-selector]')) {
   const maqamSelectorStyles = document.createElement('link');
   maqamSelectorStyles.rel = 'stylesheet';
-  maqamSelectorStyles.href = './recording-maqam-selector.css?v=2026-08-07-2055';
+  maqamSelectorStyles.href = './recording-maqam-selector.css?v=2026-08-07-2112';
   maqamSelectorStyles.dataset.recordingMaqamSelector = 'true';
   document.head.append(maqamSelectorStyles);
 }
