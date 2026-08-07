@@ -61,7 +61,7 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 14.2: automatic open chromatic session + manual-range separation. */
+/* Stage 14.3: automatic open chromatic session + dynamic guidance. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
@@ -69,7 +69,7 @@ if (!document.querySelector('link[data-recording-session-flow]')) {
   sessionFlowStyles.dataset.recordingSessionFlow = 'true';
   document.head.append(sessionFlowStyles);
 }
-import('./auto-session-start.js?v=2026-08-07-2039')
+import('./auto-session-start.js?v=2026-08-07-2043')
   .then(() => import('./recording-session-flow.js?v=2026-08-07-2025'))
   .catch(error => console.error('Recording session flow load failed', error));
 
