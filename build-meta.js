@@ -85,15 +85,23 @@ if (!document.querySelector('link[data-app-shell-frame]')) {
 }
 import('./app-shell-frame.js?v=2026-08-07-1832').catch(error => console.error('App Shell frame load failed', error));
 
-/* Stage 12.4: recording metronome output modes + automatic capture protection. */
+/* Stage 12.5: recording metronome protection + wide stable ambient lighting. */
 const existingRecordingPriority = document.querySelector('link[data-recording-priority]');
-if (existingRecordingPriority) existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1912';
+if (existingRecordingPriority) existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1922';
 else {
   const recordingPriorityStyles = document.createElement('link');
   recordingPriorityStyles.rel = 'stylesheet';
-  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1912';
+  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1922';
   recordingPriorityStyles.dataset.recordingPriority = 'true';
   document.head.append(recordingPriorityStyles);
+}
+
+if (!document.querySelector('link[data-metronome-ambient-light]')) {
+  const ambientStyles = document.createElement('link');
+  ambientStyles.rel = 'stylesheet';
+  ambientStyles.href = './metronome-ambient-light.css?v=2026-08-07-1922';
+  ambientStyles.dataset.metronomeAmbientLight = 'true';
+  document.head.append(ambientStyles);
 }
 
 import('./recording-metronome-top.js?v=2026-08-07-1912')
