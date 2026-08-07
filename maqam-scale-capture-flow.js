@@ -2,10 +2,11 @@
   'use strict';
 
   const $ = selector => document.querySelector(selector);
-  const state = { scale: null, index: 0, active: false, pending: false, timer: null };
+  const state = { scale: null, ascending: [], descending: [], phase: 'ascending', index: 0, active: false, pending: false, timer: null };
 
   const currentMode = () => $('#recordingModeControl .segment.is-active')?.dataset.recordingMode || 'single';
-  const expected = () => state.active ? state.scale?.notes?.[state.index] || null : null;
+  const phaseNotes = () => state.phase === 'descending' ? state.descending : state.ascending;
+  const expected = () => state.active ? phaseNotes()?.[state.index] || null : null;
 
   function readNumber(selector) {
     const match = String($(selector)?.textContent || '').replace(',', '.').match(/[+-]?\d+(?:\.\d+)?/);
@@ -56,6 +57,10 @@
     if (element) element.textContent = text;
   }
 
+  function phaseLabel() {
+    return state.phase === 'descending' ? 'الهبوط' : 'الصعود';
+  }
+
   function paint() {
     const panel = ensurePanel();
     if (!panel) return;
@@ -63,28 +68,30 @@
     panel.hidden = !visible;
     if (!visible) return;
 
-    const total = state.scale.notes.length;
+    const notes = phaseNotes();
+    const total = notes.length;
     const note = expected();
     const count = $('#recordingMaqamScaleCaptureCount');
     if (count) {
       count.dir = 'ltr';
-      count.textContent = `${Math.min(state.index, total)} / ${total}`;
+      count.textContent = `${phaseLabel()} ${Math.min(state.index, total)} / ${total}`;
     }
     $('#recordingMaqamScaleCaptureBar').max = Math.max(1, total);
     $('#recordingMaqamScaleCaptureBar').value = Math.min(state.index, total);
 
     if (note) {
-      $('#recordingMaqamScaleCaptureTarget').textContent = `المطلوب الآن: ${note.arabic} · ${note.english} · ${note.frequency.toFixed(2)} Hz`;
-      if (!state.pending) setStatus('اعزف الدرجة المطلوبة بثبات؛ الانتقال يتم تلقائيًا بعد حفظ التسجيل التعليمي.');
-    } else {
-      $('#recordingMaqamScaleCaptureTarget').textContent = 'اكتمل تسجيل جميع درجات السلم.';
+      $('#recordingMaqamScaleCaptureTarget').textContent = `المطلوب الآن (${phaseLabel()}): ${note.arabic} · ${note.english} · ${note.frequency.toFixed(2)} Hz`;
+      if (!state.pending) setStatus(`اعزف درجة ${phaseLabel()} المطلوبة بثبات؛ الانتقال يتم تلقائيًا بعد حفظ التسجيل التعليمي.`);
+    } else if (!state.active) {
+      $('#recordingMaqamScaleCaptureTarget').textContent = 'اكتمل تسجيل المقام صعودًا وهبوطًا.';
       setStatus('الجلسة مكتملة.');
     }
 
     document.querySelectorAll('.recording-maqam-degree').forEach(card => {
       const degree = Number(card.dataset.degree);
-      card.classList.toggle('is-complete', degree <= state.index);
       card.classList.toggle('is-current', note && degree === Number(note.degree));
+      if (state.phase === 'ascending') card.classList.toggle('is-complete', degree <= state.index);
+      else card.classList.toggle('is-complete', false);
     });
   }
 
@@ -97,6 +104,7 @@
       maqamAr: state.scale.maqamAr,
       tonic: state.scale.tonic,
       maqamDegree: note.degree,
+      maqamDirection: state.phase,
       variantId: state.scale.variantId,
       division: 24,
       a4: Number($('#a4Reference')?.value || 440),
@@ -107,8 +115,28 @@
     });
   }
 
+  function buildDescending(scale) {
+    try {
+      const descendingScale = window.NeyMaqamLibrary?.buildScale?.({
+        maqamId: scale.maqamId,
+        tonic: scale.tonic,
+        variantId: scale.variantId,
+        a4: Number($('#a4Reference')?.value || 440),
+        direction: 'descending'
+      });
+      const notes = descendingScale?.notes || [];
+      return notes.length > 1 ? notes.slice(1) : [];
+    } catch (_) {
+      const fallback = [...(scale?.notes || [])].reverse();
+      return fallback.length > 1 ? fallback.slice(1) : [];
+    }
+  }
+
   function reset(scale) {
     state.scale = scale?.notes?.length ? scale : null;
+    state.ascending = state.scale?.notes ? [...state.scale.notes] : [];
+    state.descending = state.scale ? buildDescending(state.scale) : [];
+    state.phase = 'ascending';
     state.index = 0;
     state.pending = false;
     state.active = currentMode() === 'maqam-scale' && Boolean(state.scale);
@@ -131,12 +159,12 @@
 
     const target = candidateTarget(candidate);
     if (!Number.isFinite(target) || Math.abs(centsBetween(target, note.frequency)) > 20) {
-      setStatus(`النغمة الحالية ليست المطلوبة. المطلوب: ${note.arabic}.`);
+      setStatus(`النغمة الحالية ليست المطلوبة في ${phaseLabel()}. المطلوب: ${note.arabic}.`);
       return;
     }
 
     state.pending = true;
-    setStatus(`تمت مطابقة ${note.arabic}. بدأ تسجيل المدة التعليمية من لحظة القبول؛ استمر حتى اكتمالها.`);
+    setStatus(`تمت مطابقة ${note.arabic} في ${phaseLabel()}. بدأ تسجيل المدة التعليمية من لحظة القبول؛ استمر حتى اكتمالها.`);
   }
 
   function matchingContext(event) {
@@ -148,6 +176,7 @@
     if (context.mode !== 'maqam-scale') return null;
     if (context.maqamId && context.maqamId !== state.scale?.maqamId) return null;
     if (context.tonic && !sameTonic(context.tonic, state.scale?.tonic)) return null;
+    if (context.maqamDirection && context.maqamDirection !== state.phase) return null;
     if (Number(context.maqamDegree) !== Number(note.degree)) return null;
     return { context, note };
   }
@@ -158,17 +187,30 @@
 
     state.pending = false;
     state.index += 1;
-    if (state.index >= state.scale.notes.length) {
+    const notes = phaseNotes();
+
+    if (state.index >= notes.length) {
+      if (state.phase === 'ascending' && state.descending.length) {
+        state.phase = 'descending';
+        state.index = 0;
+        setCaptureContext();
+        paint();
+        setStatus(`اكتمل الصعود. ابدأ الآن الهبوط من ${expected()?.arabic || 'الدرجة التالية'}.`);
+        return;
+      }
+
       state.active = false;
       window.NeyAutoCapture?.clearCaptureContext?.();
       paint();
-      document.dispatchEvent(new CustomEvent('ney:maqam-scale-session-complete', { detail: { scale: state.scale } }));
+      document.dispatchEvent(new CustomEvent('ney:maqam-scale-session-complete', {
+        detail: { scale: state.scale, ascendingCount: state.ascending.length, descendingCount: state.descending.length }
+      }));
       return;
     }
 
     setCaptureContext();
     paint();
-    setStatus(`تم حفظ الدرجة السابقة. انتقل الآن إلى ${expected()?.arabic || 'الدرجة التالية'}.`);
+    setStatus(`تم حفظ الدرجة السابقة. انتقل الآن إلى ${expected()?.arabic || 'الدرجة التالية'} في ${phaseLabel()}.`);
   }
 
   function reopenAfterRejected(event) {
@@ -180,10 +222,11 @@
     if (context.mode && context.mode !== 'maqam-scale') return;
     if (context.maqamId && context.maqamId !== state.scale?.maqamId) return;
     if (context.tonic && !sameTonic(context.tonic, state.scale?.tonic)) return;
+    if (context.maqamDirection && context.maqamDirection !== state.phase) return;
     if (context.maqamDegree && Number(context.maqamDegree) !== Number(note.degree)) return;
 
     state.pending = false;
-    setStatus(`لم يكتمل تسجيل ${note.arabic}. أعد عزف الدرجة نفسها؛ المحاولة التالية تبدأ تلقائيًا.`);
+    setStatus(`لم يكتمل تسجيل ${note.arabic} في ${phaseLabel()}. أعد عزف الدرجة نفسها؛ المحاولة التالية تبدأ تلقائيًا.`);
     paint();
   }
 
@@ -213,6 +256,7 @@
       isActive: () => state.active,
       getExpected: () => expected() ? { ...expected() } : null,
       getIndex: () => state.index,
+      getPhase: () => state.phase,
       reset: () => reset(window.NeyMaqamRecordingContext?.getScale?.())
     });
   }
