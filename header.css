@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Katibeh&display=swap');
 
 /* Approved header identity refinement — 2026-08-07 */
-/* Pages redeploy marker: 2026-08-07T08:56+03:00 */
+/* Katibeh title trial — preserve complete Arabic glyph visibility */
 .app-header {
   min-height: 114px;
   grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr);
@@ -26,6 +26,7 @@
   justify-self: center;
   min-width: 560px;
   gap: 18px;
+  overflow: visible;
 }
 
 .brand-logo {
@@ -48,28 +49,33 @@
   display: grid;
   justify-items: center;
   min-width: 0;
+  overflow: visible;
   text-align: center;
 }
 
 .brand-copy h1 {
   margin: 0;
-  padding: .05em .08em .14em;
-  color: var(--gold-100);
-  font-family: "Noto Nastaliq Urdu", Amiri, serif !important;
+  padding: .08em .14em .18em;
+  overflow: visible;
+  color: #f5cf82;
+  font-family: "Katibeh", Amiri, serif !important;
   font-size: clamp(3.3rem, 4.4vw, 4.45rem);
-  line-height: 1.08 !important;
-  font-weight: 700;
+  line-height: 1.12 !important;
+  font-weight: 400;
   font-synthesis: none;
+  letter-spacing: 0;
+  word-spacing: .03em;
   font-variant-ligatures: common-ligatures contextual;
   font-feature-settings: "liga" 1, "calt" 1, "kern" 1;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  background: linear-gradient(180deg, #ffe7a8 0%, #efc36f 42%, #d29a43 72%, #a46d2c 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 6px 7px rgba(0, 0, 0, .38)) drop-shadow(0 0 10px rgba(215, 157, 69, .16));
-  text-shadow: none !important;
+  -webkit-text-fill-color: currentColor;
+  background: none;
+  filter: none;
+  text-shadow:
+    0 6px 18px rgba(0, 0, 0, .38),
+    0 0 16px rgba(215, 157, 69, .13),
+    0 0 30px rgba(245, 207, 130, .06);
 }
 
 .brand-meta {
@@ -244,6 +250,7 @@
 
   .brand-copy h1 {
     font-size: 2.45rem;
+    padding-inline: .18em;
   }
 
   .brand-meta {
