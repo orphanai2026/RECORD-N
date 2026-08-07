@@ -273,5 +273,5 @@
 
 /* Stage 2 navigation is isolated from measurement logic. */
 import('./navigation.js?v=2026-08-07-r1').catch(error => console.error('Navigation load failed', error));
-/* Temporary build marker and copyright metadata. */
-import('./build-meta.js?v=2026-08-07-1414').catch(error => console.error('Build metadata load failed', error));
+/* Build bootstrap must always be fresh during development so nested module versions cannot be pinned by browser cache. */
+import(`./build-meta.js?ts=${Date.now()}`).catch(error => console.error('Build metadata load failed', error));
