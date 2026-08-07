@@ -88,15 +88,17 @@
     const noteArabic = $('#noteArabic');
     const noteResult = $('#noteResult');
     const detectedPanel = $('.detected-panel');
+    const tunerPanel = $('.tuner-panel');
     const frequency = $('#frequencyValue');
     const signal = $('#signalValue');
     const deviationMetric = $('#deviationMetric');
     const needle = $('#tunerNeedle');
     const needleValue = $('#tunerNeedleValue');
     const tunerBar = $('#tunerBar');
+    const toleranceRange = $('#toleranceRange');
     const qualityText = $('#qualityText');
 
-    if (!noteName || !noteArabic || !noteResult || !detectedPanel || !frequency || !signal || !deviationMetric || !needleValue) return;
+    if (!noteName || !noteArabic || !noteResult || !detectedPanel || !tunerPanel || !frequency || !signal || !deviationMetric || !needleValue) return;
 
     const visualNote = document.createElement('strong');
     visualNote.className = 'detected-note-visual';
@@ -116,10 +118,30 @@
     visualFrequency.className = 'detected-note-frequency';
     noteResult.append(visualFrequency);
 
+    function liveCents() {
+      const normalized = needleValue.textContent.replace('−', '-').trim();
+      const match = normalized.match(/[+-]?\d+(?:\.\d+)?/);
+      return match ? Number(match[0]) : NaN;
+    }
+
+    function currentTolerance() {
+      const value = Number(toleranceRange?.value || 12);
+      return Math.min(25, Math.max(3, Number.isFinite(value) ? value : 12));
+    }
+
     function isWaiting() {
-      const state = deviationMetric.dataset.state || 'idle';
       const noSignal = qualityText?.textContent.includes('بانتظار') ?? false;
-      return state === 'idle' || noSignal || noteName.textContent.trim().startsWith('بانتظار');
+      const noteWaiting = noteName.textContent.trim().startsWith('بانتظار');
+      return noSignal || noteWaiting || !Number.isFinite(liveCents());
+    }
+
+    function liveTuningState() {
+      if (isWaiting()) return 'idle';
+      const cents = liveCents();
+      const tolerance = currentTolerance();
+      if (cents < -tolerance) return 'flat';
+      if (cents > tolerance) return 'sharp';
+      return 'tuned';
     }
 
     function updateNote() {
@@ -173,8 +195,13 @@
       if (needleValue.textContent.trim() !== '—') needleValue.textContent = '—';
     }
 
-    function syncNeedleReadingColor() {
-      const state = deviationMetric.dataset.state || 'idle';
+    function syncTuningVisualState() {
+      const state = liveTuningState();
+      tunerPanel.classList.toggle('is-in-tune', state === 'tuned');
+      tunerPanel.classList.toggle('is-flat', state === 'flat');
+      tunerPanel.classList.toggle('is-sharp', state === 'sharp');
+      if (deviationMetric.dataset.state !== state) deviationMetric.dataset.state = state;
+
       const colors = {
         tuned: '#70f0b1',
         flat: '#ffd166',
@@ -208,7 +235,7 @@
         updateNote();
         updateQualityFromSource();
         updateNeutralValues();
-        syncNeedleReadingColor();
+        syncTuningVisualState();
         requestAnimationFrame(protectNeedleReadingAtEdges);
       } finally {
         queueMicrotask(() => { refreshing = false; });
@@ -221,8 +248,14 @@
     sourceObserver.observe(frequency, { childList: true, subtree: true, characterData: true });
     sourceObserver.observe(deviationMetric, { attributes: true, attributeFilter: ['data-state'] });
     sourceObserver.observe(signal, { childList: true, subtree: true, characterData: true });
+    sourceObserver.observe(needleValue, { childList: true, subtree: true, characterData: true });
     if (qualityText) sourceObserver.observe(qualityText, { childList: true, subtree: true, characterData: true });
     if (needle) sourceObserver.observe(needle, { attributes: true, attributeFilter: ['style', 'class'] });
+
+    if (toleranceRange) {
+      toleranceRange.addEventListener('input', refresh);
+      toleranceRange.addEventListener('change', refresh);
+    }
 
     if ('ResizeObserver' in window && tunerBar) {
       const resizeObserver = new ResizeObserver(() => requestAnimationFrame(protectNeedleReadingAtEdges));
