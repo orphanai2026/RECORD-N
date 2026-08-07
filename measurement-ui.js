@@ -91,7 +91,9 @@
     const frequency = $('#frequencyValue');
     const signal = $('#signalValue');
     const deviationMetric = $('#deviationMetric');
+    const needle = $('#tunerNeedle');
     const needleValue = $('#tunerNeedleValue');
+    const tunerBar = $('#tunerBar');
     const qualityText = $('#qualityText');
 
     if (!noteName || !noteArabic || !noteResult || !detectedPanel || !frequency || !signal || !deviationMetric || !needleValue) return;
@@ -171,6 +173,21 @@
       if (needleValue.textContent.trim() !== '—') needleValue.textContent = '—';
     }
 
+    function protectNeedleReadingAtEdges() {
+      if (!needle || !tunerBar || !needleValue) return;
+      needleValue.classList.remove('is-edge-left', 'is-edge-right');
+      if (isWaiting()) return;
+
+      const barRect = tunerBar.getBoundingClientRect();
+      const needleRect = needle.getBoundingClientRect();
+      if (!barRect.width || !needleRect.width) return;
+
+      const needleCenter = needleRect.left + (needleRect.width / 2);
+      const ratio = (needleCenter - barRect.left) / barRect.width;
+      if (ratio < .12) needleValue.classList.add('is-edge-left');
+      else if (ratio > .88) needleValue.classList.add('is-edge-right');
+    }
+
     let refreshing = false;
     function refresh() {
       if (refreshing) return;
@@ -179,6 +196,7 @@
         updateNote();
         updateQualityFromSource();
         updateNeutralValues();
+        requestAnimationFrame(protectNeedleReadingAtEdges);
       } finally {
         queueMicrotask(() => { refreshing = false; });
       }
@@ -191,6 +209,14 @@
     sourceObserver.observe(deviationMetric, { attributes: true, attributeFilter: ['data-state'] });
     sourceObserver.observe(signal, { childList: true, subtree: true, characterData: true });
     if (qualityText) sourceObserver.observe(qualityText, { childList: true, subtree: true, characterData: true });
+    if (needle) sourceObserver.observe(needle, { attributes: true, attributeFilter: ['style', 'class'] });
+
+    if ('ResizeObserver' in window && tunerBar) {
+      const resizeObserver = new ResizeObserver(() => requestAnimationFrame(protectNeedleReadingAtEdges));
+      resizeObserver.observe(tunerBar);
+    } else {
+      window.addEventListener('resize', protectNeedleReadingAtEdges, { passive: true });
+    }
 
     refresh();
   }
