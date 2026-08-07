@@ -33,7 +33,7 @@
 
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
 
-import('./maqam-library.js?v=2026-08-07-1614')
+const recordingFoundationReady = import('./maqam-library.js?v=2026-08-07-1614')
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
   .then(() => import('./performance-pack-store.js?v=2026-08-07-1707'))
   .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1742'))
@@ -69,10 +69,14 @@ if (!document.querySelector('link[data-recording-session-flow]')) {
   sessionFlowStyles.dataset.recordingSessionFlow = 'true';
   document.head.append(sessionFlowStyles);
 }
+
+/* Recording mode UI must not depend on microphone/Auto-Capture readiness. */
+const recordingSessionFlowReady = import('./recording-session-flow.js?v=2026-08-08-0016')
+  .catch(error => console.error('Recording session flow UI load failed', error));
+
 autoCaptureReady
   .then(() => window.NeyCapturePolicyLoader.loadAutoSessionStart())
-  .then(() => import('./recording-session-flow.js?v=2026-08-07-2105'))
-  .catch(error => console.error('Recording session flow load failed', error));
+  .catch(error => console.error('Auto session start load failed', error));
 
 if (!document.querySelector('link[data-recording-maqam-selector]')) {
   const maqamSelectorStyles = document.createElement('link');
@@ -81,12 +85,21 @@ if (!document.querySelector('link[data-recording-maqam-selector]')) {
   maqamSelectorStyles.dataset.recordingMaqamSelector = 'true';
   document.head.append(maqamSelectorStyles);
 }
-autoCaptureReady
-  .then(() => import('./maqam-library.js?v=2026-08-07-1614'))
-  .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2133'))
+
+/* Maqam selection UI also stays available independently from the audio engine. */
+const maqamSelectorReady = Promise.all([
+  recordingFoundationReady,
+  recordingSessionFlowReady,
+  import('./maqam-library.js?v=2026-08-07-1614'),
+  import('./recording-generator.js?v=2026-08-07-1614')
+])
+  .then(() => import('./recording-maqam-selector.js?v=2026-08-08-0016'))
+  .catch(error => console.error('Recording maqam selector UI load failed', error));
+
+Promise.all([autoCaptureReady, maqamSelectorReady])
   .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
   .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2356'))
-  .catch(error => console.error('Recording maqam selector load failed', error));
+  .catch(error => console.error('Recording maqam capture flow load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
   const durationStyles = document.createElement('link');
