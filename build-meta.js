@@ -49,7 +49,7 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
 
 import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011')
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
-  .then(() => import('./ney-auto-capture.js?v=2026-08-07-2018'))
+  .then(() => import('./ney-auto-capture.js?v=2026-08-07-2212'))
   .catch(error => console.error('Ney Auto-Capture load failed', error));
 
 if (!document.querySelector('link[data-auto-session-start]')) {
