@@ -36,3 +36,13 @@
 
 /* Metronome reset control is isolated from the metronome engine. */
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
+
+/* Stage 4 smart recording flow: presentation only. */
+if (!document.querySelector('link[data-recording-flow]')) {
+  const recordingFlowStyles = document.createElement('link');
+  recordingFlowStyles.rel = 'stylesheet';
+  recordingFlowStyles.href = './recording-flow.css?v=2026-08-07-1458';
+  recordingFlowStyles.dataset.recordingFlow = 'true';
+  document.head.append(recordingFlowStyles);
+}
+import('./recording-flow.js?v=2026-08-07-1458').catch(error => console.error('Recording flow load failed', error));
