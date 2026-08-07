@@ -61,11 +61,11 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 14: organized recording mode + session start hierarchy. */
+/* Stage 14.1: organized recording mode + session start hierarchy. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
-  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2025';
+  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2030';
   sessionFlowStyles.dataset.recordingSessionFlow = 'true';
   document.head.append(sessionFlowStyles);
 }
