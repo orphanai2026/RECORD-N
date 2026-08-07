@@ -1,0 +1,308 @@
+/* Approved compact calibration for the measurement workspace — 2026-08-07 */
+/* Visual-only overrides. Core pitch, recording, 12-TET and 24-TET logic are untouched. */
+
+/* Desktop/tablet: reduce total visual mass by ~20% while preserving primary readings. */
+.top-grid > .tuner-panel,
+.top-grid > .detected-panel {
+  min-height: 318px;
+}
+
+.tuner-panel {
+  grid-template-rows: auto minmax(158px, 1fr) auto auto auto;
+  gap: 6px;
+  padding: 13px 17px 12px;
+}
+
+.tuner-panel .panel-header,
+.detected-panel .panel-header {
+  min-height: 50px;
+  padding-bottom: 6px;
+}
+
+.tuner-panel .tuner-scale {
+  min-height: 158px;
+  padding: 10px 16px 8px;
+  border-color: rgba(215, 157, 69, .12);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(67, 222, 212, .035), transparent 44%),
+    rgba(0, 16, 19, .25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.015);
+}
+
+.tuner-panel .tuner-scale::before {
+  top: 39px;
+}
+
+.tuner-panel .tuner-bar {
+  height: 14px;
+  margin-top: 50px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.38), 0 0 12px rgba(67,222,212,.05);
+}
+
+.tuner-panel .tuner-center-zone {
+  inset-block: -4px;
+}
+
+.tuner-panel .tuner-center-zone::after {
+  top: 22px;
+  opacity: .82;
+}
+
+.tuner-panel .tuner-needle {
+  top: -12px;
+  height: 38px;
+}
+
+.tuner-panel .tuner-needle-value {
+  top: -3.8rem;
+}
+
+.tuner-panel .tuner-ticks {
+  margin-top: 6px;
+}
+
+/* One quiet secondary strip instead of a heavy inner card row. */
+.tuner-panel .metrics-grid {
+  border-color: rgba(215,157,69,.13);
+  border-radius: 11px;
+  background: rgba(0,17,20,.27);
+}
+
+.tuner-panel .metrics-grid > .metric-card {
+  min-height: 51px;
+  padding: 5px 9px;
+}
+
+.tuner-panel .metrics-grid > .metric-card + .metric-card {
+  border-inline-start-color: rgba(215,157,69,.09);
+}
+
+.tuner-panel .metric-card strong {
+  margin-top: 3px;
+}
+
+.tuner-panel .signal-meter {
+  margin-top: .28rem;
+}
+
+/* Quality becomes a thin utility row. */
+.tuner-panel .tuner-footer {
+  min-height: 36px;
+  padding: 0 2px;
+  border-top: 1px solid rgba(215,157,69,.07);
+}
+
+.tuner-panel .tuner-footer #qualityToggle {
+  min-height: 34px;
+  padding-block: 4px;
+  border-color: rgba(215,157,69,.22);
+  background: rgba(1,24,27,.32);
+}
+
+.tuner-panel .quality-details {
+  padding: 7px 9px;
+  border-color: rgba(215,157,69,.12);
+  background: rgba(0,16,19,.28);
+}
+
+/* Detected-note panel: compress the supporting ney/ornament by ~24%. */
+.detected-panel {
+  grid-template-rows: auto minmax(0, 1fr) 24px;
+  gap: 5px;
+  padding: 13px 17px 12px;
+}
+
+.detected-panel .note-visual {
+  min-height: 184px;
+}
+
+.detected-panel .note-rosette {
+  top: 43%;
+  width: 128px;
+  height: 128px;
+  opacity: .34;
+}
+
+.detected-panel .note-core {
+  top: 43%;
+  width: 70px;
+  height: 70px;
+  opacity: .66;
+  border-color: rgba(245,207,130,.32);
+  box-shadow: inset 0 0 15px rgba(67,222,212,.05), 0 0 16px rgba(67,222,212,.06);
+}
+
+.detected-panel .note-core img {
+  width: 23px;
+  height: 50px;
+}
+
+.detected-panel .note-result {
+  bottom: 3px;
+}
+
+.detected-panel .detected-note-arabic {
+  margin-top: 5px;
+}
+
+.detected-panel .detected-note-frequency {
+  margin-top: 3px;
+}
+
+.detected-panel .waveform {
+  height: 24px;
+  width: min(66%, 300px);
+  opacity: .52;
+}
+
+.detected-panel .waveform i {
+  max-height: 18px;
+}
+
+/* Avoid a boxed-inside-boxed feeling while keeping the outer panel boundary intact. */
+.tuner-panel .tuner-scale,
+.tuner-panel .metrics-grid,
+.tuner-panel .quality-details {
+  box-shadow: none;
+}
+
+/* Responsive goal: the measurement area should not consume the whole first viewport. */
+@media (max-width: 760px) {
+  .top-grid {
+    gap: 8px;
+  }
+
+  .top-grid > .tuner-panel {
+    min-height: 266px;
+  }
+
+  .top-grid > .detected-panel {
+    min-height: 224px;
+  }
+
+  .tuner-panel,
+  .detected-panel {
+    padding: 10px 12px;
+  }
+
+  .tuner-panel {
+    grid-template-rows: auto 128px auto auto auto;
+    gap: 4px;
+  }
+
+  .tuner-panel .panel-header,
+  .detected-panel .panel-header {
+    min-height: 43px;
+    padding-bottom: 4px;
+  }
+
+  .tuner-panel .tuner-scale {
+    min-height: 128px;
+    padding: 7px 10px 6px;
+  }
+
+  .tuner-panel .tuner-scale::before {
+    top: 31px;
+    font-size: .82rem;
+  }
+
+  .tuner-panel .tuner-bar {
+    height: 13px;
+    margin-top: 35px;
+  }
+
+  .tuner-panel .tuner-needle {
+    top: -10px;
+    height: 34px;
+  }
+
+  .tuner-panel .tuner-needle-value {
+    top: -3.25rem;
+  }
+
+  .tuner-panel .metrics-grid > .metric-card {
+    min-height: 44px;
+    padding-block: 4px;
+  }
+
+  .tuner-panel .tuner-footer {
+    min-height: 34px;
+  }
+
+  .tuner-panel .tuner-footer #qualityToggle {
+    min-height: 32px;
+  }
+
+  .detected-panel {
+    grid-template-rows: auto minmax(138px, 1fr) 21px;
+    gap: 4px;
+  }
+
+  .detected-panel .note-visual {
+    min-height: 138px;
+  }
+
+  .detected-panel .note-rosette {
+    width: 104px;
+    height: 104px;
+  }
+
+  .detected-panel .note-core {
+    width: 58px;
+    height: 58px;
+  }
+
+  .detected-panel .note-core img {
+    width: 19px;
+    height: 41px;
+  }
+
+  .detected-panel .waveform {
+    height: 21px;
+  }
+}
+
+@media (max-width: 520px) {
+  .top-grid > .tuner-panel,
+  .top-grid > .detected-panel {
+    border-radius: 16px;
+  }
+
+  .tuner-panel .tuner-labels {
+    font-size: .66rem;
+  }
+
+  .tuner-panel .tuner-needle-value {
+    font-size: 1.58rem;
+  }
+
+  .tuner-panel .metric-card span {
+    font-size: .56rem;
+  }
+
+  .tuner-panel .metric-card strong {
+    font-size: .82rem;
+  }
+
+  .tuner-panel .tuner-footer .quality-state {
+    font-size: .68rem;
+  }
+
+  .tuner-panel .tuner-footer #qualityToggle {
+    min-width: 116px;
+    font-size: .67rem;
+  }
+
+  .detected-panel .detected-note-visual {
+    font-size: clamp(1.9rem, 12vw, 2.7rem);
+  }
+
+  .detected-panel.is-waiting .detected-note-visual {
+    font-size: 1.35rem;
+  }
+
+  .detected-panel .detected-note-arabic {
+    font-size: .82rem;
+  }
+}
