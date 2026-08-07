@@ -1,27 +1,73 @@
 (() => {
   'use strict';
 
+  let activeBuild = null;
+  let checkingBuild = false;
+
+  async function fetchVersion() {
+    const response = await fetch(`VERSION.json?ts=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`VERSION.json ${response.status}`);
+    return response.json();
+  }
+
+  function renderBuildBadge(meta) {
+    document.querySelectorAll('.dev-build-badge').forEach(node => node.remove());
+    activeBuild = meta.temporaryBuild || null;
+    document.documentElement.dataset.neyBuild = activeBuild || '';
+
+    if (meta.temporaryBuildVisible !== false && activeBuild) {
+      const badge = document.createElement('div');
+      badge.className = 'dev-build-badge';
+      badge.textContent = activeBuild;
+      badge.setAttribute('aria-label', `رقم البناء المؤقت ${activeBuild}`);
+      document.body.append(badge);
+    }
+  }
+
+  function renderCopyright(meta) {
+    document.querySelectorAll('.app-copyright[data-build-meta]').forEach(node => node.remove());
+    const copyright = document.createElement('footer');
+    copyright.className = 'app-copyright';
+    copyright.dataset.buildMeta = 'true';
+    copyright.setAttribute('aria-label', 'حقوق الملكية');
+    const owner = meta.copyrightOwner || 'محمد الزهراني';
+    const year = new Date().getFullYear();
+    copyright.innerHTML = `© ${year} <strong>${owner}</strong> — جميع الحقوق محفوظة.`;
+    document.body.append(copyright);
+  }
+
+  function reloadForBuild(nextBuild) {
+    if (!nextBuild || nextBuild === activeBuild) return;
+    const guardKey = `ney-build-reload:${nextBuild}`;
+    try {
+      if (sessionStorage.getItem(guardKey) === '1') return;
+      sessionStorage.setItem(guardKey, '1');
+    } catch (_) {}
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('build', nextBuild);
+    window.location.replace(url.toString());
+  }
+
+  async function checkForBuildUpdate() {
+    if (checkingBuild || document.visibilityState === 'hidden') return;
+    checkingBuild = true;
+    try {
+      const meta = await fetchVersion();
+      const nextBuild = meta.temporaryBuild || null;
+      if (activeBuild && nextBuild && nextBuild !== activeBuild) reloadForBuild(nextBuild);
+    } catch (error) {
+      console.warn('Unable to check build freshness', error);
+    } finally {
+      checkingBuild = false;
+    }
+  }
+
   async function loadBuildMeta() {
     try {
-      const response = await fetch(`VERSION.json?ts=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`VERSION.json ${response.status}`);
-      const meta = await response.json();
-
-      if (meta.temporaryBuildVisible !== false && meta.temporaryBuild) {
-        const badge = document.createElement('div');
-        badge.className = 'dev-build-badge';
-        badge.textContent = meta.temporaryBuild;
-        badge.setAttribute('aria-label', `رقم البناء المؤقت ${meta.temporaryBuild}`);
-        document.body.append(badge);
-      }
-
-      const copyright = document.createElement('footer');
-      copyright.className = 'app-copyright';
-      copyright.setAttribute('aria-label', 'حقوق الملكية');
-      const owner = meta.copyrightOwner || 'محمد الزهراني';
-      const year = new Date().getFullYear();
-      copyright.innerHTML = `© ${year} <strong>${owner}</strong> — جميع الحقوق محفوظة.`;
-      document.body.append(copyright);
+      const meta = await fetchVersion();
+      renderBuildBadge(meta);
+      renderCopyright(meta);
     } catch (error) {
       console.warn('Unable to load build metadata', error);
     }
@@ -29,6 +75,13 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadBuildMeta, { once: true });
   else loadBuildMeta();
+
+  window.addEventListener('focus', checkForBuildUpdate, { passive: true });
+  window.addEventListener('pageshow', checkForBuildUpdate, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForBuildUpdate();
+  });
+  window.setInterval(checkForBuildUpdate, 60000);
 })();
 
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
@@ -70,7 +123,6 @@ if (!document.querySelector('link[data-recording-session-flow]')) {
   document.head.append(sessionFlowStyles);
 }
 
-/* Recording mode UI must not depend on microphone/Auto-Capture readiness. */
 const recordingSessionFlowReady = import('./recording-session-flow.js?v=2026-08-08-0016')
   .catch(error => console.error('Recording session flow UI load failed', error));
 
@@ -86,7 +138,6 @@ if (!document.querySelector('link[data-recording-maqam-selector]')) {
   document.head.append(maqamSelectorStyles);
 }
 
-/* Maqam selection UI also stays available independently from the audio engine. */
 const maqamSelectorReady = Promise.all([
   recordingFoundationReady,
   recordingSessionFlowReady,
