@@ -8,7 +8,8 @@
     syncTimer: null,
     playingPackKey: null,
     audio: null,
-    objectUrl: null
+    objectUrl: null,
+    countBadge: null
   };
 
   const escapeHtml = value => String(value ?? '')
@@ -20,6 +21,19 @@
 
   function store() {
     return window.NeyPerformancePackStore || null;
+  }
+
+  function ensureCountBadge() {
+    if (state.countBadge?.isConnected) return state.countBadge;
+    const title = document.querySelector('.recordings-panel .panel-title h2');
+    if (!title) return null;
+    const badge = document.createElement('span');
+    badge.className = 'performance-pack-library-count';
+    badge.setAttribute('aria-label', 'عدد العينات المرجعية المحفوظة');
+    badge.textContent = '0';
+    title.appendChild(badge);
+    state.countBadge = badge;
+    return badge;
   }
 
   function stopPlayback({ refresh = true } = {}) {
@@ -175,6 +189,10 @@
         if (row) fragment.appendChild(row);
       });
       if (fragment.childNodes.length) list.insertBefore(fragment, list.firstChild);
+      const badge = ensureCountBadge();
+      if (badge) badge.textContent = String(packs.length);
+      list.dataset.performancePackCount = String(packs.length);
+      list.setAttribute('aria-label', `التسجيلات المحفوظة؛ ${packs.length} عينة مرجعية من Ney Auto-Capture`);
     } catch (error) {
       console.error('Performance Pack recordings sync failed', error);
     } finally {
@@ -191,6 +209,7 @@
   function initialize() {
     state.list = document.querySelector('#recordingsList');
     if (!state.list) return;
+    ensureCountBadge();
     connectObserver();
     scheduleSync(0);
     document.addEventListener('ney:performance-pack-updated', () => scheduleSync(0));
@@ -199,7 +218,8 @@
 
     window.NeyPerformancePackRecordsUI = Object.freeze({
       refresh: () => sync(),
-      stopPlayback: () => stopPlayback()
+      stopPlayback: () => stopPlayback(),
+      count: async () => (await store()?.listPacks?.() || []).filter(pack => pack?.samples?.clean?.audioId).length
     });
   }
 
