@@ -1,0 +1,188 @@
+/* Stage 13 — compact microphone status card before Ney Auto-Capture. */
+
+.ney-screen--recording .ney-microphone-card {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) minmax(190px, .72fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(216,184,106,.18);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(71,216,207,.07), transparent 42%),
+    rgba(0,22,25,.58);
+}
+
+.ney-screen--recording .ney-microphone-card[data-state="active"] {
+  border-color: rgba(83,222,183,.28);
+  box-shadow: inset 0 0 28px rgba(83,222,183,.035);
+}
+
+.ney-microphone-card__identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.ney-microphone-card__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(216,184,106,.22);
+  border-radius: 13px;
+  background: rgba(216,184,106,.07);
+  color: #e7c976;
+}
+
+.ney-microphone-card__icon svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ney-microphone-card__copy {
+  min-width: 0;
+}
+
+.ney-microphone-card__status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.ney-microphone-card__status-row i {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: #8d5f5f;
+  box-shadow: 0 0 0 4px rgba(141,95,95,.08);
+}
+
+.ney-microphone-card__status-row i[data-state="active"] {
+  background: #75dfad;
+  box-shadow: 0 0 0 4px rgba(117,223,173,.10), 0 0 10px rgba(117,223,173,.20);
+}
+
+.ney-microphone-card__status-row strong {
+  color: var(--ney-shell-text, #f4f2e9);
+  font-size: .92rem;
+}
+
+.ney-microphone-card__copy > span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--ney-shell-muted, #9fb2ae);
+  font-size: .73rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ney-microphone-card__quality {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.ney-microphone-card__quality > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ney-microphone-card__quality span {
+  color: var(--ney-shell-muted, #9fb2ae);
+  font-size: .72rem;
+}
+
+.ney-microphone-card__quality strong {
+  color: #dfece8;
+  font-size: .88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ney-microphone-card__meter {
+  display: block;
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+
+.ney-microphone-card__meter i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(216,184,106,.8), rgba(78,222,206,.9));
+  transition: width .16s ease;
+}
+
+.ney-microphone-card__action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ney-screen--recording .ney-microphone-card #micButton {
+  min-width: 180px;
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: .9rem;
+}
+
+/* Auto-Capture follows the microphone card as the live analysis layer. */
+.ney-screen--recording #neyAutoCapturePanel {
+  margin-top: 0;
+  border-radius: 16px;
+}
+
+.ney-screen--recording #neyAutoCapturePanel .ney-auto-capture__header {
+  padding-bottom: 4px;
+}
+
+.ney-screen--recording #neyAutoCapturePanel .ney-auto-capture__metrics {
+  gap: 9px;
+}
+
+.ney-screen--recording #neyAutoCapturePanel .ney-auto-capture__metrics > div {
+  min-height: 66px;
+}
+
+@media (max-width: 980px) {
+  .ney-screen--recording .ney-microphone-card {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, .72fr);
+  }
+
+  .ney-screen--recording .ney-microphone-card__action {
+    grid-column: 1 / -1;
+  }
+
+  .ney-screen--recording .ney-microphone-card #micButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .ney-screen--recording .ney-microphone-card {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .ney-screen--recording .ney-microphone-card__action {
+    grid-column: 1;
+  }
+}
