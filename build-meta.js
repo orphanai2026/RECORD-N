@@ -60,7 +60,7 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 15.4: tablet alignment for recording modes and session-start controls. */
+/* Stage 15.5: reliable direct maqam selection on Android Chrome. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
@@ -75,12 +75,12 @@ import('./auto-session-start.js?v=2026-08-07-2043')
 if (!document.querySelector('link[data-recording-maqam-selector]')) {
   const maqamSelectorStyles = document.createElement('link');
   maqamSelectorStyles.rel = 'stylesheet';
-  maqamSelectorStyles.href = './recording-maqam-selector.css?v=2026-08-07-2112';
+  maqamSelectorStyles.href = './recording-maqam-selector.css?v=2026-08-07-2128';
   maqamSelectorStyles.dataset.recordingMaqamSelector = 'true';
   document.head.append(maqamSelectorStyles);
 }
 import('./maqam-library.js?v=2026-08-07-1614')
-  .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2107'))
+  .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2128'))
   .catch(error => console.error('Recording maqam selector load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
