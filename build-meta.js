@@ -107,9 +107,19 @@ function showAutoCaptureLoadFailure(error) {
 
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
 
-const recordingFoundationReady = import('./maqam-library.js?v=2026-08-07-1614')
+/* During development, clear the test recording library once for every new build
+   before IndexedDB is opened by the recording foundation. */
+const devBuildResetReady = import('./dev-build-recordings-reset.js?v=2026-08-08-0050')
+  .then(() => window.NeyDevBuildResetReady)
+  .catch(error => {
+    console.error('Development recording reset loader failed', error);
+    return null;
+  });
+
+const recordingFoundationReady = devBuildResetReady
+  .then(() => import('./maqam-library.js?v=2026-08-07-1614'))
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
-  .then(() => import('./performance-pack-store.js?v=2026-08-07-1707'))
+  .then(() => import('./performance-pack-store.js?v=2026-08-08-0050'))
   .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1742'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
@@ -173,7 +183,7 @@ const maqamSelectorReady = Promise.all([
 
 Promise.all([autoCaptureReady, maqamSelectorReady])
   .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
-  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2356'))
+  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-08-0050'))
   .catch(error => console.error('Recording maqam capture flow load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
