@@ -27,11 +27,8 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadBuildMeta, { once: true });
-  } else {
-    loadBuildMeta();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadBuildMeta, { once: true });
+  else loadBuildMeta();
 })();
 
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
@@ -67,8 +64,7 @@ if (!document.querySelector('link[data-educational-duration]')) {
   durationStyles.dataset.educationalDuration = 'true';
   document.head.append(durationStyles);
 }
-import('./educational-duration-capture.js?v=2026-08-07-1707')
-  .catch(error => console.error('Educational duration capture load failed', error));
+import('./educational-duration-capture.js?v=2026-08-07-1707').catch(error => console.error('Educational duration capture load failed', error));
 
 if (!document.querySelector('link[data-recording-modernization]')) {
   const modernizationStyles = document.createElement('link');
@@ -78,8 +74,7 @@ if (!document.querySelector('link[data-recording-modernization]')) {
   document.head.append(modernizationStyles);
 }
 
-import('./app-shell-metronome-bridge.js?v=2026-08-07-1818')
-  .catch(error => console.error('App Shell metronome bridge load failed', error));
+import('./app-shell-metronome-bridge.js?v=2026-08-07-1818').catch(error => console.error('App Shell metronome bridge load failed', error));
 
 if (!document.querySelector('link[data-app-shell-frame]')) {
   const frameStyles = document.createElement('link');
@@ -88,19 +83,19 @@ if (!document.querySelector('link[data-app-shell-frame]')) {
   frameStyles.dataset.appShellFrame = 'true';
   document.head.append(frameStyles);
 }
-import('./app-shell-frame.js?v=2026-08-07-1832')
-  .catch(error => console.error('App Shell frame load failed', error));
+import('./app-shell-frame.js?v=2026-08-07-1832').catch(error => console.error('App Shell frame load failed', error));
 
-/* Stage 12.3: top recording metronome with selectable light/sound output modes. */
+/* Stage 12.4: recording metronome output modes + automatic capture protection. */
 const existingRecordingPriority = document.querySelector('link[data-recording-priority]');
-if (existingRecordingPriority) {
-  existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1903';
-} else {
+if (existingRecordingPriority) existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1912';
+else {
   const recordingPriorityStyles = document.createElement('link');
   recordingPriorityStyles.rel = 'stylesheet';
-  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1903';
+  recordingPriorityStyles.href = './recording-priority.css?v=2026-08-07-1912';
   recordingPriorityStyles.dataset.recordingPriority = 'true';
   document.head.append(recordingPriorityStyles);
 }
-import('./recording-metronome-top.js?v=2026-08-07-1903')
-  .catch(error => console.error('Recording top metronome load failed', error));
+
+import('./recording-metronome-top.js?v=2026-08-07-1912')
+  .then(() => import('./recording-metronome-capture-guard.js?v=2026-08-07-1912'))
+  .catch(error => console.error('Recording metronome protection load failed', error));
