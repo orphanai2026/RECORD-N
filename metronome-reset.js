@@ -15,7 +15,7 @@
 
   function installResetButton() {
     const actions = document.querySelector('.metronome-actions');
-    if (!actions || document.querySelector('#trainingMetronomeReset')) return;
+    if (!actions || document.querySelector('#trainingMetronomeReset')) return false;
 
     const button = document.createElement('button');
     button.id = 'trainingMetronomeReset';
@@ -81,11 +81,21 @@
     });
 
     actions.append(button);
+    return true;
+  }
+
+  function ensureInstalled() {
+    if (installResetButton()) return;
+    const observer = new MutationObserver(() => {
+      if (installResetButton()) observer.disconnect();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    window.setTimeout(() => observer.disconnect(), 10000);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', installResetButton, { once: true });
+    document.addEventListener('DOMContentLoaded', ensureInstalled, { once: true });
   } else {
-    installResetButton();
+    ensureInstalled();
   }
 })();
