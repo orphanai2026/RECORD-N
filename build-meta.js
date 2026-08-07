@@ -47,7 +47,7 @@ if (!document.querySelector('link[data-ney-auto-capture]')) {
   document.head.append(autoCaptureStyles);
 }
 
-const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-07-2324');
+const capturePolicyReady = import('./capture-acceptance-policy.js?v=2026-08-07-2344');
 const autoCaptureReady = capturePolicyReady
   .then(() => import('./ney-auto-capture-stop-sync.js?v=2026-08-07-2011'))
   .then(() => import('./ney-auto-capture-state-watch.js?v=2026-08-07-2018'))
@@ -85,13 +85,13 @@ autoCaptureReady
   .then(() => import('./maqam-library.js?v=2026-08-07-1614'))
   .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2133'))
   .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
-  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2324'))
+  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-07-2344'))
   .catch(error => console.error('Recording maqam selector load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
   const durationStyles = document.createElement('link');
   durationStyles.rel = 'stylesheet';
-  durationStyles.href = './educational-duration-capture.css?v=2026-08-07-1707';
+  durationStyles.href = './educational-duration-capture.css?v=2026-08-07-2344';
   durationStyles.dataset.educationalDuration = 'true';
   document.head.append(durationStyles);
 }
