@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#00191d">
+  <title>مقارنة خطوط معيار الناي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lateef:wght@400;600;700;800&family=Mirza:wght@400;500;600;700&family=Rakkas&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #00191d;
+      --bg2: #00383a;
+      --gold: #f3c66d;
+      --gold-2: #c38a38;
+      --cream: #efe3cc;
+      --muted: #aebdb9;
+      --line: rgba(215,157,69,.45);
+      --teal: #55d8cd;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--cream);
+      background:
+        radial-gradient(circle at 50% -10%, rgba(34,145,143,.22), transparent 34rem),
+        radial-gradient(circle at 10% 55%, rgba(215,157,69,.08), transparent 24rem),
+        linear-gradient(160deg, #003337 0%, #00191d 48%, #001216 100%);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .2;
+      background-image:
+        linear-gradient(30deg, transparent 0 48%, rgba(215,157,69,.08) 49% 50%, transparent 51% 100%),
+        linear-gradient(-30deg, transparent 0 48%, rgba(215,157,69,.05) 49% 50%, transparent 51% 100%);
+      background-size: 84px 84px;
+      mask-image: radial-gradient(circle at center, #000, transparent 78%);
+    }
+    .wrap { width: min(1320px, calc(100% - 24px)); margin: 0 auto; padding: 32px 0 48px; }
+    .intro { text-align: center; margin-bottom: 24px; }
+    .intro h1 { margin: 0 0 8px; color: var(--gold); font-size: clamp(1.6rem, 4vw, 2.6rem); }
+    .intro p { margin: 0 auto; max-width: 900px; color: var(--muted); line-height: 1.9; font-size: .95rem; }
+    .notice {
+      margin: 18px auto 26px;
+      max-width: 920px;
+      padding: 12px 16px;
+      border: 1px solid rgba(85,216,205,.28);
+      border-radius: 14px;
+      background: rgba(0,38,42,.72);
+      color: #d7e6e2;
+      text-align: center;
+      line-height: 1.8;
+      font-size: .85rem;
+    }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      position: relative;
+      overflow: visible;
+      min-width: 0;
+      min-height: 290px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(2,48,50,.86), rgba(0,20,24,.92));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 16px 36px rgba(0,0,0,.2);
+    }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; direction: rtl; }
+    .number {
+      width: 38px; height: 38px; flex: 0 0 38px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line); border-radius: 50%; color: var(--gold); font-weight: 800;
+    }
+    .meta { flex: 1; min-width: 0; }
+    .meta strong { display: block; color: var(--gold); font-size: 1.02rem; }
+    .meta small { color: var(--muted); direction: ltr; unicode-bidi: isolate; }
+    .status { font-size: .7rem; padding: 5px 9px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); color: var(--muted); white-space: nowrap; }
+    .status.ok { color: #bff8d6; border-color: rgba(98,231,160,.35); background: rgba(98,231,160,.07); }
+    .status.bad { color: #ffb4ad; border-color: rgba(255,117,109,.35); background: rgba(255,117,109,.07); }
+    .identity {
+      display: grid;
+      grid-template-columns: 1fr 72px;
+      gap: 16px;
+      align-items: center;
+      min-height: 154px;
+      margin-top: 4px;
+      overflow: visible;
+    }
+    .title {
+      min-width: 0;
+      overflow: visible;
+      color: var(--gold);
+      font-size: clamp(3.2rem, 6vw, 5.15rem);
+      line-height: 1.18;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 6px 18px rgba(0,0,0,.36), 0 0 18px rgba(215,157,69,.12);
+      padding: .12em .12em .2em;
+      white-space: nowrap;
+    }
+    .logo {
+      position: relative;
+      width: 66px; height: 66px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(4,64,66,.95), rgba(0,22,26,.98));
+      box-shadow: 0 0 0 7px rgba(215,157,69,.05), 0 0 24px rgba(215,157,69,.12);
+    }
+    .logo::before { content: ""; position: absolute; inset: -10px; border-radius: 50%; border: 1px dashed rgba(215,157,69,.25); }
+    .logo img { width: 18px; height: 51px; object-fit: contain; filter: saturate(.95) contrast(1.05); }
+    .subrow { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
+    .desc { color: var(--cream); font-weight: 650; font-size: .95rem; white-space: nowrap; }
+    .badge { direction: ltr; unicode-bidi: isolate; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; color: #f7e4bc; font-weight: 800; font-size: .92rem; background: rgba(0,31,34,.82); }
+    .font-katibeh { font-family: "Katibeh", serif; font-weight: 400; }
+    .font-rakkas { font-family: "Rakkas", serif; font-weight: 400; }
+    .font-mirza { font-family: "Mirza", serif; font-weight: 700; }
+    .font-aref { font-family: "Aref Ruqaa", serif; font-weight: 700; }
+    .font-lateef { font-family: "Lateef", serif; font-weight: 700; }
+    .font-amiri { font-family: "Amiri", serif; font-weight: 700; }
+    .footer { margin-top: 22px; text-align: center; color: var(--muted); line-height: 1.8; font-size: .8rem; }
+    @media (max-width: 820px) {
+      .wrap { width: min(100% - 14px, 720px); padding-top: 18px; }
+      .grid { grid-template-columns: 1fr; gap: 12px; }
+      .card { min-height: 260px; padding: 16px; border-radius: 18px; }
+      .identity { grid-template-columns: 1fr 58px; min-height: 138px; gap: 10px; }
+      .logo { width: 54px; height: 54px; }
+      .logo img { width: 15px; height: 42px; }
+      .title { font-size: clamp(3rem, 13vw, 4.2rem); }
+      .desc { font-size: .86rem; }
+      .badge { font-size: .83rem; padding: 7px 12px; }
+    }
+    @media (max-width: 460px) {
+      .card { padding: 14px 12px 16px; }
+      .head { align-items: flex-start; }
+      .status { margin-top: 2px; }
+      .identity { grid-template-columns: 1fr 48px; }
+      .logo { width: 46px; height: 46px; }
+      .logo::before { inset: -7px; }
+      .logo img { width: 13px; height: 35px; }
+      .title { font-size: clamp(2.7rem, 14vw, 3.7rem); white-space: normal; }
+      .subrow { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="intro">
+      <h1>مقارنة حقيقية لخط عنوان «معيار الناي»</h1>
+      <p>هذه الصفحة تستخدم خطوط Google Fonts الفعلية داخل HTML/CSS، وليست صورة مولّدة. افتحها على نفس الجهاز والمتصفح الذي ستستخدم عليه الأداة، واختر بناءً على الشكل الحقيقي للحروف.</p>
+    </header>
+
+    <div class="notice">المعيار الأول للاختيار: ظهور «معيار الناي» كاملة وواضحة، وبالأخص حرف الياء في «معيار». جميع الخطوط أدناه مجانية وموجودة ضمن مكتبة Google Fonts المفتوحة.</div>
+
+    <section class="grid">
+      <article class="card" data-font="Katibeh">
+        <div class="head"><span class="number">1</span><div class="meta"><strong>Katibeh</strong><small>Katibeh</small></div><span class="status">جاري التحقق…</span></div>
+        <div class="identity"><div class="title font-katibeh">معيار الناي</div><div class="logo"><img src="assets/ney-dokah-reference.webp" alt=""></div></div>
+        <div class="subrow"><span class="desc">مسجل ومعيار النغمات الشرقية</span><span class="badge">A4 = 440 Hz</span></div>
+      </article>
+
+      <article class="card" data-font="Rakkas">
+        <div class="head"><span class="number">2</span><div class="meta"><strong>Rakkas</strong><small>Rakkas</small></div><span class="status">جاري التحقق…</span></div>
+        <div class="identity"><div class="title font-rakkas">معيار الناي</div><div class="logo"><img src="assets/ney-dokah-reference.webp" alt=""></div></div>
+        <div class="subrow"><span class="desc">مسجل ومعيار النغمات الشرقية</span><span class="badge">A4 = 440 Hz</span></div>
+      </article>
+
+      <article class="card" data-font="Mirza">
+        <div class="head"><span class="number">3</span><div class="meta"><strong>Mirza</strong><small>Mirza Bold</small></div><span class="status">جاري التحقق…</span></div>
+        <div class="identity"><div class="title font-mirza">معيار الناي</div><div class="logo"><img src="assets/ney-dokah-reference.webp" alt=""></div></div>
+        <div class="subrow"><span class="desc">مسجل ومعيار النغمات الشرقية</span><span class="badge">A4 = 440 Hz</span></div>
+      </article>
+
+      <article class="card" data-font="Aref Ruqaa">
+        <div class="head"><span class="number">4</span><div class="meta"><strong>Aref Ruqaa</strong><small>Aref Ruqaa Bold</small></div><span class="status">جاري التحقق…</span></div>
+        <div class="identity"><div class="title font-aref">معيار الناي</div><div class="logo"><img src="assets/ney-dokah-reference.webp" alt=""></div></div>
+        <div class="subrow"><span class="desc">مسجل ومعيار النغمات الشرقية</span><span class="badge">A4 = 440 Hz</span></div>
+      </article>
+
+      <article class="card" data-font="Lateef">
+        <div class="head"><span class="number">5</span><div class="meta"><strong>Lateef</strong><small>Lateef Bold</small></div><span class="status">جاري التحقق…</span></div>
+        <div class="identity"><div class="title font-lateef">معيار الناي</div><div class="logo"><img src="assets/ney-dokah-reference.webp" alt=""></div></div>
+        <div class="subrow"><span class="desc">مسجل ومعيار النغمات الشرقية</span><span class="badge">A4 = 440 Hz</span></div>
+      </article>
+
+      <article class="card" data-font="Amiri">
+        <div class="head"><span class="number">6</span><div class="meta"><strong>Amiri</strong><small>Amiri Bold</small></div><span class="status">جاري التحقق…</span></div>
+        <div class="identity"><div class="title font-amiri">معيار الناي</div><div class="logo"><img src="assets/ney-dokah-reference.webp" alt=""></div></div>
+        <div class="subrow"><span class="desc">مسجل ومعيار النغمات الشرقية</span><span class="badge">A4 = 440 Hz</span></div>
+      </article>
+    </section>
+
+    <footer class="footer">هذه صفحة اختبار مستقلة فقط، ولا تغيّر الواجهة الرئيسية للأداة. بعد اختيار رقم واحد نطبّقه على عنوان «معيار الناي» في الصفحة الأساسية.</footer>
+  </main>
+  <script>
+    const checks = {
+      'Katibeh': '48px Katibeh',
+      'Rakkas': '48px Rakkas',
+      'Mirza': '700 48px Mirza',
+      'Aref Ruqaa': '700 48px "Aref Ruqaa"',
+      'Lateef': '700 48px Lateef',
+      'Amiri': '700 48px Amiri'
+    };
+    document.fonts.ready.then(() => {
+      document.querySelectorAll('[data-font]').forEach(card => {
+        const name = card.dataset.font;
+        const status = card.querySelector('.status');
+        const ok = document.fonts.check(checks[name], 'معيار الناي');
+        status.textContent = ok ? 'الخط محمّل فعليًا' : 'لم يُحمّل — لا تعتمد';
+        status.classList.add(ok ? 'ok' : 'bad');
+      });
+    });
+  </script>
+</body>
+</html>
