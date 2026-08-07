@@ -61,19 +61,18 @@ if (!document.querySelector('link[data-auto-session-start]')) {
   document.head.append(sessionStartStyles);
 }
 
-/* Stage 14.3: automatic open chromatic session + dynamic guidance. */
+/* Stage 15.1: three recording paths including full eastern maqam scale. */
 if (!document.querySelector('link[data-recording-session-flow]')) {
   const sessionFlowStyles = document.createElement('link');
   sessionFlowStyles.rel = 'stylesheet';
-  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2039';
+  sessionFlowStyles.href = './recording-session-flow.css?v=2026-08-07-2107';
   sessionFlowStyles.dataset.recordingSessionFlow = 'true';
   document.head.append(sessionFlowStyles);
 }
 import('./auto-session-start.js?v=2026-08-07-2043')
-  .then(() => import('./recording-session-flow.js?v=2026-08-07-2025'))
+  .then(() => import('./recording-session-flow.js?v=2026-08-07-2107'))
   .catch(error => console.error('Recording session flow load failed', error));
 
-/* Stage 15: maqam selection for single-note recording. */
 if (!document.querySelector('link[data-recording-maqam-selector]')) {
   const maqamSelectorStyles = document.createElement('link');
   maqamSelectorStyles.rel = 'stylesheet';
@@ -82,7 +81,7 @@ if (!document.querySelector('link[data-recording-maqam-selector]')) {
   document.head.append(maqamSelectorStyles);
 }
 import('./maqam-library.js?v=2026-08-07-1614')
-  .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2055'))
+  .then(() => import('./recording-maqam-selector.js?v=2026-08-07-2107'))
   .catch(error => console.error('Recording maqam selector load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
@@ -137,7 +136,6 @@ import('./recording-metronome-top.js?v=2026-08-07-1912')
   .then(() => import('./recording-metronome-capture-guard.js?v=2026-08-07-1912'))
   .catch(error => console.error('Recording metronome protection load failed', error));
 
-/* Stage 13.1: synchronized compact microphone state card. */
 if (!document.querySelector('link[data-recording-microphone-card]')) {
   const microphoneStyles = document.createElement('link');
   microphoneStyles.rel = 'stylesheet';
