@@ -1,0 +1,31 @@
+.duration-control.duration-control--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.duration-control.duration-control--five .duration-option {
+  min-width: 0;
+}
+
+.duration-control.duration-control--five .duration-option strong {
+  white-space: nowrap;
+}
+
+.record-row--educational {
+  border-inline-start: 3px solid rgba(83, 213, 193, .72);
+}
+
+.record-row--educational .record-copy span {
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .duration-control.duration-control--five {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .duration-control.duration-control--five {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
