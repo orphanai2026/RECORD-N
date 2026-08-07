@@ -99,14 +99,19 @@
       source: 'https://www.maqamworld.com/en/maqam/saba.php',
       variants: Object.freeze([
         Object.freeze({
-          id: 'standard', ar: 'المسار الأساسي', upperJins: 'Hijaz → Ajam/Nikriz',
+          id: 'nikriz', ar: 'نكريز علوي', upperJins: 'Hijaz → Nikriz',
           offsets24: Object.freeze([0, 3, 6, 8, 14, 16, 20, 22]),
-          extendedOffsets24: Object.freeze([0, 3, 6, 8, 14, 16, 20, 22, 26, 30]),
+          extendedOffsets24: Object.freeze([0, 3, 6, 8, 14, 16, 20, 22, 28, 30]),
+          octaveEquivalent: false
+        }),
+        Object.freeze({
+          id: 'ajam', ar: 'عجم علوي', upperJins: 'Hijaz → Ajam',
+          offsets24: Object.freeze([0, 3, 6, 8, 14, 16, 20, 24]),
           octaveEquivalent: false
         })
       ]),
-      defaultVariantId: 'standard',
-      intonationNote: 'Saba is treated as a special non-octave-equivalent path; its scale can extend beyond eight notes.'
+      defaultVariantId: 'nikriz',
+      intonationNote: 'Saba is treated as a special non-octave-equivalent path. The Nikriz route reaches D-flat as degree 8 and extends to E natural and F; the Ajam route reaches D natural as degree 8.'
     })
   });
 
