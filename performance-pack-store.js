@@ -1,0 +1,180 @@
+(() => {
+  'use strict';
+
+  const DB_NAME = 'ney-meyar-performance-packs';
+  const DB_VERSION = 1;
+  const PACK_STORE = 'packs';
+  const AUDIO_STORE = 'audio';
+
+  let dbPromise = null;
+
+  function openDb() {
+    if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB is unavailable'));
+    if (dbPromise) return dbPromise;
+
+    dbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(PACK_STORE)) {
+          const packs = db.createObjectStore(PACK_STORE, { keyPath: 'packKey' });
+          packs.createIndex('maqamId', 'context.maqamId', { unique: false });
+          packs.createIndex('noteKey', 'note.noteKey', { unique: false });
+          packs.createIndex('updatedAt', 'updatedAt', { unique: false });
+        }
+        if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+          db.createObjectStore(AUDIO_STORE, { keyPath: 'audioId' });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Unable to open IndexedDB'));
+    });
+    return dbPromise;
+  }
+
+  function requestToPromise(request) {
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('IndexedDB request failed'));
+    });
+  }
+
+  function transactionDone(tx) {
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB transaction failed'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB transaction aborted'));
+    });
+  }
+
+  function normalizeContext(context = {}) {
+    return {
+      mode: context.mode || 'general-note',
+      maqamId: context.maqamId || null,
+      maqamAr: context.maqamAr || null,
+      tonic: context.tonic || null,
+      maqamDegree: context.maqamDegree || null,
+      variantId: context.variantId || null,
+      division: Number(context.division || 24),
+      a4: Number(context.a4 || 440)
+    };
+  }
+
+  function makePackKey({ note = {}, context = {} } = {}) {
+    const c = normalizeContext(context);
+    const noteKey = note.noteKey || note.english || note.arabic || `${note.abs24 ?? 'na'}`;
+    return [c.mode, c.maqamId || 'none', c.tonic?.letter || c.tonic || 'none', c.maqamDegree || 'none', c.variantId || 'default', c.division, c.a4, noteKey].join('|');
+  }
+
+  function qualityScore(sample = {}) {
+    if (Number.isFinite(sample.score)) return Number(sample.score);
+    const clarity = Number(sample.metrics?.meanClarity ?? sample.meanClarity ?? 0);
+    const absCents = Number(sample.metrics?.meanAbsCents ?? sample.meanAbsCents ?? 999);
+    const tolerance = Math.max(1, Number(sample.metrics?.tolerance ?? sample.tolerance ?? 12));
+    const pitchScore = Math.max(0, 1 - Math.min(1, absCents / tolerance));
+    return Math.max(0, Math.min(1, clarity * 0.62 + pitchScore * 0.38));
+  }
+
+  async function getPack(packKey) {
+    const db = await openDb();
+    const tx = db.transaction(PACK_STORE, 'readonly');
+    return requestToPromise(tx.objectStore(PACK_STORE).get(packKey));
+  }
+
+  async function listPacks() {
+    const db = await openDb();
+    const tx = db.transaction(PACK_STORE, 'readonly');
+    return requestToPromise(tx.objectStore(PACK_STORE).getAll());
+  }
+
+  async function saveAudio({ audioId, blob, pcm, sampleRate, mimeType } = {}) {
+    if (!audioId) throw new Error('audioId is required');
+    const db = await openDb();
+    const tx = db.transaction(AUDIO_STORE, 'readwrite');
+    tx.objectStore(AUDIO_STORE).put({
+      audioId,
+      blob: blob || null,
+      pcm: pcm || null,
+      sampleRate: Number(sampleRate || 0) || null,
+      mimeType: mimeType || blob?.type || null,
+      createdAt: new Date().toISOString()
+    });
+    await transactionDone(tx);
+    return audioId;
+  }
+
+  async function getAudio(audioId) {
+    const db = await openDb();
+    const tx = db.transaction(AUDIO_STORE, 'readonly');
+    return requestToPromise(tx.objectStore(AUDIO_STORE).get(audioId));
+  }
+
+  async function upsertCleanReference({ note, context, sample } = {}) {
+    if (!note || !sample) throw new Error('note and sample are required');
+    if (sample.style && sample.style !== 'clean') throw new Error('Only clean reference samples can be auto-approved in this release');
+    if (Number(sample.passRatio) !== 1) throw new Error('Clean reference requires 100% passing frames');
+
+    const db = await openDb();
+    const normalizedContext = normalizeContext(context);
+    const packKey = makePackKey({ note, context: normalizedContext });
+    const tx = db.transaction(PACK_STORE, 'readwrite');
+    const store = tx.objectStore(PACK_STORE);
+    const current = await requestToPromise(store.get(packKey));
+    const incomingScore = qualityScore(sample);
+    const previousScore = qualityScore(current?.samples?.clean || {});
+
+    if (current?.samples?.clean && incomingScore <= previousScore) {
+      tx.abort();
+      return { changed: false, pack: current, reason: 'existing-sample-is-better-or-equal' };
+    }
+
+    const timestamp = new Date().toISOString();
+    const pack = {
+      packKey,
+      schemaVersion: 1,
+      note: {
+        ...note,
+        noteKey: note.noteKey || note.english || note.arabic || `${note.abs24 ?? 'na'}`
+      },
+      context: normalizedContext,
+      samples: {
+        ...(current?.samples || {}),
+        clean: {
+          ...sample,
+          style: 'clean',
+          score: incomingScore,
+          approvedAutomatically: true,
+          acceptanceRule: '100-percent-valid-window',
+          updatedAt: timestamp
+        }
+      },
+      createdAt: current?.createdAt || timestamp,
+      updatedAt: timestamp
+    };
+
+    store.put(pack);
+    await transactionDone(tx);
+    document.dispatchEvent(new CustomEvent('ney:performance-pack-updated', { detail: { packKey, pack } }));
+    return { changed: true, pack };
+  }
+
+  async function removePack(packKey) {
+    const db = await openDb();
+    const tx = db.transaction(PACK_STORE, 'readwrite');
+    tx.objectStore(PACK_STORE).delete(packKey);
+    await transactionDone(tx);
+  }
+
+  window.NeyPerformancePackStore = Object.freeze({
+    dbName: DB_NAME,
+    schemaVersion: DB_VERSION,
+    makePackKey,
+    qualityScore,
+    getPack,
+    listPacks,
+    saveAudio,
+    getAudio,
+    upsertCleanReference,
+    removePack
+  });
+})();
