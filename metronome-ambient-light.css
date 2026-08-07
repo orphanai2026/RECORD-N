@@ -22,38 +22,42 @@
   content: "";
   position: absolute;
   z-index: 0;
-  inset: -18%;
+  inset: -28%;
   pointer-events: none;
   opacity: 0;
   background:
-    radial-gradient(ellipse at 50% 50%, rgba(79, 230, 213, .22) 0%, rgba(49, 192, 183, .12) 34%, rgba(20, 111, 110, .055) 58%, transparent 78%),
-    linear-gradient(90deg, transparent 0%, rgba(70, 222, 208, .055) 20%, rgba(70, 222, 208, .09) 50%, rgba(70, 222, 208, .055) 80%, transparent 100%);
+    radial-gradient(ellipse at 50% 50%, rgba(79, 230, 213, .18) 0%, rgba(49, 192, 183, .115) 36%, rgba(20, 111, 110, .06) 62%, rgba(10, 70, 72, .025) 76%, transparent 90%),
+    linear-gradient(90deg, transparent 0%, rgba(70, 222, 208, .035) 12%, rgba(70, 222, 208, .065) 32%, rgba(70, 222, 208, .085) 50%, rgba(70, 222, 208, .065) 68%, rgba(70, 222, 208, .035) 88%, transparent 100%);
 }
 
-/* Ordinary beat: wide turquoise illumination. */
+/* Ordinary beat: wide turquoise illumination with a softer 300 ms fade. */
 .ney-mini-metronome.is-beat:not(.is-accent)::after,
 .metronome-panel.is-training-metronome.metronome-flash::after {
-  animation: neyMetronomeAmbientBeat 210ms ease-out;
+  animation: neyMetronomeAmbientBeat 300ms cubic-bezier(.18,.72,.32,1);
 }
 
-/* First beat / accent: wider warm gold illumination. */
+/* First beat / accent: warmer, slightly wider 350 ms illumination. */
 .ney-mini-metronome.is-beat.is-accent::after,
 .metronome-panel.is-training-metronome.metronome-flash-accent::after {
   background:
-    radial-gradient(ellipse at 50% 50%, rgba(244, 205, 123, .27) 0%, rgba(216, 170, 79, .15) 36%, rgba(130, 91, 30, .07) 60%, transparent 80%),
-    linear-gradient(90deg, transparent 0%, rgba(239, 199, 112, .065) 18%, rgba(239, 199, 112, .11) 50%, rgba(239, 199, 112, .065) 82%, transparent 100%);
-  animation: neyMetronomeAmbientAccent 250ms ease-out;
+    radial-gradient(ellipse at 50% 50%, rgba(244, 205, 123, .22) 0%, rgba(216, 170, 79, .135) 38%, rgba(130, 91, 30, .065) 64%, rgba(85, 58, 20, .025) 78%, transparent 92%),
+    linear-gradient(90deg, transparent 0%, rgba(239, 199, 112, .04) 10%, rgba(239, 199, 112, .075) 31%, rgba(239, 199, 112, .10) 50%, rgba(239, 199, 112, .075) 69%, rgba(239, 199, 112, .04) 90%, transparent 100%);
+  animation: neyMetronomeAmbientAccent 350ms cubic-bezier(.18,.72,.32,1);
 }
 
 @keyframes neyMetronomeAmbientBeat {
   0% { opacity: 0; }
-  28% { opacity: 1; }
+  18% { opacity: .72; }
+  34% { opacity: 1; }
+  68% { opacity: .48; }
   100% { opacity: 0; }
 }
 
 @keyframes neyMetronomeAmbientAccent {
   0% { opacity: 0; }
-  24% { opacity: 1; }
+  16% { opacity: .76; }
+  32% { opacity: 1; }
+  70% { opacity: .5; }
   100% { opacity: 0; }
 }
 
@@ -71,12 +75,12 @@
 /* Keep a local indicator too, but without changing its size. */
 .ney-mini-metronome.is-beat .ney-mini-metronome__pulse {
   background: #86ebbc;
-  box-shadow: 0 0 0 4px rgba(117,223,173,.14), 0 0 13px rgba(117,223,173,.25);
+  box-shadow: 0 0 0 4px rgba(117,223,173,.12), 0 0 12px rgba(117,223,173,.22);
 }
 
 .ney-mini-metronome.is-beat.is-accent .ney-mini-metronome__pulse {
   background: #f0cc7d;
-  box-shadow: 0 0 0 4px rgba(240,204,125,.14), 0 0 14px rgba(240,204,125,.28);
+  box-shadow: 0 0 0 4px rgba(240,204,125,.12), 0 0 13px rgba(240,204,125,.24);
 }
 
 /* The full training screen may illuminate the whole panel, but never change dimensions. */
@@ -88,6 +92,6 @@
 @media (prefers-reduced-motion: reduce) {
   .ney-mini-metronome::after,
   .metronome-panel.is-training-metronome::after {
-    animation-duration: 90ms !important;
+    animation-duration: 120ms !important;
   }
 }
