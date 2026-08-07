@@ -8,7 +8,7 @@
   });
 
   async function importPatchedModule(path, replacements) {
-    const response = await fetch(`${path}?policy=2026-08-07-2256`, { cache: 'no-store' });
+    const response = await fetch(`${path}?policy=2026-08-07-2305`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`${path} ${response.status}`);
     let source = await response.text();
 
@@ -49,6 +49,7 @@
   async function loadEducationalDurationCapture() {
     return importPatchedModule('./educational-duration-capture.js', [
       ['if (!candidate || candidate.style !== \'clean\' || Number(candidate.passRatio) !== 1) return;', 'if (!candidate || candidate.style !== \'clean\' || Number(candidate.passRatio) < (window.NeyCaptureAcceptancePolicy?.requiredPassRatio ?? .90)) return;'],
+      ['if (!frame || frame.english !== candidate.english) return false;', 'if (!frame) return false;\n    if (frame.english && candidate.english && frame.english !== candidate.english) return false;'],
       ['passRatio: 1,\n      meanClarity:', 'passRatio: frames.length ? frames.filter(frame => framePasses(frame, state.active?.candidate || state.latestCandidate)).length / frames.length : 0,\n      meanClarity:'],
       ['const metrics = qualityMetrics(active.frames, active.tolerance);\n    const durationKey', 'const metrics = qualityMetrics(active.frames, active.tolerance);\n    if (Number.isFinite(active.acceptancePassRatio)) metrics.passRatio = active.acceptancePassRatio;\n    if (metrics.passRatio < (window.NeyCaptureAcceptancePolicy?.requiredPassRatio ?? .90)) {\n      document.dispatchEvent(new CustomEvent(\'ney:educational-duration-rejected\', { detail: { reason: \'pass-ratio\', passRatio: metrics.passRatio, candidate: active.candidate } }));\n      return;\n    }\n    const durationKey'],
       ['const sampleForScore = { metrics, passRatio: 1 };', 'const sampleForScore = { metrics, passRatio: metrics.passRatio };'],
@@ -100,7 +101,7 @@
   document.addEventListener('ney:educational-duration-saved', event => {
     const note = event.detail?.note;
     const label = note?.arabic || note?.english || 'النغمة';
-    setCaptureUi('تم حفظ التسجيل ✓', `تم حفظ التسجيل الصوتي التعليمي فعليًا لـ ${label}.`, 'success');
+    setCaptureUi('تم حفظ التسجيل ✓', `تم حفظ التسجيل الصوتي التعليمي فعليًا لـ ${label}، وسيظهر في شاشة التسجيلات.`, 'success');
   });
 
   document.addEventListener('ney:educational-duration-rejected', event => {
