@@ -1,0 +1,275 @@
+/* Recording mode + session-start hierarchy. Existing controls stay engine-bound. */
+.ney-screen--recording .recording-workflow {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(216,184,106,.25);
+  border-radius: 20px;
+  background: linear-gradient(180deg,rgba(1,39,40,.72),rgba(0,29,32,.66));
+}
+
+.ney-screen--recording .recording-workflow__header {
+  margin: 0;
+}
+
+.ney-screen--recording .recording-workflow__header > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.ney-screen--recording .recording-workflow__header h3 {
+  margin: 0;
+  color: #f0d18b;
+  font-size: 1.12rem;
+}
+
+.ney-screen--recording .recording-workflow__header p {
+  margin: 0;
+  color: rgba(229,239,235,.65);
+  font-size: .8rem;
+}
+
+.ney-screen--recording .recording-mode-control {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+  max-width: 430px;
+  padding: 5px;
+  border: 1px solid rgba(216,184,106,.23);
+  border-radius: 16px;
+  background: rgba(0,22,24,.56);
+}
+
+.ney-screen--recording .recording-mode-option {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 14px minmax(0,1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(235,242,238,.72);
+  text-align: start;
+}
+
+.ney-screen--recording .recording-mode-option__mark {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid rgba(216,184,106,.46);
+  box-shadow: inset 0 0 0 3px rgba(0,24,26,.92);
+}
+
+.ney-screen--recording .recording-mode-option__copy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.ney-screen--recording .recording-mode-option__copy strong {
+  font-size: .92rem;
+  color: #f2eee0;
+}
+
+.ney-screen--recording .recording-mode-option__copy small {
+  font-size: .68rem;
+  color: rgba(224,235,230,.58);
+}
+
+.ney-screen--recording .recording-mode-option.is-active {
+  border-color: rgba(77,222,207,.55);
+  background: linear-gradient(180deg,rgba(47,183,173,.38),rgba(16,118,114,.42));
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(109,236,222,.12);
+}
+
+.ney-screen--recording .recording-mode-option.is-active .recording-mode-option__mark {
+  border-color: #73eadd;
+  background: #73eadd;
+  box-shadow: inset 0 0 0 3px rgba(12,95,92,.95),0 0 10px rgba(87,224,210,.28);
+}
+
+.ney-screen--recording .recording-mode-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr);
+  align-items: center;
+  gap: 11px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  background: rgba(2,46,47,.52);
+}
+
+.ney-screen--recording .recording-mode-summary__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 29px;
+  padding: 4px 9px;
+  border: 1px solid rgba(216,184,106,.28);
+  border-radius: 999px;
+  color: #efd18a;
+  background: rgba(216,184,106,.07);
+  font-size: .7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ney-screen--recording .recording-mode-summary > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.ney-screen--recording .recording-mode-summary strong {
+  color: #f2eee1;
+  font-size: .9rem;
+}
+
+.ney-screen--recording .recording-mode-summary span:not(.recording-mode-summary__badge) {
+  color: rgba(229,238,234,.65);
+  font-size: .74rem;
+  line-height: 1.55;
+}
+
+.ney-screen--recording .chromatic-settings {
+  display: grid;
+  gap: 10px;
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.ney-screen--recording .chromatic-settings[hidden] {
+  display: none !important;
+}
+
+.ney-screen--recording .auto-session-start {
+  margin: 0;
+  padding: 12px;
+  border-radius: 15px;
+  background: rgba(3,43,43,.58);
+}
+
+.ney-screen--recording .auto-session-start__head {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.ney-screen--recording .auto-session-start__modes {
+  min-width: 270px;
+}
+
+.ney-screen--recording .auto-session-start__modes button {
+  min-height: 38px;
+}
+
+.ney-screen--recording .recording-manual-range {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(216,184,106,.18);
+  border-radius: 15px;
+  background: rgba(0,24,27,.45);
+}
+
+.ney-screen--recording .chromatic-settings[data-start-mode="auto"] .recording-manual-range,
+.ney-screen--recording .chromatic-settings[data-start-mode="none"] .recording-manual-range {
+  display: none !important;
+}
+
+.ney-screen--recording .recording-manual-range__head {
+  display: grid;
+  gap: 2px;
+}
+
+.ney-screen--recording .recording-manual-range__head strong {
+  color: #efd18a;
+  font-size: .88rem;
+}
+
+.ney-screen--recording .recording-manual-range__head span {
+  color: rgba(226,237,232,.61);
+  font-size: .72rem;
+}
+
+.ney-screen--recording .recording-manual-range__controls {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr)) auto;
+  align-items: end;
+  gap: 9px;
+}
+
+.ney-screen--recording .recording-manual-range__controls label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  color: rgba(231,239,235,.68);
+  font-size: .72rem;
+}
+
+.ney-screen--recording .recording-manual-range__controls select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(216,184,106,.25);
+  border-radius: 11px;
+  background: rgba(0,22,25,.75);
+  color: #f1eee2;
+  padding: 7px 9px;
+  font: inherit;
+}
+
+.ney-screen--recording #buildChromaticButton {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.ney-screen--recording .chromatic-progress {
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .ney-screen--recording .recording-workflow__header,
+  .ney-screen--recording .auto-session-start__head {
+    grid-template-columns: 1fr;
+  }
+
+  .ney-screen--recording .recording-mode-control,
+  .ney-screen--recording .auto-session-start__modes {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .ney-screen--recording .recording-manual-range__controls {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .ney-screen--recording #buildChromaticButton {
+    grid-column: 1/-1;
+  }
+}
+
+@media (max-width: 560px) {
+  .ney-screen--recording .recording-workflow {
+    padding: 12px;
+  }
+
+  .ney-screen--recording .recording-mode-control,
+  .ney-screen--recording .recording-manual-range__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .ney-screen--recording .recording-mode-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .ney-screen--recording #buildChromaticButton {
+    grid-column: auto;
+  }
+}
