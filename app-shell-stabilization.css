@@ -1,0 +1,177 @@
+/*
+ * App Shell stabilization — 2026-08-07
+ * Structural/layout fixes only. No audio, capture, storage or metronome logic changes.
+ */
+
+:root {
+  --ney-shell-safe-bottom: calc(var(--ney-shell-nav-height, 76px) + env(safe-area-inset-bottom, 0px) + 54px);
+}
+
+html {
+  scroll-padding-bottom: var(--ney-shell-safe-bottom);
+}
+
+body.ney-app-shell-active {
+  padding-bottom: var(--ney-shell-safe-bottom) !important;
+  overflow-x: clip;
+}
+
+/* Every screen owns enough trailing space to scroll its final controls fully above the fixed nav. */
+.ney-screen {
+  box-sizing: border-box;
+  min-width: 0;
+  padding-bottom: var(--ney-shell-safe-bottom);
+}
+
+.ney-screen > *,
+.ney-recording-layout > *,
+.ney-recording-main > *,
+.ney-recording-side > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Once the shell supplies the screen title, exact duplicate panel titles are unnecessary. */
+.ney-screen--recording .recording-panel > .panel-header,
+.ney-screen--metronome .metronome-panel > .panel-header {
+  display: none !important;
+}
+
+/* Let the dedicated metronome screen use document scrolling instead of an inner clipped viewport. */
+.ney-screen--metronome .metronome-panel,
+.ney-screen--metronome .metronome-trainer,
+.ney-screen--metronome .metronome-controls,
+.ney-screen--metronome .metronome-stage {
+  max-height: none !important;
+}
+
+.ney-screen--metronome .metronome-panel,
+.ney-screen--metronome .metronome-trainer {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Prevent library content from disappearing under the persistent navigation. */
+.ney-screen--recordings .recordings-panel,
+.ney-screen--recordings .recordings-list {
+  overflow: visible;
+  max-height: none !important;
+}
+
+/* Recording is a two-column desktop workspace only when there is genuinely enough room. */
+.ney-screen--recording {
+  container-type: inline-size;
+}
+
+@container (max-width: 1240px) {
+  .ney-recording-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ney-recording-main {
+    order: 1;
+  }
+
+  .ney-recording-side {
+    order: 2;
+  }
+
+  .ney-recording-side .controls-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Media-query fallback for browsers without container queries and for tablet landscape. */
+@media (max-width: 1280px) {
+  .ney-recording-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ney-recording-main {
+    order: 1;
+  }
+
+  .ney-recording-side {
+    order: 2;
+  }
+
+  .ney-recording-side .quick-controls,
+  .ney-recording-side .ney-mini-metronome {
+    width: 100%;
+  }
+
+  .ney-recording-side .controls-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ney-screen__heading {
+    align-items: flex-start;
+  }
+}
+
+/* Controls must shrink/wrap instead of forcing horizontal overflow. */
+.ney-screen--recording .control-group,
+.ney-screen--recording .duration-control,
+.ney-screen--recording .segmented-control,
+.ney-screen--recording .numeric-stepper,
+.ney-screen--recording .reference-stepper,
+.ney-screen--recording .recording-workflow,
+.ney-screen--recording .recording-session-status {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ney-screen--recording .duration-control {
+  overflow: visible;
+}
+
+.ney-screen--recording .duration-option,
+.ney-screen--recording .segment {
+  min-width: 0;
+}
+
+.ney-screen--recording .duration-option strong,
+.ney-screen--recording .duration-option small,
+.ney-screen--recording .segment span,
+.ney-screen--recording .segment strong {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --ney-shell-safe-bottom: calc(var(--ney-shell-nav-height, 70px) + env(safe-area-inset-bottom, 0px) + 42px);
+  }
+
+  .ney-screen {
+    padding-bottom: var(--ney-shell-safe-bottom);
+  }
+
+  .ney-recording-side .controls-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ney-screen__heading {
+    gap: 10px;
+  }
+
+  .ney-screen-status {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 720px) {
+  /* On shorter landscape tablets keep the nav compact and reserve explicit content clearance. */
+  :root {
+    --ney-shell-nav-height: 68px;
+    --ney-shell-safe-bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 46px);
+  }
+
+  .ney-shell-nav {
+    min-height: 68px;
+  }
+
+  .ney-shell-nav__item {
+    min-height: 52px;
+  }
+}
