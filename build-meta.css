@@ -1,0 +1,63 @@
+/* Development build marker + copyright. Temporary build badge can be disabled via VERSION.json. */
+.dev-build-badge {
+  position: fixed;
+  z-index: 135;
+  top: max(8px, env(safe-area-inset-top));
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 1px solid rgba(215,157,69,.38);
+  border-radius: 999px;
+  color: #e8d7b4;
+  background: rgba(0,24,27,.88);
+  box-shadow: 0 5px 16px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
+  font-size: .62rem;
+  font-weight: 700;
+  line-height: 1;
+  direction: ltr;
+  opacity: .86;
+  pointer-events: none;
+}
+.dev-build-badge::before {
+  content: "DEV";
+  display: inline-grid;
+  place-items: center;
+  min-height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: #04211f;
+  background: #e6bd72;
+  font-size: .52rem;
+  font-weight: 900;
+}
+
+.app-copyright {
+  position: relative;
+  z-index: 2;
+  width: min(1480px, calc(100% - 24px));
+  margin: 12px auto calc(var(--app-nav-height, 58px) + 14px);
+  padding: 9px 12px;
+  border-top: 1px solid rgba(215,157,69,.16);
+  color: rgba(234,223,200,.68);
+  text-align: center;
+  font-size: .68rem;
+  line-height: 1.6;
+}
+.app-copyright strong { color: rgba(245,207,130,.84); font-weight: 700; }
+
+@media (max-width: 640px) {
+  .dev-build-badge {
+    top: auto;
+    bottom: calc(var(--app-nav-height, 54px) + 10px + env(safe-area-inset-bottom));
+    left: 7px;
+    min-height: 22px;
+    padding: 3px 6px;
+    font-size: .52rem;
+  }
+  .dev-build-badge::before { min-height: 15px; font-size: .46rem; }
+  .app-copyright { width: calc(100% - 12px); font-size: .6rem; }
+}
