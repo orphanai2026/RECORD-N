@@ -21,7 +21,9 @@
     minimumClarity: .90,
     requiredPassRatio: 1,
     candidateCooldownMs: 650,
-    maxRecentEvents: 24
+    maxRecentEvents: 24,
+    extractionInnerTrimMs: 8,
+    minimumSavedAudioMs: 260
   });
 
   const state = {
@@ -40,7 +42,9 @@
     lastCandidateAt: 0,
     originalGetUserMedia: null,
     ui: null,
-    running: false
+    running: false,
+    captureContext: null,
+    persistChains: new Map()
   };
 
   const now = () => performance.now();
@@ -158,15 +162,92 @@
     return Math.max(1, Math.round(state.sampleRate * CONFIG.ringSeconds));
   }
 
-  function pushPcm(chunk) {
+  function pushPcm(pcm) {
+    const endTime = now();
+    const durationMs = (pcm.length / state.sampleRate) * 1000;
+    const chunk = {
+      pcm,
+      startTime: endTime - durationMs,
+      endTime
+    };
     state.ringChunks.push(chunk);
-    state.ringSamples += chunk.length;
+    state.ringSamples += pcm.length;
     const limit = ringLimitSamples();
     while (state.ringSamples > limit && state.ringChunks.length > 1) {
       const removed = state.ringChunks.shift();
-      state.ringSamples -= removed.length;
+      state.ringSamples -= removed.pcm.length;
     }
     updateBufferMetric();
+  }
+
+  function extractPcm(startTime, endTime) {
+    if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || endTime <= startTime) return null;
+    let safeStart = startTime + CONFIG.extractionInnerTrimMs;
+    let safeEnd = endTime - CONFIG.extractionInnerTrimMs;
+    if (safeEnd <= safeStart) {
+      safeStart = startTime;
+      safeEnd = endTime;
+    }
+
+    const slices = [];
+    let total = 0;
+    for (const chunk of state.ringChunks) {
+      if (chunk.endTime <= safeStart || chunk.startTime >= safeEnd) continue;
+      const duration = Math.max(.001, chunk.endTime - chunk.startTime);
+      const overlapStart = Math.max(safeStart, chunk.startTime);
+      const overlapEnd = Math.min(safeEnd, chunk.endTime);
+      const from = clamp(Math.floor(((overlapStart - chunk.startTime) / duration) * chunk.pcm.length), 0, chunk.pcm.length);
+      const to = clamp(Math.ceil(((overlapEnd - chunk.startTime) / duration) * chunk.pcm.length), from, chunk.pcm.length);
+      if (to <= from) continue;
+      const slice = chunk.pcm.slice(from, to);
+      slices.push(slice);
+      total += slice.length;
+    }
+
+    if (!total) return null;
+    const merged = new Float32Array(total);
+    let offset = 0;
+    for (const slice of slices) {
+      merged.set(slice, offset);
+      offset += slice.length;
+    }
+    return merged;
+  }
+
+  function writeAscii(view, offset, text) {
+    for (let index = 0; index < text.length; index += 1) view.setUint8(offset + index, text.charCodeAt(index));
+  }
+
+  function encodeWav24(pcm, sampleRate) {
+    const bytesPerSample = 3;
+    const dataSize = pcm.length * bytesPerSample;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+    writeAscii(view, 0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeAscii(view, 8, 'WAVE');
+    writeAscii(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * bytesPerSample, true);
+    view.setUint16(32, bytesPerSample, true);
+    view.setUint16(34, 24, true);
+    writeAscii(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    let offset = 44;
+    for (let index = 0; index < pcm.length; index += 1) {
+      const value = clamp(pcm[index], -1, 1);
+      let sample = value < 0 ? Math.round(value * 0x800000) : Math.round(value * 0x7fffff);
+      if (sample < 0) sample += 0x1000000;
+      view.setUint8(offset, sample & 0xff);
+      view.setUint8(offset + 1, (sample >> 8) & 0xff);
+      view.setUint8(offset + 2, (sample >> 16) & 0xff);
+      offset += 3;
+    }
+    return new Blob([buffer], { type: 'audio/wav' });
   }
 
   function disconnectAudioGraph() {
@@ -289,6 +370,134 @@
     return TAXONOMY.unclassified;
   }
 
+  function averageFinite(values, fallback = null) {
+    const finite = values.filter(Number.isFinite);
+    if (!finite.length) return fallback;
+    return finite.reduce((sum, value) => sum + value, 0) / finite.length;
+  }
+
+  function candidateNote(candidate) {
+    const first = candidate.frames[0] || {};
+    return {
+      noteKey: candidate.key,
+      english: candidate.english,
+      arabic: candidate.arabic,
+      targetFrequency: averageFinite(candidate.frames.map(frame => frame.target), first.target ?? null),
+      measuredFrequency: averageFinite(candidate.frames.map(frame => frame.frequency), null),
+      division: Number(first.division || currentDivision()),
+      a4: Number(first.a4 || $('#a4Reference')?.value || 440),
+      register: 'unclassified'
+    };
+  }
+
+  function candidateContext(candidate) {
+    const first = candidate.frames[0] || {};
+    return {
+      mode: 'general-note',
+      ...(state.captureContext || {}),
+      division: Number(state.captureContext?.division || first.division || currentDivision()),
+      a4: Number(state.captureContext?.a4 || first.a4 || $('#a4Reference')?.value || 440)
+    };
+  }
+
+  function newAudioId() {
+    if (window.crypto?.randomUUID) return `clean-${window.crypto.randomUUID()}`;
+    return `clean-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  async function persistCleanCandidate(candidate) {
+    const store = window.NeyPerformancePackStore;
+    if (!store) {
+      updateBadge('نافذة صافية ✓', 'success');
+      updateStatus('تم العثور على نافذة صافية، لكن مخزن Performance Pack لم يجهز بعد؛ لم يتأثر التسجيل القديم.');
+      return;
+    }
+
+    const note = candidateNote(candidate);
+    const context = candidateContext(candidate);
+    const packKey = store.makePackKey({ note, context });
+    const existing = await store.getPack(packKey);
+    const incomingScore = store.qualityScore(candidate);
+    const existingScore = store.qualityScore(existing?.samples?.clean || {});
+
+    if (existing?.samples?.clean && incomingScore <= existingScore) {
+      updateBadge('العينة الأفضل محفوظة ✓', 'success');
+      updateStatus(`تم رصد نافذة صافية لـ ${candidate.arabic || candidate.english}، لكن العينة المحفوظة أفضل أو مساوية؛ لم تُستبدل.`);
+      return;
+    }
+
+    const pcm = extractPcm(candidate.startTime, candidate.endTime);
+    const durationMs = pcm ? (pcm.length / state.sampleRate) * 1000 : 0;
+    if (!pcm || durationMs < CONFIG.minimumSavedAudioMs) {
+      updateBadge('نافذة صافية ✓', 'success');
+      updateStatus('تحققت شروط النغمة، لكن لم يكتمل تطابق النافذة مع ذاكرة الصوت بما يكفي للحفظ؛ أواصل البحث تلقائيًا.');
+      return;
+    }
+
+    const audioId = newAudioId();
+    const wavBlob = encodeWav24(pcm, state.sampleRate);
+    await store.saveAudio({
+      audioId,
+      blob: wavBlob,
+      pcm,
+      sampleRate: state.sampleRate,
+      mimeType: 'audio/wav'
+    });
+
+    const result = await store.upsertCleanReference({
+      note,
+      context,
+      sample: {
+        ...candidate,
+        audioId,
+        sampleRate: state.sampleRate,
+        durationMs,
+        mimeType: 'audio/wav',
+        bitDepth: 24,
+        metrics: {
+          passRatio: candidate.passRatio,
+          meanClarity: candidate.meanClarity,
+          meanAbsCents: candidate.meanAbsCents,
+          tolerance: candidate.tolerance
+        },
+        referenceWindow: {
+          startTime: candidate.startTime,
+          endTime: candidate.endTime,
+          durationMs
+        }
+      }
+    });
+
+    if (!result.changed) {
+      updateBadge('العينة الأفضل محفوظة ✓', 'success');
+      updateStatus(`العينة المرجعية الحالية لـ ${candidate.arabic || candidate.english} بقيت الأفضل ولم تُستبدل.`);
+      return;
+    }
+
+    updateBadge('حُفظت العينة ✓', 'success');
+    updateStatus(`حُفظت تلقائيًا أفضل عينة صافية لـ ${candidate.arabic || candidate.english} داخل Performance Pack — جودة ${Math.round(candidate.meanClarity * 100)}%.`);
+    document.dispatchEvent(new CustomEvent('ney:auto-capture-saved', {
+      detail: { candidate, note, context, packKey, audioId, durationMs, pack: result.pack }
+    }));
+  }
+
+  function queuePersistence(candidate) {
+    const key = candidate.key;
+    const previous = state.persistChains.get(key) || Promise.resolve();
+    const next = previous
+      .catch(() => {})
+      .then(() => persistCleanCandidate(candidate))
+      .catch(error => {
+        console.error('Ney Auto-Capture persistence failed', error);
+        updateBadge('الحفظ تعذر', 'warning');
+        updateStatus('تم تحليل النغمة لكن تعذر حفظ Performance Pack محليًا؛ مسار التسجيل القديم ما زال متاحًا.');
+      })
+      .finally(() => {
+        if (state.persistChains.get(key) === next) state.persistChains.delete(key);
+      });
+    state.persistChains.set(key, next);
+  }
+
   function evaluateCleanWindow(event) {
     const elapsed = event.lastFrameAt - event.startedAt;
     const usable = event.frames.filter(frame => frame.time - event.startedAt >= CONFIG.attackGuardMs);
@@ -307,7 +516,7 @@
 
     if (passRatio < CONFIG.requiredPassRatio || style.id !== 'clean') {
       updateStatus(style.id === 'vibrato'
-        ? 'تم رصد فبراتو محتمل؛ لن يُعامل كعينة صافية، وسيُحفظ لاحقًا ضمن فئته بعد تفعيل الحفظ الجديد.'
+        ? 'تم رصد فبراتو محتمل؛ لن يُعامل كعينة صافية ولن يُعتمد تلقائيًا في هذا الإصدار.'
         : 'أواصل البحث؛ النافذة الحالية ليست صافية بالكامل وفق شروط الجودة.');
       return;
     }
@@ -326,6 +535,7 @@
       passRatio,
       meanClarity,
       meanAbsCents,
+      tolerance,
       startTime: windowFrames[0].time,
       endTime: windowFrames[windowFrames.length - 1].time,
       frames: windowFrames.map(frame => ({
@@ -336,7 +546,8 @@
         clarity: frame.clarity,
         stable: frame.stable,
         division: frame.division,
-        a4: frame.a4
+        a4: frame.a4,
+        tolerance: frame.tolerance
       }))
     };
 
@@ -344,11 +555,12 @@
     const previous = state.bestByNote.get(event.key);
     if (!previous || candidate.score > previous.score) {
       state.bestByNote.set(event.key, candidate);
+      queuePersistence(candidate);
+      document.dispatchEvent(new CustomEvent('ney:auto-capture-candidate', { detail: candidate }));
       if (now() - state.lastCandidateAt > CONFIG.candidateCooldownMs) {
         state.lastCandidateAt = now();
         updateBadge('نافذة صافية ✓', 'success');
-        updateStatus(`تم العثور على نافذة صافية لـ ${event.arabic || event.english}: 100% من القراءات صحيحة، جودة ${Math.round(meanClarity * 100)}%.`);
-        document.dispatchEvent(new CustomEvent('ney:auto-capture-candidate', { detail: candidate }));
+        updateStatus(`تم العثور على نافذة صافية لـ ${event.arabic || event.english}: 100% من القراءات صحيحة، جودة ${Math.round(meanClarity * 100)}%. جارٍ فحصها للحفظ.`);
       }
     }
   }
@@ -422,6 +634,7 @@
       if (state.ui) {
         state.ui.note.textContent = '—';
         state.ui.window.textContent = '0%';
+        state.ui.style.textContent = TAXONOMY.unclassified.ar;
       }
       updateBadge('رصد مستمر', 'active');
     }
@@ -447,6 +660,12 @@
     }
   }
 
+  function setCaptureContext(context) {
+    state.captureContext = context && typeof context === 'object' ? { ...context } : null;
+    state.bestByNote.clear();
+    return state.captureContext ? { ...state.captureContext } : null;
+  }
+
   function initialize() {
     installUi();
     installMediaBridge();
@@ -456,6 +675,9 @@
       config: CONFIG,
       getBestCandidates: () => [...state.bestByNote.values()].map(item => ({ ...item, frames: [...item.frames] })),
       getRecentEvents: () => state.recentEvents.map(item => ({ ...item })),
+      getCaptureContext: () => state.captureContext ? { ...state.captureContext } : null,
+      setCaptureContext,
+      clearCaptureContext: () => setCaptureContext(null),
       isRunning: () => state.running
     });
   }
