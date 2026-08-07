@@ -1,107 +1,64 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap');
 @import url('measurement.css?v=2026-08-07-r2');
 @import url('measurement-compact.css?v=2026-08-07-r4');
+@import url('navigation.css?v=2026-08-07-r1');
 
-/* Approved header identity package — 2026-08-07 */
-/* Amiri title — preserve complete Arabic glyph visibility */
+/* Stage 2 consolidated identity header. */
 .app-header {
-  min-height: 126px;
-  grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr);
+  position: relative;
+  z-index: 2;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr);
+  grid-template-rows: 1fr;
   align-items: center;
-  gap: 20px;
-  padding: 2px 30px 8px;
-  margin-bottom: 28px;
+  gap: 12px;
+  padding: 3px 14px 6px;
+  margin-bottom: 7px;
 }
 
-.header-tabs {
-  grid-column: 3;
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.header-tab {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 17px;
-  border: 1px solid rgba(215, 157, 69, .42);
-  border-radius: 999px;
-  color: #f5cf82;
-  background: linear-gradient(145deg, rgba(5, 48, 50, .62), rgba(1, 24, 27, .86));
-  font-size: .94rem;
-  line-height: 1;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.header-tab:hover,
-.header-tab:focus-visible {
-  border-color: rgba(215, 157, 69, .72);
-  background: rgba(215, 157, 69, .11);
-}
-
-.microphone-status {
-  grid-column: 1;
-  justify-self: start;
-  min-width: 208px;
-  min-height: 44px;
-  height: 44px;
-  gap: 9px;
-  padding: 7px 13px;
-  border: 1px solid rgba(215, 157, 69, .5);
-  border-radius: 999px;
-  color: #eadfc8;
-  background: linear-gradient(145deg, rgba(5, 50, 52, .68), rgba(1, 24, 27, .9));
-  font-size: .89rem;
-  line-height: 1;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.microphone-status svg {
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
-}
-
-.microphone-status .status-dot {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 9px;
-}
+.app-header > .header-tabs { display: none; }
 
 .brand {
   grid-column: 2;
+  grid-row: 1;
   justify-self: center;
-  min-width: 560px;
-  gap: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
   overflow: visible;
 }
 
 .brand-logo {
   position: relative;
-  align-self: flex-start;
-  margin-top: 7px;
-  width: 70px;
-  height: 70px;
-  flex: 0 0 70px;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border: 1px solid rgba(245,207,130,.62);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(67,222,212,.12), rgba(1,28,31,.95) 68%);
+  box-shadow: inset 0 0 0 4px rgba(0,18,21,.68), 0 0 20px rgba(67,222,212,.08);
 }
 
 .brand-logo__rosette {
-  inset: -7px;
-  opacity: .28;
-  border: 1px solid rgba(245, 207, 130, .24);
-  background: repeating-conic-gradient(from 2deg, rgba(215, 157, 69, .85) 0 1.4deg, transparent 1.8deg 11deg);
-  box-shadow: 0 0 18px rgba(215, 157, 69, .08);
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  opacity: .24;
+  background: repeating-conic-gradient(from 2deg, rgba(215,157,69,.75) 0 1.3deg, transparent 1.8deg 11deg);
+  mask: radial-gradient(circle, transparent 0 59%, #000 60%);
 }
 
 .brand-logo__ney {
-  width: 23px;
-  height: 54px;
+  width: 17px;
+  height: 41px;
+  object-fit: contain;
+  filter: sepia(.12) brightness(1.1) drop-shadow(0 4px 4px rgba(0,0,0,.5));
+  transform: rotate(12deg);
 }
 
 .brand-copy {
@@ -114,401 +71,140 @@
 
 .brand-copy h1 {
   margin: 0;
-  padding: .08em .14em .18em;
+  padding: .08em .18em .16em;
   overflow: visible;
+  white-space: nowrap;
   color: #f5cf82;
-  font-family: "Amiri", serif !important;
-  font-size: clamp(3.3rem, 4.4vw, 4.45rem);
-  line-height: 1.12 !important;
+  font-family: "Amiri", "Aref Ruqaa Ink", "Aref Ruqaa", serif;
+  font-size: clamp(2rem, 2.55vw, 2.7rem);
+  line-height: 1.3;
   font-weight: 700;
-  font-synthesis: none;
   letter-spacing: 0;
-  word-spacing: .03em;
-  font-variant-ligatures: common-ligatures contextual;
-  font-feature-settings: "liga" 1, "calt" 1, "kern" 1;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -webkit-text-fill-color: currentColor;
-  background: none;
-  filter: none;
-  text-shadow:
-    0 6px 18px rgba(0, 0, 0, .38),
-    0 0 16px rgba(215, 157, 69, .13),
-    0 0 30px rgba(245, 207, 130, .06);
+  word-spacing: .02em;
+  text-shadow: 0 5px 16px rgba(0,0,0,.34), 0 0 14px rgba(215,157,69,.11);
 }
 
 .brand-meta {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 22px;
-  margin-top: 16px;
+  gap: 7px;
+  margin-top: -4px;
   min-width: 0;
+  white-space: nowrap;
 }
 
 .brand-description {
-  color: #eee2cc;
-  font-size: 1.1rem;
+  color: #eadfc8;
+  font-size: .72rem;
   line-height: 1.25;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 .brand-reference {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 31px;
-  padding: 5px 13px;
-  border: 1px solid rgba(215, 157, 69, .44);
+  min-height: 23px;
+  padding: 2px 8px;
+  border: 1px solid rgba(215,157,69,.4);
   border-radius: 999px;
   color: #f8e8c5;
-  background: linear-gradient(145deg, rgba(6, 48, 50, .74), rgba(1, 25, 28, .9));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035), 0 5px 16px rgba(0, 0, 0, .18);
-  font-size: 1.08rem;
+  background: linear-gradient(145deg, rgba(6,48,50,.68), rgba(1,25,28,.88));
+  font-size: .72rem;
   line-height: 1;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+#brandReferenceValue { color: #fff1cf; font-weight: 800; }
+
+.microphone-status {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  min-width: 188px;
+  min-height: 39px;
+  height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 11px;
+  border: 1px solid rgba(215,157,69,.48);
+  border-radius: 999px;
+  color: #eadfc8;
+  background: linear-gradient(145deg, rgba(5,50,52,.64), rgba(1,24,27,.88));
+  box-shadow: 0 5px 16px rgba(0,0,0,.18);
+  font-size: .78rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-#brandReferenceValue {
-  color: #fff1cf;
-  font-weight: 800;
-  letter-spacing: .01em;
+.microphone-status svg { width: 17px; height: 17px; flex: 0 0 17px; }
+
+.header-tab {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 
-@media (max-width: 1200px) {
-  .app-header {
-    min-height: 112px;
-    grid-template-columns: minmax(190px, 1fr) auto minmax(190px, 1fr);
-    padding-inline: 12px;
-  }
-
-  .brand {
-    min-width: 500px;
-    gap: 14px;
-  }
-
-  .brand-logo {
-    margin-top: 6px;
-    width: 60px;
-    height: 60px;
-    flex-basis: 60px;
-  }
-
-  .brand-logo__rosette {
-    inset: -6px;
-  }
-
-  .brand-logo__ney {
-    width: 20px;
-    height: 47px;
-  }
-
-  .brand-copy h1 {
-    font-size: 3.6rem;
-  }
-
-  .brand-description {
-    font-size: 1rem;
-  }
-
-  .brand-reference {
-    font-size: .99rem;
-  }
-}
+.background-ornament { opacity: .16; }
+body::before { opacity: .2; }
 
 @media (max-width: 900px) {
   .app-header {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    min-height: 0;
-    column-gap: 14px;
-    row-gap: 3px;
-    padding: 5px 10px 10px;
-    margin-bottom: 28px;
+    grid-template-columns: minmax(120px,1fr) auto minmax(120px,1fr);
+    min-height: 64px;
+    padding-inline: 7px;
   }
-
-  .brand {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    justify-self: center;
-    min-width: 0;
-    gap: 12px;
-  }
-
-  .header-tabs {
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: end;
-    width: auto;
-    order: initial;
-  }
-
-  .microphone-status {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: start;
-  }
-
-  .brand-logo {
-    margin-top: 5px;
-    width: 52px;
-    height: 52px;
-    flex-basis: 52px;
-  }
-
-  .brand-logo__rosette {
-    inset: -5px;
-  }
-
-  .brand-logo__ney {
-    width: 17px;
-    height: 40px;
-  }
-
-  .brand-copy h1 {
-    font-size: 2.95rem;
-  }
-
-  .brand-meta {
-    gap: 18px;
-    margin-top: 15px;
-  }
-
-  .brand-description {
-    font-size: .92rem;
-  }
-
-  .brand-reference {
-    min-height: 28px;
-    padding: 4px 11px;
-    font-size: .9rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .app-header {
-    padding: 5px 4px 9px;
-    margin-bottom: 28px;
-  }
-
-  .brand {
-    gap: 10px;
-    width: 100%;
-  }
-
-  .brand-logo {
-    margin-top: 5px;
-    width: 44px;
-    height: 44px;
-    flex-basis: 44px;
-  }
-
-  .brand-logo__rosette {
-    inset: -4.5px;
-  }
-
-  .brand-logo__ney {
-    width: 15px;
-    height: 34px;
-  }
-
-  .brand-copy h1 {
-    font-size: 2.45rem;
-    padding-inline: .18em;
-  }
-
-  .brand-meta {
-    flex-wrap: wrap;
-    column-gap: 14px;
-    row-gap: 7px;
-    margin-top: 13px;
-  }
-
-  .brand-description {
-    font-size: .84rem;
-  }
-
-  .brand-reference {
-    min-height: 27px;
-    padding: 4px 10px;
-    font-size: .82rem;
-  }
-
-  .header-tabs {
-    width: 100%;
-    gap: 7px;
-  }
-
-  .header-tab {
-    flex: 1 1 auto;
-    min-width: 0;
-    padding-inline: 12px;
-    font-size: .9rem;
-  }
-
-  .microphone-status {
-    min-width: 200px;
-    padding-inline: 11px;
-    font-size: .86rem;
-  }
-}
-
-@media (max-width: 520px) {
-  .app-header {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    row-gap: 7px;
-  }
-
-  .brand {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .header-tabs {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: center;
-    width: auto;
-    max-width: 100%;
-  }
-
-  .header-tab {
-    flex: 0 1 auto;
-    padding-inline: 13px;
-  }
-
-  .microphone-status {
-    grid-column: 1;
-    grid-row: 3;
-    justify-self: center;
-    min-width: 200px;
-  }
-}
-
-@media (max-width: 430px) {
-  .brand {
-    gap: 9px;
-  }
-
-  .brand-logo {
-    margin-top: 4px;
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
-  }
-
-  .brand-logo__rosette {
-    inset: -4px;
-  }
-
-  .brand-logo__ney {
-    width: 13px;
-    height: 31px;
-  }
-
-  .brand-meta {
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .header-tab {
-    padding-inline: 11px;
-    font-size: .86rem;
-  }
-
-  .microphone-status {
-    min-width: 194px;
-    font-size: .84rem;
-  }
-}
-
-/* Visual refresh — stage 1: lighter density without changing behavior. */
-.background-ornament { opacity: .18; }
-body::before { opacity: .22; }
-.app-shell { width: min(1480px, calc(100% - 24px)); padding-top: 4px; }
-.app-header {
-  min-height: 84px;
-  gap: 16px;
-  padding: 4px 20px 9px;
-  margin-bottom: 10px;
-}
-.brand { min-width: 0; gap: 11px; }
-.brand-logo { width: 62px; height: 62px; flex-basis: 62px; margin-top: 1px; }
-.brand-logo__ney { width: 20px; height: 48px; }
-.brand-copy { overflow: visible; }
-.brand-copy h1 {
-  padding: .10em .18em .18em;
-  overflow: visible;
-  white-space: nowrap;
-  font-size: clamp(2.25rem, 2.9vw, 3.1rem);
-  line-height: 1.28 !important;
-}
-.brand-meta { gap: 9px; margin-top: -3px; }
-.brand-description { font-size: .78rem; }
-.brand-reference { min-height: 25px; padding: 3px 9px; font-size: .77rem; }
-.microphone-status { min-width: 198px; min-height: 42px; height: 42px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
-.header-tab { min-height: 40px; padding: 7px 13px; font-size: .82rem; }
-
-.panel { border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.025); }
-.top-grid { gap: 10px; }
-.tuner-panel, .detected-panel { height: 324px; padding: 12px 15px; }
-.panel-header { min-height: 52px; padding-bottom: 6px; }
-.panel-title { gap: 9px; }
-.panel-title h2, .quick-controls h2 { font-size: 1.38rem; }
-.panel-title p, .quick-controls p { margin-top: 3px; font-size: .72rem; }
-.icon-disc { width: 41px; height: 41px; flex-basis: 41px; }
-.tuner-panel { grid-template-rows: auto 88px 72px auto auto; gap: 6px; }
-.tuner-scale { padding: 9px 15px 5px; }
-.metrics-grid { gap: 7px; }
-.metric-card { min-height: 66px; padding: 7px 6px; border-radius: 11px; }
-.note-visual { min-height: 198px; }
-.note-rosette { width: 178px; height: 178px; }
-.quick-controls { margin-top: 10px; padding: 11px 14px; }
-.quick-controls__header { min-height: 36px; }
-.controls-grid { gap: 9px; }
-.control-group { border-radius: 12px; }
-.bottom-grid { gap: 10px; margin-top: 10px; }
-.recording-workflow { border-radius: 14px; }
-
-@media (min-width: 901px) {
-  .quick-controls { height: 154px !important; min-height: 154px !important; }
-  .control-group { height: 76px !important; min-height: 76px !important; }
-  .segment, .duration-option { height: 40px !important; min-height: 40px !important; }
-  .stepper, .reference-input { height: 40px !important; }
-}
-
-@media (max-width: 900px) {
-  .app-shell { width: min(100% - 18px, 760px); }
-  .app-header { min-height: 76px; margin-bottom: 8px; padding-inline: 8px; }
-  .brand { min-width: 0; }
-  .tuner-panel, .detected-panel { height: auto; min-height: 326px; }
-}
-
-@media (max-width: 640px) {
-  .app-shell { width: calc(100% - 10px); }
-  .app-header { margin-bottom: 7px; padding: 4px 4px 7px; }
   .brand-logo { width: 46px; height: 46px; flex-basis: 46px; }
-  .brand-logo__ney { width: 16px; height: 38px; }
-  .brand-copy h1 { font-size: 1.78rem; line-height: 1.32 !important; }
-  .brand-meta { gap: 6px; margin-top: -3px; }
-  .brand-description { font-size: .63rem; }
-  .brand-reference { min-height: 22px; padding: 2px 7px; font-size: .62rem; }
-  .header-tab { min-height: 37px; font-size: .74rem; padding-inline: 10px; }
-  .microphone-status { min-width: 180px; min-height: 38px; height: 38px; font-size: .75rem; }
-  .tuner-panel, .detected-panel { min-height: 0; padding: 10px; }
-  .panel-title h2, .quick-controls h2 { font-size: 1.18rem; }
-  .panel-title p, .quick-controls p { font-size: .65rem; }
-  .icon-disc { width: 37px; height: 37px; flex-basis: 37px; }
-  .metrics-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  .metric-card { min-height: 62px; }
+  .brand-logo__rosette { inset: -4px; }
+  .brand-logo__ney { width: 15px; height: 36px; }
+  .brand-copy h1 { font-size: 2rem; }
+  .brand-description { font-size: .64rem; }
+  .brand-reference { min-height: 21px; font-size: .64rem; }
+  .microphone-status { min-width: 150px; min-height: 37px; height: 37px; font-size: .7rem; }
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    grid-template-columns: 42px minmax(0,1fr) 42px;
+    min-height: 57px;
+    gap: 4px;
+    padding: 2px 3px 5px;
+  }
+  .brand { grid-column: 2; justify-self: center; gap: 6px; }
+  .brand-logo { width: 39px; height: 39px; flex-basis: 39px; }
+  .brand-logo__ney { width: 13px; height: 31px; }
+  .brand-copy h1 { font-size: 1.56rem; }
+  .brand-meta { gap: 4px; }
+  .brand-description { display: none; }
+  .brand-reference { min-height: 19px; padding: 2px 5px; font-size: .56rem; }
+  .microphone-status {
+    grid-column: 1;
+    position: relative;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    justify-self: center;
+  }
+  .microphone-status span:not(.status-dot) { display: none; }
+  .microphone-status .status-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    transform: translate(11px,-11px);
+  }
+  .microphone-status svg { width: 18px; height: 18px; }
 }
 
 @media (max-width: 430px) {
-  .brand-description { display: none; }
-  .brand-copy h1 { font-size: 1.62rem; }
-  .microphone-status { min-width: 160px; }
+  .brand-logo { width: 35px; height: 35px; flex-basis: 35px; }
+  .brand-copy h1 { font-size: 1.42rem; }
 }
