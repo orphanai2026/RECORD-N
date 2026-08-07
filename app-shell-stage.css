@@ -1,0 +1,544 @@
+/*
+ * App Shell Stage 1 — structural screen separation only.
+ * Keeps the existing audio, tuner, recording and persistence DOM nodes alive.
+ */
+
+:root {
+  --ney-shell-nav-height: 76px;
+  --ney-shell-gap: clamp(14px, 2vw, 24px);
+  --ney-shell-panel: rgba(3, 28, 31, 0.78);
+  --ney-shell-panel-soft: rgba(5, 39, 42, 0.56);
+  --ney-shell-border: rgba(226, 190, 104, 0.18);
+  --ney-shell-gold: #d8b86a;
+  --ney-shell-text: #f4f2e9;
+  --ney-shell-muted: #9fb2ae;
+}
+
+/* The legacy scroll navigation is superseded by the real screen router. */
+.app-bottom-nav,
+.app-nav-more-menu {
+  display: none !important;
+}
+
+body.ney-app-shell-active {
+  padding-bottom: calc(var(--ney-shell-nav-height) + env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+.ney-shell-legacy-hidden,
+.bottom-grid[hidden] {
+  display: none !important;
+}
+
+.ney-screen-host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: clamp(10px, 1.4vw, 18px);
+}
+
+.ney-screen {
+  width: 100%;
+  min-width: 0;
+  animation: neyScreenIn 180ms ease-out;
+}
+
+.ney-screen[hidden] {
+  display: none !important;
+}
+
+@keyframes neyScreenIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ney-screen__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 16px;
+  padding: 0 2px;
+}
+
+.ney-screen__identity {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.ney-screen__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--ney-shell-border);
+  border-radius: 14px;
+  background: rgba(216, 184, 106, 0.08);
+  color: var(--ney-shell-gold);
+}
+
+.ney-screen__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ney-screen__copy {
+  min-width: 0;
+}
+
+.ney-screen__copy h2 {
+  margin: 0;
+  color: var(--ney-shell-text);
+  font-size: clamp(1.08rem, 2vw, 1.34rem);
+  font-weight: 700;
+}
+
+.ney-screen__copy p {
+  margin: 4px 0 0;
+  color: var(--ney-shell-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.ney-screen-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ney-screen-status__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.035);
+  color: var(--ney-shell-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.ney-screen-status__chip strong {
+  color: var(--ney-shell-text);
+  font-weight: 700;
+}
+
+/* Recording screen: primary capture area + side controls. */
+.ney-recording-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(310px, 0.65fr);
+  gap: var(--ney-shell-gap);
+  align-items: start;
+}
+
+.ney-recording-main,
+.ney-recording-side {
+  display: grid;
+  min-width: 0;
+  gap: var(--ney-shell-gap);
+}
+
+.ney-recording-side .quick-controls {
+  margin: 0;
+}
+
+.ney-recording-side .controls-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ney-recording-main .recording-panel,
+.ney-recording-side .quick-controls,
+.ney-recording-side .ney-mini-metronome,
+.ney-screen--recordings .recordings-panel,
+.ney-screen--metronome .metronome-panel {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Compact view of the SAME metronome engine used by the training screen. */
+.ney-mini-metronome {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid var(--ney-shell-border);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(216,184,106,.09), transparent 34%),
+    var(--ney-shell-panel);
+}
+
+.ney-mini-metronome__head,
+.ney-mini-metronome__body,
+.ney-mini-metronome__actions {
+  display: flex;
+  align-items: center;
+}
+
+.ney-mini-metronome__head {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ney-mini-metronome__title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ney-mini-metronome__pulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #6f827f;
+  box-shadow: 0 0 0 4px rgba(111,130,127,.08);
+}
+
+.ney-mini-metronome.is-running .ney-mini-metronome__pulse {
+  background: #75dfad;
+  box-shadow: 0 0 0 4px rgba(117,223,173,.12);
+}
+
+.ney-mini-metronome.is-beat .ney-mini-metronome__pulse {
+  transform: scale(1.45);
+}
+
+.ney-mini-metronome__title strong {
+  color: var(--ney-shell-text);
+  font-size: 0.94rem;
+}
+
+.ney-mini-metronome__meter {
+  color: var(--ney-shell-gold);
+  font-size: 0.8rem;
+  direction: ltr;
+}
+
+.ney-mini-metronome__body {
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ney-mini-metronome__beat {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  border: 1px solid rgba(216,184,106,.24);
+  border-radius: 50%;
+  background: rgba(216,184,106,.055);
+}
+
+.ney-mini-metronome__beat strong {
+  color: var(--ney-shell-gold);
+  font-size: 1.4rem;
+}
+
+.ney-mini-metronome__tempo {
+  min-width: 0;
+  flex: 1;
+}
+
+.ney-mini-metronome__tempo span {
+  display: block;
+  color: var(--ney-shell-muted);
+  font-size: 0.76rem;
+  margin-bottom: 3px;
+}
+
+.ney-mini-metronome__tempo strong {
+  color: var(--ney-shell-text);
+  font-size: 1.15rem;
+}
+
+.ney-mini-metronome__actions {
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ney-mini-metronome__actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  color: var(--ney-shell-text);
+  font: inherit;
+  font-size: .8rem;
+  cursor: pointer;
+}
+
+.ney-mini-metronome__actions button[data-mini-action="toggle"] {
+  border-color: rgba(216,184,106,.32);
+  background: rgba(216,184,106,.12);
+  color: #f2d98d;
+}
+
+.ney-mini-metronome__actions button:focus-visible,
+.ney-more-card:focus-visible,
+.ney-shell-nav__item:focus-visible {
+  outline: 2px solid var(--ney-shell-gold);
+  outline-offset: 2px;
+}
+
+/* Recordings gets the full available screen width. */
+.ney-screen--recordings .recordings-list {
+  max-height: none;
+}
+
+/* More screen */
+.ney-more-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ney-shell-gap);
+}
+
+.ney-more-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 112px;
+  padding: 18px;
+  gap: 14px;
+  border: 1px solid var(--ney-shell-border);
+  border-radius: 18px;
+  background: var(--ney-shell-panel);
+  color: var(--ney-shell-text);
+  text-align: right;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ney-more-card:hover {
+  border-color: rgba(216,184,106,.32);
+  background: rgba(7,44,46,.82);
+}
+
+.ney-more-card__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(216,184,106,.08);
+  color: var(--ney-shell-gold);
+}
+
+.ney-more-card__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ney-more-card__text {
+  min-width: 0;
+  flex: 1;
+}
+
+.ney-more-card__text strong,
+.ney-more-card__text span {
+  display: block;
+}
+
+.ney-more-card__text strong {
+  font-size: .96rem;
+  margin-bottom: 5px;
+}
+
+.ney-more-card__text span {
+  color: var(--ney-shell-muted);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+
+.ney-more-card__arrow {
+  color: #6f827f;
+  font-size: 1.1rem;
+}
+
+/* Bottom navigation — five primary destinations only. */
+.ney-shell-nav {
+  position: fixed;
+  z-index: 900;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  max-width: 760px;
+  min-height: var(--ney-shell-nav-height);
+  margin-inline: auto;
+  padding: 7px;
+  border: 1px solid rgba(216,184,106,.2);
+  border-radius: 22px;
+  background: rgba(0, 22, 25, .94);
+  box-shadow: 0 12px 38px rgba(0,0,0,.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.ney-shell-nav__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 15px;
+  background: transparent;
+  color: #8fa29e;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ney-shell-nav__item svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ney-shell-nav__item span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .72rem;
+}
+
+.ney-shell-nav__item[aria-current="page"] {
+  background: rgba(216,184,106,.105);
+  color: #efd98f;
+}
+
+.ney-shell-nav__item--record[aria-current="page"]::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #e7c56c;
+}
+
+.app-copyright {
+  margin-bottom: calc(var(--ney-shell-nav-height) + 20px) !important;
+}
+
+@media (max-width: 980px) {
+  .ney-recording-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ney-recording-main { order: 1; }
+  .ney-recording-side { order: 2; }
+
+  .ney-recording-side .controls-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ney-more-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  :root { --ney-shell-nav-height: 70px; }
+
+  .ney-screen__heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .ney-screen-status {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .ney-recording-side .controls-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ney-more-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ney-more-card {
+    min-height: 92px;
+    padding: 14px;
+  }
+
+  .ney-shell-nav {
+    left: max(6px, env(safe-area-inset-left, 0px));
+    right: max(6px, env(safe-area-inset-right, 0px));
+    bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    padding: 5px;
+    border-radius: 18px;
+  }
+
+  .ney-shell-nav__item {
+    min-height: 56px;
+    padding-inline: 2px;
+  }
+
+  .ney-shell-nav__item span {
+    font-size: .66rem;
+  }
+
+  .ney-mini-metronome__body {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 390px) {
+  .ney-shell-nav__item span {
+    font-size: .61rem;
+  }
+
+  .ney-screen__icon {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .ney-mini-metronome__beat {
+    width: 54px;
+    height: 54px;
+    flex-basis: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ney-screen { animation: none; }
+  .ney-shell-nav,
+  .ney-mini-metronome__pulse { transition: none; }
+}
