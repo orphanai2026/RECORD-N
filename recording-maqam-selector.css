@@ -1,4 +1,4 @@
-/* Maqam selector shown only in single-note recording mode. */
+/* Maqam selector shared by single maqam notes and full maqam-scale recording. */
 .ney-screen--recording .recording-maqam-selector {
   display: grid;
   gap: 10px;
@@ -8,7 +8,10 @@
   background: rgba(1,35,37,.5);
 }
 
-.ney-screen--recording .recording-maqam-selector[hidden] {
+.ney-screen--recording .recording-maqam-selector[hidden],
+.ney-screen--recording .recording-maqam-selector__modes[hidden],
+.ney-screen--recording .recording-maqam-selector__summary[hidden],
+.ney-screen--recording .recording-maqam-selector__panel[hidden] {
   display: none !important;
 }
 
@@ -86,10 +89,6 @@
 .ney-screen--recording .recording-maqam-selector__panel {
   display: grid;
   gap: 10px;
-}
-
-.ney-screen--recording .recording-maqam-selector__panel[hidden] {
-  display: none !important;
 }
 
 .ney-screen--recording .recording-maqam-selector__panel-head {
