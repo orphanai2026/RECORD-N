@@ -1,0 +1,23 @@
+/* Approved title spacing and glow refinement — 2026-08-07 */
+.brand-copy h1 {
+  text-shadow:
+    0 6px 20px rgba(0, 0, 0, .38),
+    0 0 18px rgba(215, 157, 69, .10),
+    0 0 34px rgba(245, 207, 130, .055);
+}
+
+.brand-meta {
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .brand-meta {
+    margin-top: 15px;
+  }
+}
+
+@media (max-width: 640px) {
+  .brand-meta {
+    margin-top: 13px;
+  }
+}
