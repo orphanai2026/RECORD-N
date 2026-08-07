@@ -85,7 +85,6 @@ if (!document.querySelector('link[data-app-shell-frame]')) {
 }
 import('./app-shell-frame.js?v=2026-08-07-1832').catch(error => console.error('App Shell frame load failed', error));
 
-/* Stage 12.8: full-duration ambient pulse timing + gold first-beat accent. */
 const existingRecordingPriority = document.querySelector('link[data-recording-priority]');
 if (existingRecordingPriority) existingRecordingPriority.href = './recording-priority.css?v=2026-08-07-1922';
 else {
@@ -110,7 +109,7 @@ import('./recording-metronome-top.js?v=2026-08-07-1912')
   .then(() => import('./recording-metronome-capture-guard.js?v=2026-08-07-1912'))
   .catch(error => console.error('Recording metronome protection load failed', error));
 
-/* Stage 13: compact live microphone card before Ney Auto-Capture. */
+/* Stage 13.1: synchronized compact microphone state card. */
 if (!document.querySelector('link[data-recording-microphone-card]')) {
   const microphoneStyles = document.createElement('link');
   microphoneStyles.rel = 'stylesheet';
@@ -118,5 +117,5 @@ if (!document.querySelector('link[data-recording-microphone-card]')) {
   microphoneStyles.dataset.recordingMicrophoneCard = 'true';
   document.head.append(microphoneStyles);
 }
-import('./recording-microphone-card.js?v=2026-08-07-1954')
+import('./recording-microphone-card.js?v=2026-08-07-2002')
   .catch(error => console.error('Recording microphone card load failed', error));
