@@ -71,3 +71,8 @@ import('./frequency-reference.js?v=2026-08-08-1958')
    reserved for an actual, trusted press on the settings save button. */
 import('./settings-restore-toast-guard.js?v=2026-08-08-1958')
   .catch(error => console.error('Settings restore toast guard load failed', error));
+
+/* More → Music information: visual reference library. It is intentionally loaded
+   as an isolated module so closed tuner/recording/settings screens remain untouched. */
+import('./music-library.js?v=2026-08-08-2116')
+  .catch(error => console.error('Music library load failed', error));
