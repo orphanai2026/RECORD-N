@@ -42,13 +42,13 @@
 })();
 
 /* Tuner-only learning reference: frequency table reuses the current A4, division,
-   and analysis range without introducing another settings source. */
+   analysis range and the shared maqam library without introducing another source. */
 if (!document.querySelector('link[data-frequency-reference]')) {
   const frequencyReferenceStyles = document.createElement('link');
   frequencyReferenceStyles.rel = 'stylesheet';
-  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1843';
+  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1858';
   frequencyReferenceStyles.dataset.frequencyReference = 'true';
   document.head.append(frequencyReferenceStyles);
 }
-import('./frequency-reference.js?v=2026-08-08-1843')
+import('./frequency-reference.js?v=2026-08-08-1858')
   .catch(error => console.error('Frequency reference load failed', error));
