@@ -1,0 +1,264 @@
+/* Final detail-only compaction for Music Information.
+   Home library and More screen are intentionally untouched. */
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__topbar {
+  margin-block: 2px 8px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero {
+  grid-template-columns: 48px 1fr;
+  gap: 11px;
+  min-height: 88px;
+  margin-bottom: 9px;
+  padding: 13px 15px;
+  border-radius: 16px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero-icon {
+  width: 46px;
+  height: 46px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero h3 {
+  font-size: clamp(1.06rem, 1.9vw, 1.35rem);
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero p {
+  margin-top: 3px;
+  font-size: .73rem;
+  line-height: 1.5;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-detail__body {
+  gap: 8px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-info-panel {
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-info-panel h4 {
+  margin-bottom: 6px;
+  font-size: .84rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-info-panel > p {
+  font-size: .7rem;
+  line-height: 1.5;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-segments {
+  margin-bottom: 8px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-segments button {
+  min-height: 31px;
+  padding: 4px 8px;
+  font-size: .68rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-note-grid,
+.ney-screen--music-library .ney-music-library__detail .ney-accidental-grid,
+.ney-screen--music-library .ney-music-library__detail .ney-duration-grid,
+.ney-screen--music-library .ney-music-library__detail .ney-meter-grid,
+.ney-screen--music-library .ney-music-library__detail .ney-tet-grid,
+.ney-screen--music-library .ney-music-library__detail .ney-maqam-groups,
+.ney-screen--music-library .ney-music-library__detail .ney-term-grid {
+  gap: 7px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-note-chip {
+  min-height: 60px;
+  padding: 7px;
+  border-radius: 11px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-note-chip strong {
+  font-size: .85rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-note-chip span {
+  margin-top: 2px;
+  font-size: .71rem;
+}
+
+/* Accidentals: compact but still visually distinct. */
+.ney-screen--music-library .ney-music-library__detail .ney-accidental-card {
+  min-height: 138px;
+  padding: 11px 9px;
+  border-radius: 14px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-accidental-card__symbol,
+.ney-screen--music-library .ney-music-library__detail .ney-quarter-accidental-symbol {
+  width: 50px !important;
+  height: 50px !important;
+  margin-bottom: 2px;
+  font-size: 1.72rem !important;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-quarter-accidental-symbol img {
+  width: 21px;
+  height: 37px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-accidental-card strong {
+  margin-top: 3px;
+  font-size: .8rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-accidental-card span:not(.ney-accidental-card__symbol):not(.ney-quarter-accidental-symbol) {
+  margin-top: 2px;
+  font-size: .63rem;
+  line-height: 1.38;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-accidental-card__cents {
+  margin-top: 5px !important;
+  padding: 3px 6px;
+  font-size: .6rem !important;
+}
+
+/* Rhythmic values: remove the display-card feel and use the width efficiently. */
+.ney-screen--music-library .ney-music-library__detail .ney-duration-card {
+  min-height: 142px;
+  padding: 10px 8px;
+  border-radius: 14px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-duration-card svg {
+  width: 45px;
+  height: 52px;
+  margin-bottom: 1px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-duration-card strong {
+  margin-top: 2px;
+  font-size: .79rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-duration-card span {
+  margin-top: 2px;
+  font-size: .64rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-duration-card__beats {
+  margin-top: 5px !important;
+  padding: 3px 6px;
+  font-size: .64rem !important;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-meter-card {
+  min-height: 92px;
+  padding: 9px;
+  border-radius: 12px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-meter-card__fraction {
+  font-size: 1.2rem !important;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-tet-card {
+  min-height: 118px;
+  padding: 11px;
+  border-radius: 13px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-tet-card__number {
+  font-size: 1.3rem !important;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-maqam-group {
+  min-height: 94px;
+  padding: 10px;
+  border-radius: 13px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-maqam-group h5 {
+  margin-bottom: 5px;
+  font-size: .76rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-maqam-group li {
+  padding: 3px 6px;
+  font-size: .62rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-term-search {
+  margin-bottom: 7px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-term-search input {
+  min-height: 37px;
+  font-size: .74rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-term-card {
+  min-height: 70px;
+  padding: 9px;
+  border-radius: 11px;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-term-card strong {
+  font-size: .77rem;
+}
+
+.ney-screen--music-library .ney-music-library__detail .ney-music-reference-note {
+  margin-top: 7px !important;
+  padding: 8px 9px;
+  font-size: .68rem !important;
+  line-height: 1.48 !important;
+}
+
+/* Tablet landscape: five concise cards fit comfortably in one row. */
+@media (min-width: 900px) and (max-width: 1180px) {
+  .ney-screen--music-library .ney-music-library__detail .ney-duration-grid,
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete > .ney-accidental-card,
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete > .ney-accidental-card:nth-child(4),
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete > .ney-accidental-card:nth-child(5) {
+    grid-column: auto;
+    width: auto;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 899px) and (min-width: 761px) {
+  .ney-screen--music-library .ney-music-library__detail .ney-duration-grid,
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete > .ney-accidental-card,
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete > .ney-accidental-card:nth-child(4),
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-grid.is-complete > .ney-accidental-card:nth-child(5) {
+    grid-column: auto;
+    width: auto;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 760px) {
+  .ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero {
+    grid-template-columns: 42px 1fr;
+    padding: 12px;
+  }
+
+  .ney-screen--music-library .ney-music-library__detail .ney-music-detail__hero-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ney-screen--music-library .ney-music-library__detail .ney-accidental-card,
+  .ney-screen--music-library .ney-music-library__detail .ney-duration-card {
+    min-height: 128px;
+  }
+}
