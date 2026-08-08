@@ -46,16 +46,16 @@
 if (!document.querySelector('link[data-frequency-reference]')) {
   const frequencyReferenceStyles = document.createElement('link');
   frequencyReferenceStyles.rel = 'stylesheet';
-  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1927';
+  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1933';
   frequencyReferenceStyles.dataset.frequencyReference = 'true';
   document.head.append(frequencyReferenceStyles);
 }
 if (!document.querySelector('link[data-frequency-reference-maqam-layout]')) {
   const maqamLayoutStyles = document.createElement('link');
   maqamLayoutStyles.rel = 'stylesheet';
-  maqamLayoutStyles.href = './frequency-reference-maqam-layout.css?v=2026-08-08-1927';
+  maqamLayoutStyles.href = './frequency-reference-maqam-layout.css?v=2026-08-08-1933';
   maqamLayoutStyles.dataset.frequencyReferenceMaqamLayout = 'true';
   document.head.append(maqamLayoutStyles);
 }
-import('./frequency-reference.js?v=2026-08-08-1927')
+import('./frequency-reference.js?v=2026-08-08-1933')
   .catch(error => console.error('Frequency reference load failed', error));
