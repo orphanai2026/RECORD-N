@@ -1,0 +1,156 @@
+/* Contextual fingering guide for Ney Dokah. */
+.ney-fingering-trigger {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(216,184,106,.28);
+  border-radius: 13px;
+  color: #eadfc8;
+  background: linear-gradient(145deg, rgba(5,48,50,.82), rgba(1,27,30,.94));
+  font: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+
+.ney-fingering-trigger[hidden] { display: none !important; }
+.ney-fingering-trigger:hover { border-color: rgba(216,184,106,.5); }
+.ney-fingering-trigger__visual { width: 42px; height: 58px; display: grid; place-items: center; }
+.ney-fingering-trigger strong { display: block; color: #f1d59b; font-size: .9rem; }
+.ney-fingering-trigger small { display: block; margin-top: 2px; color: #a9bab7; font-size: .7rem; }
+.ney-fingering-trigger > b { color: #d8b86a; font-size: 1.25rem; }
+.ney-fingering-trigger.is-unverified { border-style: dashed; }
+
+.ney-degree-fingering-button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid rgba(216,184,106,.22);
+  border-radius: 9px;
+  color: #e8d7b3;
+  background: rgba(2,31,34,.7);
+  font: inherit;
+  font-size: .68rem;
+  cursor: pointer;
+}
+.ney-degree-fingering-button[data-reference-state="C"],
+.ney-degree-fingering-button[data-reference-state="missing"] { border-style: dashed; }
+
+.ney-fingering-dialog {
+  width: min(660px, calc(100% - 24px));
+  max-width: 660px;
+  max-height: 88dvh;
+  padding: 0;
+  border: 1px solid rgba(216,184,106,.48);
+  border-radius: 20px;
+  color: #f2eee5;
+  background: #061f22;
+  box-shadow: 0 28px 80px rgba(0,0,0,.6);
+}
+.ney-fingering-dialog::backdrop { background: rgba(0,10,12,.68); backdrop-filter: blur(3px); }
+
+.ney-fingering-sheet { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+.ney-fingering-sheet__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 13px;
+  border-bottom: 1px solid rgba(216,184,106,.18);
+  background: linear-gradient(145deg, rgba(10,55,56,.82), rgba(2,29,32,.92));
+}
+.ney-fingering-sheet__eyebrow { color: #9fb2ae; font-size: .68rem; }
+.ney-fingering-sheet__header h3 { margin: 3px 0 0; color: #f2d58f; font-size: 1.25rem; }
+.ney-fingering-sheet__header p { margin: 4px 0 0; color: #a9bab7; font-size: .72rem; }
+.ney-fingering-sheet__close {
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border: 1px solid rgba(216,184,106,.28); border-radius: 50%;
+  color: #f1d59b; background: rgba(0,20,23,.65); font-size: 1.45rem; cursor: pointer;
+}
+.ney-fingering-sheet__body { overflow: auto; padding: 16px 18px 20px; }
+
+.ney-fingering-note-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px 13px;
+  border: 1px solid rgba(216,184,106,.18);
+  border-radius: 13px;
+  background: rgba(4,39,41,.58);
+}
+.ney-fingering-note-head strong { display: block; color: #f2eee5; font-size: 1rem; }
+.ney-fingering-note-head span { display: block; margin-top: 2px; color: #9fb2ae; font-size: .72rem; }
+.ney-fingering-note-head bdi { color: #f1d59b; font-weight: 800; }
+
+.ney-fingering-layout { display: grid; grid-template-columns: minmax(160px, .75fr) minmax(0, 1.25fr); gap: 18px; align-items: center; }
+.ney-fingering-visual { display: grid; place-items: center; min-height: 320px; }
+.ney-fingering-copy h4 { margin: 0 0 8px; color: #f1d59b; }
+.ney-fingering-instruction { margin: 0; color: #e9e0ce; line-height: 1.85; }
+.ney-fingering-performance-note {
+  margin-top: 12px; padding: 10px 11px; border-inline-start: 3px solid rgba(67,222,212,.55);
+  border-radius: 9px; color: #b8c7c4; background: rgba(67,222,212,.05); font-size: .76rem; line-height: 1.7;
+}
+
+.ney-fingering-legend { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 14px; }
+.ney-fingering-legend span { display: inline-flex; align-items: center; gap: 6px; color: #aebfbc; font-size: .7rem; }
+.ney-fingering-legend i { width: 13px; height: 13px; display: inline-block; border: 1.5px solid #d8b86a; border-radius: 50%; background: #061f22; }
+.ney-fingering-legend i.is-closed { background: #d8b86a; }
+.ney-fingering-legend i.is-half { background: linear-gradient(90deg, #d8b86a 0 50%, #061f22 50%); }
+.ney-fingering-legend i.is-optional { background: #071f22; box-shadow: inset 0 0 0 3px #071f22; position: relative; }
+.ney-fingering-legend i.is-optional::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #9fb2ae; position: absolute; inset: 50% auto auto 50%; transform: translate(-50%,-50%); }
+
+.ney-fingering-source {
+  display: grid;
+  gap: 3px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(216,184,106,.16);
+  color: #aebfbc;
+  font-size: .7rem;
+}
+.ney-fingering-source strong { color: #f1d59b; font-size: .72rem; }
+.ney-fingering-source small { color: #7f9692; }
+
+.ney-fingering-unavailable {
+  padding: 14px;
+  border: 1px dashed rgba(216,184,106,.34);
+  border-radius: 13px;
+  background: rgba(216,184,106,.04);
+}
+.ney-fingering-unavailable strong { color: #f1d59b; }
+.ney-fingering-unavailable p { margin: 7px 0 0; color: #aebfbc; line-height: 1.75; }
+
+.ney-fingering-body { fill: rgba(207,151,66,.22); stroke: rgba(245,207,130,.5); stroke-width: 1.5; }
+.ney-fingering-hole { stroke: #d8b86a; stroke-width: 2; }
+.ney-fingering-hole--closed { fill: #d8b86a; }
+.ney-fingering-hole--open { fill: #062124; }
+.ney-fingering-hole--optional { fill: #3e5552; }
+.ney-fingering-hole--unknown { fill: #061f22; stroke-dasharray: 3 2; }
+.ney-fingering-half-fill { fill: #d8b86a; }
+.ney-fingering-optional-dot { fill: #c9d1cf; }
+.ney-fingering-hole-label { fill: #d8b86a; font-size: 14px; font-weight: 800; }
+.ney-fingering-ney { width: 190px; height: auto; max-width: 100%; }
+.ney-fingering-ney.is-compact { width: 42px; height: 58px; }
+
+@media (max-width: 640px) {
+  .ney-fingering-dialog {
+    width: 100%;
+    max-width: none;
+    max-height: 84dvh;
+    margin: auto 0 0;
+    border-radius: 20px 20px 0 0;
+  }
+  .ney-fingering-sheet__body { padding: 14px 14px 22px; }
+  .ney-fingering-layout { grid-template-columns: 1fr; gap: 6px; }
+  .ney-fingering-visual { min-height: 260px; }
+  .ney-fingering-ney { width: 150px; }
+  .ney-fingering-note-head { align-items: flex-start; }
+}
