@@ -1,26 +1,71 @@
-/* Frequency reference maqam layout stabilization — 2026-08-08 */
+/* Creative frequency-reference layout — notes first, 2026-08-08 */
+.ney-frequency-reference-dialog{
+  width:min(1040px,calc(100% - 20px));
+  max-height:90dvh;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  scrollbar-gutter:stable;
+}
+.ney-frequency-reference-shell{
+  display:block!important;
+  max-height:none!important;
+  min-height:0
+}
+.ney-frequency-reference-head{
+  padding:13px 18px 10px!important;
+  gap:14px
+}
+.ney-frequency-reference-head h2{
+  margin:1px 0 2px!important;
+  font-size:1.22rem!important
+}
+.ney-frequency-reference-head p{
+  max-width:760px;
+  font-size:.72rem!important;
+  line-height:1.4!important
+}
+.ney-frequency-reference-kicker{font-size:.63rem!important}
+.ney-frequency-reference-close{
+  width:36px!important;
+  height:36px!important;
+  flex-basis:36px!important
+}
+.ney-frequency-reference-meta{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+  padding:8px 18px 6px!important
+}
+.ney-frequency-reference-meta span{
+  min-height:32px!important;
+  padding:5px 9px!important;
+  font-size:.65rem!important
+}
+.ney-frequency-reference-meta strong{font-size:.7rem!important}
 .ney-frequency-reference-view{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:7px;
-  margin:0 20px 11px;
-  padding:4px;
+  gap:6px;
+  margin:0 18px 8px;
+  padding:3px;
   border:1px solid rgba(216,184,106,.14);
-  border-radius:12px;
+  border-radius:11px;
   background:rgba(0,18,21,.5)
 }
 .ney-frequency-reference-view button{
   appearance:none;
   -webkit-appearance:none;
-  min-height:36px;
+  min-height:34px;
   margin:0;
-  padding:7px 12px;
+  padding:6px 11px;
   border:0;
-  border-radius:9px;
+  border-radius:8px;
   background:transparent;
   color:#9fb2ae;
   font:inherit;
-  font-size:.73rem;
+  font-size:.71rem;
   font-weight:700;
   line-height:1.2;
   cursor:pointer
@@ -32,24 +77,36 @@
 }
 .ney-frequency-reference-tools[hidden],
 .ney-frequency-reference-maqam-tools[hidden]{display:none!important}
+.ney-frequency-reference-tools{
+  gap:8px!important;
+  padding:0 18px 8px!important
+}
+.ney-frequency-reference-tools label,
+.ney-frequency-reference-maqam-tools label{
+  gap:4px!important;
+  font-size:.64rem!important
+}
+.ney-frequency-reference-tools input,
+.ney-frequency-reference-tools select,
+.ney-frequency-reference-maqam-tools select{
+  min-height:38px!important;
+  padding:6px 9px!important
+}
 .ney-frequency-reference-maqam-tools{
   display:grid;
-  grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(150px,.55fr);
-  gap:10px;
+  grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(145px,.55fr);
+  gap:8px;
   min-width:0;
-  margin:0 20px 10px;
-  padding:10px;
+  margin:0 18px 8px;
+  padding:8px;
   border:1px solid rgba(216,184,106,.11);
-  border-radius:12px;
+  border-radius:11px;
   background:rgba(0,18,21,.34)
 }
 .ney-frequency-reference-maqam-tools label{
   display:grid;
   grid-template-rows:auto auto;
-  min-width:0;
-  gap:5px;
-  color:#9fb2ae;
-  font-size:.68rem
+  min-width:0
 }
 .ney-frequency-reference-maqam-tools label>span{
   display:block;
@@ -60,30 +117,176 @@
   appearance:auto;
   width:100%;
   min-width:0;
-  min-height:40px;
   margin:0;
-  padding:7px 10px;
   border:1px solid rgba(216,184,106,.2);
-  border-radius:10px;
+  border-radius:9px;
   background:rgba(0,18,21,.76);
   color:#f4f2e9;
   font:inherit;
   line-height:1.25
 }
-.ney-frequency-reference-dialog.is-maqam-view .ney-frequency-reference-note{
-  clear:both;
-  margin-top:0
+.ney-frequency-reference-note{
+  margin:0 18px 8px!important;
+  padding:7px 10px!important;
+  font-size:.67rem!important;
+  line-height:1.4!important
 }
+.ney-frequency-reference-table-wrap{
+  min-height:0!important;
+  overflow:visible!important;
+  margin:0 18px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important
+}
+.ney-frequency-reference-table{
+  width:100%;
+  border-collapse:separate!important;
+  border-spacing:0 6px!important;
+  table-layout:auto;
+  font-size:.82rem!important
+}
+.ney-frequency-reference-table thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:5!important;
+  padding:8px 12px!important;
+  border-top:1px solid rgba(216,184,106,.14);
+  border-bottom:1px solid rgba(216,184,106,.18)!important;
+  background:rgba(6,40,43,.97)!important;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:#e9cf8c!important;
+  font-size:.68rem!important
+}
+.ney-frequency-reference-table tbody td{
+  padding:12px 14px!important;
+  border-top:1px solid rgba(255,255,255,.045);
+  border-bottom:1px solid rgba(255,255,255,.055)!important;
+  background:rgba(0,23,26,.72);
+  color:#dce6e2;
+  vertical-align:middle
+}
+.ney-frequency-reference-table tbody tr td:first-child{
+  border-inline-start:1px solid rgba(216,184,106,.11);
+  border-radius:0 12px 12px 0
+}
+.ney-frequency-reference-table tbody tr td:last-child{
+  border-inline-end:1px solid rgba(216,184,106,.11);
+  border-radius:12px 0 0 12px
+}
+.ney-frequency-reference-table tbody tr:nth-child(even) td{
+  background:rgba(2,31,34,.78)
+}
+.ney-frequency-reference-table tbody tr:hover td{
+  background:rgba(8,48,49,.82)
+}
+.ney-frequency-reference-dialog:not(.is-maqam-view) .ney-frequency-reference-table td:first-child strong,
+.ney-frequency-reference-dialog.is-maqam-view .ney-frequency-reference-table td:nth-child(2) strong{
+  color:#f4f2e9!important;
+  font-size:1.02rem;
+  font-weight:800;
+  line-height:1.35
+}
+.ney-frequency-reference-table td:last-child strong{
+  color:#72e8db!important;
+  font-size:1rem;
+  font-weight:800;
+  font-variant-numeric:tabular-nums
+}
+.ney-frequency-reference-table td:last-child span{
+  color:#8fa29e!important;
+  font-size:.68rem!important
+}
+.ney-frequency-degree{
+  width:30px!important;
+  height:30px!important;
+  border-color:rgba(216,184,106,.26)!important;
+  background:rgba(216,184,106,.075)!important;
+  color:#efd98f!important;
+  font-size:.74rem!important
+}
+.ney-frequency-reference-dialog.is-maqam-view tbody tr.is-root-degree td,
+.ney-frequency-reference-dialog.is-maqam-view tbody tr:first-child td{
+  background:linear-gradient(90deg,rgba(216,184,106,.11),rgba(4,39,41,.82))!important;
+  border-top-color:rgba(216,184,106,.24)!important;
+  border-bottom-color:rgba(216,184,106,.2)!important
+}
+.ney-frequency-reference-dialog.is-maqam-view tbody tr.is-root-degree td:first-child,
+.ney-frequency-reference-dialog.is-maqam-view tbody tr:first-child td:first-child{
+  border-inline-start:3px solid rgba(216,184,106,.72)
+}
+.ney-quarter-tone-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:24px;
+  height:20px;
+  margin-inline-start:7px;
+  padding:0 6px;
+  border:1px solid rgba(114,232,219,.23);
+  border-radius:999px;
+  background:rgba(114,232,219,.07);
+  color:#83ddd4;
+  font-size:.62rem;
+  font-weight:800;
+  vertical-align:middle
+}
+.ney-frequency-reference-foot{
+  padding:8px 18px 14px!important;
+  gap:10px!important
+}
+.ney-frequency-reference-foot>span{font-size:.68rem!important}
+.ney-frequency-reference-foot small{font-size:.61rem!important;line-height:1.45!important}
 @media(max-width:760px){
   .ney-frequency-reference-maqam-tools{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ney-frequency-reference-maqam-tools label:last-child{grid-column:1/-1}
 }
 @media(max-width:700px){
-  .ney-frequency-reference-view{margin:0 14px 9px}
+  .ney-frequency-reference-dialog{
+    width:calc(100% - 8px)!important;
+    max-height:94dvh!important;
+    border-radius:15px!important
+  }
+  .ney-frequency-reference-head{padding:11px 12px 8px!important}
+  .ney-frequency-reference-head p{font-size:.68rem!important}
+  .ney-frequency-reference-meta{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    padding:7px 12px 5px!important
+  }
+  .ney-frequency-reference-meta span{
+    justify-content:center!important;
+    flex-wrap:wrap;
+    gap:3px!important;
+    min-height:34px!important;
+    padding:4px 5px!important;
+    text-align:center
+  }
+  .ney-frequency-reference-view{margin:0 12px 7px}
+  .ney-frequency-reference-tools{padding:0 12px 7px!important}
   .ney-frequency-reference-maqam-tools{
     grid-template-columns:1fr;
-    margin:0 14px 9px;
-    padding:9px
+    margin:0 12px 7px;
+    padding:7px
   }
   .ney-frequency-reference-maqam-tools label:last-child{grid-column:auto}
+  .ney-frequency-reference-note{margin:0 12px 7px!important}
+  .ney-frequency-reference-table-wrap{margin:0 12px!important}
+  .ney-frequency-reference-table{font-size:.76rem!important;border-spacing:0 5px!important}
+  .ney-frequency-reference-table thead th,
+  .ney-frequency-reference-table tbody td{padding:10px 8px!important}
+  .ney-frequency-reference-dialog:not(.is-maqam-view) .ney-frequency-reference-table td:first-child strong,
+  .ney-frequency-reference-dialog.is-maqam-view .ney-frequency-reference-table td:nth-child(2) strong{font-size:.92rem}
+  .ney-frequency-reference-table td:last-child strong{font-size:.9rem}
+  .ney-frequency-reference-foot{padding:7px 12px 12px!important}
+}
+@media(max-width:520px){
+  .ney-frequency-reference-meta{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .ney-frequency-reference-meta span:last-child{grid-column:1/-1}
+  .ney-frequency-reference-table thead th{font-size:.61rem!important}
+  .ney-frequency-reference-table tbody td{font-size:.72rem}
+  .ney-frequency-reference-dialog.is-maqam-view .ney-frequency-reference-table thead th:nth-child(4),
+  .ney-frequency-reference-dialog.is-maqam-view .ney-frequency-reference-table tbody td:nth-child(4){display:none}
+  .ney-frequency-reference-dialog:not(.is-maqam-view) .ney-frequency-reference-table thead th:nth-child(3),
+  .ney-frequency-reference-dialog:not(.is-maqam-view) .ney-frequency-reference-table tbody td:nth-child(3){display:none}
 }
