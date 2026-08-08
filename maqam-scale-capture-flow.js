@@ -264,3 +264,14 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
   else initialize();
 })();
+
+/* Contextual fingering guide — loaded after the maqam flow so it can follow the active target. */
+if (!document.querySelector('link[data-ney-fingering-guide]')) {
+  const fingeringStyles = document.createElement('link');
+  fingeringStyles.rel = 'stylesheet';
+  fingeringStyles.href = './ney-fingering-guide.css?v=2026-08-08-1117';
+  fingeringStyles.dataset.neyFingeringGuide = 'true';
+  document.head.append(fingeringStyles);
+}
+import('./ney-fingering-guide.js?v=2026-08-08-1117')
+  .catch(error => console.error('Ney fingering guide load failed', error));
