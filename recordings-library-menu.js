@@ -7,7 +7,7 @@
     if (document.querySelector('link[data-recordings-library-menu]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './recordings-library-menu.css?v=2026-08-08-1648';
+    link.href = './recordings-library-menu.css?v=2026-08-08-1654';
     link.dataset.recordingsLibraryMenu = 'true';
     document.head.append(link);
   }
