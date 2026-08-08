@@ -46,16 +46,23 @@
 if (!document.querySelector('link[data-frequency-reference]')) {
   const frequencyReferenceStyles = document.createElement('link');
   frequencyReferenceStyles.rel = 'stylesheet';
-  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1933';
+  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1945';
   frequencyReferenceStyles.dataset.frequencyReference = 'true';
   document.head.append(frequencyReferenceStyles);
 }
 if (!document.querySelector('link[data-frequency-reference-maqam-layout]')) {
   const maqamLayoutStyles = document.createElement('link');
   maqamLayoutStyles.rel = 'stylesheet';
-  maqamLayoutStyles.href = './frequency-reference-maqam-layout.css?v=2026-08-08-1933';
+  maqamLayoutStyles.href = './frequency-reference-maqam-layout.css?v=2026-08-08-1945';
   maqamLayoutStyles.dataset.frequencyReferenceMaqamLayout = 'true';
   document.head.append(maqamLayoutStyles);
 }
-import('./frequency-reference.js?v=2026-08-08-1933')
+if (!document.querySelector('link[data-tuner-safe-area]')) {
+  const tunerSafeAreaStyles = document.createElement('link');
+  tunerSafeAreaStyles.rel = 'stylesheet';
+  tunerSafeAreaStyles.href = './tuner-safe-area.css?v=2026-08-08-1945';
+  tunerSafeAreaStyles.dataset.tunerSafeArea = 'true';
+  document.head.append(tunerSafeAreaStyles);
+}
+import('./frequency-reference.js?v=2026-08-08-1945')
   .catch(error => console.error('Frequency reference load failed', error));
