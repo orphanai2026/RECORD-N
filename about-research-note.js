@@ -74,7 +74,14 @@ import('./settings-restore-toast-guard.js?v=2026-08-08-1958')
 
 /* More → Music information: visual reference library. It is intentionally loaded
    as an isolated module so closed tuner/recording/settings screens remain untouched. */
-import('./music-library.js?v=2026-08-08-2128')
+if (!document.querySelector('link[data-music-library-premium]')) {
+  const premiumStyles = document.createElement('link');
+  premiumStyles.rel = 'stylesheet';
+  premiumStyles.href = './music-library-premium.css?v=2026-08-08-2141';
+  premiumStyles.dataset.musicLibraryPremium = 'true';
+  document.head.append(premiumStyles);
+}
+import('./music-library.js?v=2026-08-08-2141')
   .catch(error => console.error('Music library load failed', error));
-import('./music-library-navigation-guard.js?v=2026-08-08-2128')
+import('./music-library-navigation-guard.js?v=2026-08-08-2141')
   .catch(error => console.error('Music library navigation guard load failed', error));
