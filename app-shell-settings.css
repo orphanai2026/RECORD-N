@@ -1,0 +1,163 @@
+/* Dedicated settings screen for the App Shell. */
+.ney-screen--settings {
+  display: grid;
+  gap: 16px;
+}
+
+.ney-screen--settings[hidden] {
+  display: none !important;
+}
+
+.ney-settings-back {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid rgba(216, 184, 106, .34);
+  border-radius: 11px;
+  color: #f0dbab;
+  background: rgba(2, 30, 33, .72);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ney-settings-back svg {
+  width: 17px;
+  height: 17px;
+}
+
+.ney-screen--settings .quick-controls {
+  width: 100%;
+  margin: 0 !important;
+}
+
+.ney-screen--settings .quick-controls__header {
+  align-items: center;
+}
+
+.ney-screen--settings #advancedButton {
+  display: none !important;
+}
+
+.ney-settings-technical {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.ney-settings-technical > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(216, 184, 106, .24);
+  border-radius: 17px 17px 0 0;
+  background: linear-gradient(145deg, rgba(4, 44, 46, .82), rgba(1, 24, 27, .92));
+}
+
+.ney-settings-technical > header h2 {
+  margin: 0;
+  color: #f2d58f;
+  font-size: 1.25rem;
+}
+
+.ney-settings-technical > header p {
+  margin: 4px 0 0;
+  color: #9fb2ae;
+  font-size: .76rem;
+}
+
+.ney-settings-technical > header .icon-button {
+  display: none !important;
+}
+
+.ney-screen--settings .advanced-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0;
+}
+
+.ney-screen--settings .settings-section {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(216, 184, 106, .24);
+  border-radius: 17px;
+  background: linear-gradient(145deg, rgba(4, 44, 46, .72), rgba(1, 24, 27, .88));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+}
+
+.ney-screen--settings .settings-section h3 {
+  margin-top: 0;
+}
+
+.ney-screen--settings .advanced-footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 14px;
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(216, 184, 106, .16);
+}
+
+.ney-screen--settings #saveAdvancedButton {
+  min-width: 170px;
+}
+
+.ney-screen--settings .controls-grid,
+.ney-screen--settings .advanced-settings-grid,
+.ney-screen--settings .settings-section,
+.ney-screen--settings .inline-settings,
+.ney-screen--settings .admin-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .ney-screen--settings .advanced-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ney-screen--settings .settings-section--admin {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .ney-screen--settings .ney-screen__heading {
+    align-items: flex-start;
+  }
+
+  .ney-settings-back span {
+    display: none;
+  }
+
+  .ney-settings-back {
+    width: 40px;
+    min-width: 40px;
+    padding: 0;
+  }
+
+  .ney-screen--settings .controls-grid,
+  .ney-screen--settings .advanced-settings-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ney-screen--settings .settings-section--admin {
+    grid-column: auto;
+  }
+
+  .ney-settings-technical > header {
+    padding: 13px 14px;
+  }
+
+  .ney-screen--settings .settings-section {
+    padding: 13px;
+  }
+}
