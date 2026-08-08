@@ -293,6 +293,10 @@ import('./recording-microphone-card.js?v=2026-08-07-2002')
     if (brand) brand.textContent = text;
   }
 
+  function queueA4Sync() {
+    window.setTimeout(() => window.requestAnimationFrame(syncA4), 0);
+  }
+
   function retireLegacyBulkExport() {
     const button = document.querySelector('#exportAllButton');
     if (!button) return;
@@ -302,6 +306,7 @@ import('./recording-microphone-card.js?v=2026-08-07-2002')
     button.setAttribute('aria-hidden', 'true');
     button.tabIndex = -1;
     button.dataset.retiredByPerformancePack = 'true';
+    button.style.setProperty('display', 'none', 'important');
   }
 
   function initializeFinalUiConsistency() {
@@ -310,10 +315,20 @@ import('./recording-microphone-card.js?v=2026-08-07-2002')
       input.addEventListener('input', syncA4);
       input.addEventListener('change', syncA4);
     }
-    document.addEventListener('ney:screenchange', syncA4);
+    document.querySelector('#a4Minus')?.addEventListener('click', queueA4Sync);
+    document.querySelector('#a4Plus')?.addEventListener('click', queueA4Sync);
+    window.addEventListener('ney:screenchange', syncA4);
+    window.addEventListener('focus', syncA4, { passive: true });
+    window.addEventListener('pageshow', syncA4, { passive: true });
     document.addEventListener('ney:performance-pack-updated', retireLegacyBulkExport);
     syncA4();
     retireLegacyBulkExport();
+
+    const recordingsPanel = document.querySelector('.recordings-panel');
+    if (recordingsPanel) {
+      const observer = new MutationObserver(retireLegacyBulkExport);
+      observer.observe(recordingsPanel, { childList: true, subtree: true });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeFinalUiConsistency, { once: true });
