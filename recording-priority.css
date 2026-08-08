@@ -312,3 +312,76 @@
     grid-column: auto;
   }
 }
+
+/* Final recording-screen review — approved full-width hierarchy.
+   The metronome already lives above the layout, so the former side rail must no longer reserve space. */
+.ney-screen--recording .ney-recording-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100%;
+  max-width: 100%;
+  gap: 0 !important;
+}
+
+.ney-screen--recording .ney-recording-main {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ney-screen--recording .ney-recording-side {
+  display: none !important;
+}
+
+.ney-screen--recording .recording-panel {
+  width: 100%;
+  max-width: 100%;
+}
+
+.ney-screen--recording .recording-actions-stack {
+  gap: 16px;
+}
+
+.ney-screen--recording .ney-mini-metronome--top,
+.ney-screen--recording .ney-microphone-card,
+.ney-screen--recording #neyAutoCapturePanel,
+.ney-screen--recording .recording-workflow {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.ney-screen--recording .ney-mini-metronome--top {
+  margin-bottom: 16px;
+  border-radius: 18px;
+}
+
+.ney-screen--recording .ney-microphone-card,
+.ney-screen--recording #neyAutoCapturePanel,
+.ney-screen--recording .recording-workflow {
+  border-radius: 18px;
+}
+
+@media (min-width: 1180px) {
+  .ney-screen--recording .ney-recording-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ney-screen--recording .recording-workflow__header {
+    grid-template-columns: minmax(260px, .55fr) minmax(560px, 1.45fr);
+  }
+
+  .ney-screen--recording .recording-mode-control {
+    max-width: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .ney-screen--recording .recording-actions-stack {
+    gap: 12px;
+  }
+
+  .ney-screen--recording .ney-mini-metronome--top {
+    margin-bottom: 12px;
+  }
+}
