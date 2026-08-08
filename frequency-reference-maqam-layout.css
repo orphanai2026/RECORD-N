@@ -1,0 +1,89 @@
+/* Frequency reference maqam layout stabilization — 2026-08-08 */
+.ney-frequency-reference-view{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin:0 20px 11px;
+  padding:4px;
+  border:1px solid rgba(216,184,106,.14);
+  border-radius:12px;
+  background:rgba(0,18,21,.5)
+}
+.ney-frequency-reference-view button{
+  appearance:none;
+  -webkit-appearance:none;
+  min-height:36px;
+  margin:0;
+  padding:7px 12px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#9fb2ae;
+  font:inherit;
+  font-size:.73rem;
+  font-weight:700;
+  line-height:1.2;
+  cursor:pointer
+}
+.ney-frequency-reference-view button.is-active{
+  background:rgba(216,184,106,.12);
+  color:#efd98f;
+  box-shadow:inset 0 0 0 1px rgba(216,184,106,.18)
+}
+.ney-frequency-reference-tools[hidden],
+.ney-frequency-reference-maqam-tools[hidden]{display:none!important}
+.ney-frequency-reference-maqam-tools{
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(150px,.55fr);
+  gap:10px;
+  min-width:0;
+  margin:0 20px 10px;
+  padding:10px;
+  border:1px solid rgba(216,184,106,.11);
+  border-radius:12px;
+  background:rgba(0,18,21,.34)
+}
+.ney-frequency-reference-maqam-tools label{
+  display:grid;
+  grid-template-rows:auto auto;
+  min-width:0;
+  gap:5px;
+  color:#9fb2ae;
+  font-size:.68rem
+}
+.ney-frequency-reference-maqam-tools label>span{
+  display:block;
+  min-height:1em;
+  white-space:nowrap
+}
+.ney-frequency-reference-maqam-tools select{
+  appearance:auto;
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  margin:0;
+  padding:7px 10px;
+  border:1px solid rgba(216,184,106,.2);
+  border-radius:10px;
+  background:rgba(0,18,21,.76);
+  color:#f4f2e9;
+  font:inherit;
+  line-height:1.25
+}
+.ney-frequency-reference-dialog.is-maqam-view .ney-frequency-reference-note{
+  clear:both;
+  margin-top:0
+}
+@media(max-width:760px){
+  .ney-frequency-reference-maqam-tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ney-frequency-reference-maqam-tools label:last-child{grid-column:1/-1}
+}
+@media(max-width:700px){
+  .ney-frequency-reference-view{margin:0 14px 9px}
+  .ney-frequency-reference-maqam-tools{
+    grid-template-columns:1fr;
+    margin:0 14px 9px;
+    padding:9px
+  }
+  .ney-frequency-reference-maqam-tools label:last-child{grid-column:auto}
+}
