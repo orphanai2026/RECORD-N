@@ -1,0 +1,55 @@
+/* Unified settings runtime — small visual fixes coupled to runtime field wrappers. */
+.ney-screen--settings .ney-frequency-field {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  direction: ltr;
+  border: 1px solid rgba(216, 184, 106, .22);
+  border-radius: 10px;
+  background: #3f3f3f;
+}
+
+.ney-screen--settings .ney-frequency-field input[type="number"] {
+  flex: 1 1 auto;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #f2f0eb;
+  direction: ltr;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.ney-screen--settings .ney-frequency-field small {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  color: #d7bc79;
+  font-size: .7rem;
+  line-height: 1;
+  direction: ltr;
+}
+
+.ney-screen--settings .ney-frequency-field:focus-within {
+  border-color: rgba(91, 225, 216, .72);
+  box-shadow: 0 0 0 2px rgba(91, 225, 216, .10);
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .inline-settings > label {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 6px !important;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .inline-settings > label > .ney-frequency-field {
+  grid-column: 1 / -1;
+}
