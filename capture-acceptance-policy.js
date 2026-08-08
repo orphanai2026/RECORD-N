@@ -3,13 +3,16 @@
 
   const policy = Object.freeze({
     requiredPassRatio: 0.90,
-    minimumClarity: 0.90,
+    get minimumClarity() {
+      const value = Number(window.NeySettingsRuntime?.recordingQuality?.() ?? .90);
+      return Number.isFinite(value) ? Math.max(.65, Math.min(1, value)) : .90;
+    },
     transientGraceMs: 150,
     rationale: 'engineering-calibration-informed-by-pitch-and-onset-research'
   });
 
   async function importPatchedModule(path, replacements) {
-    const response = await fetch(`${path}?policy=2026-08-08-0036`, { cache: 'no-store' });
+    const response = await fetch(`${path}?policy=2026-08-08-1627`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`${path} ${response.status}`);
     let source = await response.text();
 
@@ -18,7 +21,7 @@
       source = source.split(before).join(after);
     }
 
-    source += `\n//# sourceURL=${path}?capture-policy-90`;
+    source += `\n//# sourceURL=${path}?capture-policy-unified-settings`;
     const blobUrl = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
     try {
       return await import(blobUrl);
@@ -56,7 +59,8 @@
     }
   }`],
       ['requiredPassRatio: 1,', 'requiredPassRatio: .90,'],
-      ['<strong>100% من القراءات داخل هامش الضبط المختار · جودة ≥ 90%</strong>', '<strong>القراءات المقبولة ≥ 90% · جودة الإشارة ≥ 90%</strong>'],
+      ['minimumClarity: .90,', 'get minimumClarity() { return Number(window.NeySettingsRuntime?.recordingQuality?.() ?? .90); },'],
+      ['<strong>100% من القراءات داخل هامش الضبط المختار · جودة ≥ 90%</strong>', '<strong>القراءات المقبولة ≥ 90% · جودة الإشارة وفق الإعداد المختار</strong>'],
       ['if (cleanPassRatio === 1 && deviation <= 3 && range <= 10)', 'if (cleanPassRatio >= CONFIG.requiredPassRatio && deviation <= 3 && range <= 10)'],
       ["updateBadge('العينة الأفضل محفوظة ✓', 'success');", "updateBadge('المرجع الأفضل موجود ✓', 'success');"],
       ['لكن العينة المحفوظة أفضل أو مساوية؛ لم تُستبدل.', 'لكن المرجع المحفوظ أفضل أو مساوٍ؛ لم يُستبدل. التسجيل التعليمي يمكنه الاستمرار أو إعادة المحاولة بصورة مستقلة.'],
@@ -74,6 +78,7 @@
 
   async function loadEducationalDurationCapture() {
     return importPatchedModule('./educational-duration-capture.js', [
+      ['minimumClarity: .90,', 'get minimumClarity() { return Number(window.NeySettingsRuntime?.recordingQuality?.() ?? .90); },'],
       [`  function framePasses(frame, candidate) {
     if (!frame || !candidate) return false;
     if (frame.english && candidate.english && frame.english !== candidate.english) return false;
@@ -163,7 +168,7 @@
     const labels = [];
     if (analysis.reasonCounts.unstable) labels.push('عدم ثبات ' + analysis.reasonCounts.unstable);
     if (analysis.reasonCounts.cents) labels.push('خارج هامش السنت ' + analysis.reasonCounts.cents);
-    if (analysis.reasonCounts.clarity) labels.push('جودة أقل من 90% ' + analysis.reasonCounts.clarity);
+    if (analysis.reasonCounts.clarity) labels.push('جودة أقل من ' + Math.round(CONFIG.minimumClarity * 100) + '% ' + analysis.reasonCounts.clarity);
     if (analysis.reasonCounts.note) labels.push('اختلاف النغمة ' + analysis.reasonCounts.note);
     if (analysis.reasonCounts.target) labels.push('اختلاف الهدف الترددي ' + analysis.reasonCounts.target);
     if (analysis.reasonCounts.missing) labels.push('قراءات مفقودة ' + analysis.reasonCounts.missing);
