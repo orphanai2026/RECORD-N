@@ -46,23 +46,28 @@
 if (!document.querySelector('link[data-frequency-reference]')) {
   const frequencyReferenceStyles = document.createElement('link');
   frequencyReferenceStyles.rel = 'stylesheet';
-  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1945';
+  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1958';
   frequencyReferenceStyles.dataset.frequencyReference = 'true';
   document.head.append(frequencyReferenceStyles);
 }
 if (!document.querySelector('link[data-frequency-reference-maqam-layout]')) {
   const maqamLayoutStyles = document.createElement('link');
   maqamLayoutStyles.rel = 'stylesheet';
-  maqamLayoutStyles.href = './frequency-reference-maqam-layout.css?v=2026-08-08-1945';
+  maqamLayoutStyles.href = './frequency-reference-maqam-layout.css?v=2026-08-08-1958';
   maqamLayoutStyles.dataset.frequencyReferenceMaqamLayout = 'true';
   document.head.append(maqamLayoutStyles);
 }
 if (!document.querySelector('link[data-tuner-safe-area]')) {
   const tunerSafeAreaStyles = document.createElement('link');
   tunerSafeAreaStyles.rel = 'stylesheet';
-  tunerSafeAreaStyles.href = './tuner-safe-area.css?v=2026-08-08-1945';
+  tunerSafeAreaStyles.href = './tuner-safe-area.css?v=2026-08-08-1958';
   tunerSafeAreaStyles.dataset.tunerSafeArea = 'true';
   document.head.append(tunerSafeAreaStyles);
 }
-import('./frequency-reference.js?v=2026-08-08-1945')
+import('./frequency-reference.js?v=2026-08-08-1958')
   .catch(error => console.error('Frequency reference load failed', error));
+
+/* Keep automatic settings restoration silent. The user-facing save toast remains
+   reserved for an actual, trusted press on the settings save button. */
+import('./settings-restore-toast-guard.js?v=2026-08-08-1958')
+  .catch(error => console.error('Settings restore toast guard load failed', error));
