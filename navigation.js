@@ -2,18 +2,122 @@
   'use strict';
 
   const $ = (selector, scope = document) => scope.querySelector(selector);
+  let settingsScreen = null;
 
   function icon(path) {
     return `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
   }
 
+  function closeSettingsScreen() {
+    if (!settingsScreen) return;
+    settingsScreen.hidden = true;
+    document.body.classList.remove('app-settings-screen-open');
+    $('.app-shell')?.removeAttribute('aria-hidden');
+  }
+
+  function openSettingsScreen(focusSelector = '') {
+    settingsScreen = ensureSettingsScreen();
+    if (!settingsScreen) return;
+    settingsScreen.hidden = false;
+    document.body.classList.add('app-settings-screen-open');
+    $('.app-shell')?.setAttribute('aria-hidden', 'true');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (focusSelector) {
+      window.setTimeout(() => {
+        const target = $(focusSelector, settingsScreen) || $(focusSelector);
+        target?.focus({ preventScroll: true });
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
+  }
+
+  function ensureSettingsScreen() {
+    if (settingsScreen?.isConnected) return settingsScreen;
+
+    const quickControls = $('.quick-controls');
+    const advancedDialog = $('#advancedDialog');
+    const advancedForm = $('#advancedSettingsForm');
+    if (!quickControls && !advancedForm) return null;
+
+    const screen = document.createElement('section');
+    screen.id = 'settingsScreen';
+    screen.className = 'app-settings-screen';
+    screen.hidden = true;
+    screen.setAttribute('aria-labelledby', 'settingsScreenTitle');
+    screen.innerHTML = `
+      <header class="app-settings-screen__hero">
+        <div>
+          <span class="app-settings-screen__kicker">إعدادات معيار الناي</span>
+          <h1 id="settingsScreenTitle">الإعدادات</h1>
+          <p>جميع إعدادات العزف والقياس والتسجيل والتصدير في شاشة مستقلة عن شاشة التسجيل.</p>
+        </div>
+        <button type="button" class="app-settings-screen__back" aria-label="العودة إلى شاشة التسجيل">
+          ${icon('<path d="m9 18 6-6-6-6"></path>')}
+          <span>العودة للتسجيل</span>
+        </button>
+      </header>
+      <div class="app-settings-screen__content"></div>`;
+
+    const content = $('.app-settings-screen__content', screen);
+
+    if (quickControls) {
+      quickControls.classList.add('settings-quick-controls');
+      const title = $('h2', quickControls);
+      const description = $('.quick-controls__header p', quickControls);
+      if (title) title.textContent = 'التحكم السريع';
+      if (description) description.textContent = 'إعدادات العزف الأساسية التي تضبطها قبل بدء التسجيل.';
+      const advancedButton = $('#advancedButton', quickControls) || $('#advancedButton');
+      if (advancedButton) {
+        advancedButton.hidden = true;
+        advancedButton.setAttribute('aria-hidden', 'true');
+        advancedButton.tabIndex = -1;
+      }
+      content.appendChild(quickControls);
+    }
+
+    if (advancedForm) {
+      advancedForm.classList.add('settings-screen-form');
+      advancedForm.removeAttribute('method');
+
+      const formHeader = $('header', advancedForm);
+      const closeButton = formHeader?.querySelector('button[value="cancel"], .dialog-close, .icon-button');
+      if (closeButton) {
+        closeButton.type = 'button';
+        closeButton.removeAttribute('value');
+        closeButton.setAttribute('aria-label', 'العودة إلى شاشة التسجيل');
+        closeButton.addEventListener('click', closeSettingsScreen);
+      }
+
+      const saveButton = $('#saveAdvancedButton', advancedForm);
+      if (saveButton) {
+        saveButton.type = 'button';
+        saveButton.removeAttribute('value');
+      }
+
+      content.appendChild(advancedForm);
+    }
+
+    if (advancedDialog) {
+      advancedDialog.hidden = true;
+      advancedDialog.setAttribute('aria-hidden', 'true');
+    }
+
+    $('.app-settings-screen__back', screen)?.addEventListener('click', closeSettingsScreen);
+    document.body.appendChild(screen);
+    settingsScreen = screen;
+    return screen;
+  }
+
   function scrollToTarget(selector, button) {
-    const target = $(selector);
-    if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    target.classList.remove('app-nav-target-pulse');
-    requestAnimationFrame(() => target.classList.add('app-nav-target-pulse'));
-    window.setTimeout(() => target.classList.remove('app-nav-target-pulse'), 800);
+    closeSettingsScreen();
+    window.requestAnimationFrame(() => {
+      const target = $(selector);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.remove('app-nav-target-pulse');
+      requestAnimationFrame(() => target.classList.add('app-nav-target-pulse'));
+      window.setTimeout(() => target.classList.remove('app-nav-target-pulse'), 800);
+    });
     document.querySelectorAll('.app-bottom-nav__item').forEach(item => item.classList.remove('is-active'));
     button?.classList.add('is-active');
   }
@@ -30,11 +134,11 @@
   function initializeNavigation() {
     if ($('.app-bottom-nav')) return;
 
+    ensureSettingsScreen();
+
     const headerTabs = $('.app-header > .header-tabs');
     const helpButton = $('#helpButton');
     const aboutButton = $('#aboutButton');
-    const advancedButton = $('#advancedButton');
-    const advancedDialog = $('#advancedDialog');
 
     const nav = document.createElement('nav');
     nav.className = 'app-bottom-nav';
@@ -65,12 +169,7 @@
       action(event) {
         document.querySelectorAll('.app-bottom-nav__item').forEach(item => item.classList.remove('is-active'));
         event.currentTarget.classList.add('is-active');
-        advancedButton?.click();
-        window.setTimeout(() => {
-          const calibrationTarget = $('#toleranceRange') || $('#sensitivityRange');
-          calibrationTarget?.focus({ preventScroll: true });
-          calibrationTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 80);
+        openSettingsScreen('#toleranceRange');
       }
     });
 
@@ -81,7 +180,7 @@
       action(event) {
         document.querySelectorAll('.app-bottom-nav__item').forEach(item => item.classList.remove('is-active'));
         event.currentTarget.classList.add('is-active');
-        advancedButton?.click();
+        openSettingsScreen();
       }
     });
 
@@ -141,9 +240,10 @@
       moreMenu.hidden = true;
     });
 
-    advancedDialog?.addEventListener('close', () => {
-      settingsButton.classList.remove('is-active');
-      calibrationButton.classList.remove('is-active');
+    window.NeySettingsScreen = Object.freeze({
+      open: openSettingsScreen,
+      close: closeSettingsScreen,
+      isOpen: () => Boolean(settingsScreen && !settingsScreen.hidden)
     });
   }
 
