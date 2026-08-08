@@ -50,7 +50,6 @@
     if (form.dataset.neyOrganized === 'true') return true;
     form.dataset.neyOrganized = 'true';
 
-    /* Approved basic order: A4, division, duration, BPM. Move the same live nodes. */
     const basicGrid = $('.controls-grid', quickControls);
     if (basicGrid) {
       basicGrid.classList.add('ney-settings-basic-grid');
@@ -173,10 +172,10 @@
       saveStatus.textContent = 'تغييرات غير محفوظة';
     }
 
-    function setSaved(message = 'تم الحفظ') {
+    function setSaved() {
       if (!saveStatus) return;
       saveStatus.dataset.state = 'saved';
-      saveStatus.textContent = message;
+      saveStatus.textContent = 'تم حفظ التغييرات';
     }
 
     $$('input, select', form).forEach(control => {
@@ -189,11 +188,8 @@
 
     saveButton?.addEventListener('click', () => {
       if (!validate()) return;
-      window.setTimeout(() => setSaved('تم حفظ التغييرات'), 0);
+      window.setTimeout(setSaved, 0);
     });
-
-    $('#resetSettingsButton', form)?.addEventListener('click', () => window.setTimeout(() => { validate(); setSaved('تمت استعادة الإعدادات'); }, 0));
-    $('#settingsImportInput', form)?.addEventListener('change', () => window.setTimeout(() => { validate(); setSaved('تم استيراد الإعدادات'); }, 0));
 
     validate();
     return true;
