@@ -19,3 +19,7 @@
 .ney-screen--recording .recording-maqam-tonic__controls label{gap:3px}
 .ney-screen--recording .recording-maqam-tonic__controls select{min-height:40px;padding:5px 9px}
 @media(max-width:620px){.ney-screen--recording .recording-maqam-tonic__controls select{min-height:42px;padding:6px 9px}}
+
+/* Final current-stage adjustment: keep the last recording controls fully above the fixed bottom nav. */
+.ney-screen--recording .recording-workflow{margin-bottom:calc(var(--ney-shell-nav-height,76px) + env(safe-area-inset-bottom,0px) + 36px)}
+@media(max-width:760px){.ney-screen--recording .recording-workflow{margin-bottom:calc(var(--ney-shell-nav-height,70px) + env(safe-area-inset-bottom,0px) + 28px)}}
