@@ -1,3 +1,6 @@
+import('./recordings-library-menu.js?v=2026-08-08-1648')
+  .catch(error => console.error('Recordings library menu load failed', error));
+
 (() => {
   'use strict';
 
