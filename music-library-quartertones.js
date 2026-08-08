@@ -170,3 +170,14 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
   else initialize();
 })();
+
+/* Complete the educational content after the quarter-tone layer is available. */
+if (!document.querySelector('link[data-music-library-content-complete]')) {
+  const contentStyles = document.createElement('link');
+  contentStyles.rel = 'stylesheet';
+  contentStyles.href = './music-library-content-complete.css?v=2026-08-08-2217';
+  contentStyles.dataset.musicLibraryContentComplete = 'true';
+  document.head.append(contentStyles);
+}
+import('./music-library-content-complete.js?v=2026-08-08-2217')
+  .catch(error => console.error('Music library complete content load failed', error));
