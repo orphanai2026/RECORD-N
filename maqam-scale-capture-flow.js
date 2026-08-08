@@ -269,7 +269,7 @@
 if (!document.querySelector('link[data-ney-fingering-guide]')) {
   const fingeringStyles = document.createElement('link');
   fingeringStyles.rel = 'stylesheet';
-  fingeringStyles.href = './ney-fingering-guide.css?v=2026-08-08-1117';
+  fingeringStyles.href = './ney-fingering-guide.css?v=2026-08-08-1124';
   fingeringStyles.dataset.neyFingeringGuide = 'true';
   document.head.append(fingeringStyles);
 }
