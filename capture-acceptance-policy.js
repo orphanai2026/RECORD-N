@@ -1,3 +1,12 @@
+const settingsRuntimeStyle = document.querySelector('link[data-ney-settings-runtime]') || document.createElement('link');
+if (!settingsRuntimeStyle.dataset.neySettingsRuntime) {
+  settingsRuntimeStyle.rel = 'stylesheet';
+  settingsRuntimeStyle.href = './settings-runtime-bridge.css?v=2026-08-08-1627';
+  settingsRuntimeStyle.dataset.neySettingsRuntime = 'true';
+  document.head.append(settingsRuntimeStyle);
+}
+await import('./settings-runtime-bridge.js?v=2026-08-08-1627');
+
 (() => {
   'use strict';
 
