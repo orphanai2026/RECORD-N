@@ -269,3 +269,53 @@ if (!document.querySelector('link[data-recording-microphone-card]')) {
 }
 import('./recording-microphone-card.js?v=2026-08-07-2002')
   .catch(error => console.error('Recording microphone card load failed', error));
+
+/* Final UI consistency: use the real A4 input as the source of truth for the
+   recording header, and retire the legacy multi-file bulk export button once
+   the Performance Pack library is active. */
+(() => {
+  'use strict';
+
+  function formatA4(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return 'A4 = 440 Hz';
+    const text = Number.isInteger(number) ? String(number) : number.toFixed(1).replace(/\.0$/, '');
+    return `A4 = ${text} Hz`;
+  }
+
+  function syncA4() {
+    const input = document.querySelector('#a4Reference');
+    const screen = document.querySelector('#neyScreenA4');
+    const brand = document.querySelector('#brandReferenceValue');
+    if (!input) return;
+    const text = formatA4(input.value);
+    if (screen) screen.textContent = text;
+    if (brand) brand.textContent = text;
+  }
+
+  function retireLegacyBulkExport() {
+    const button = document.querySelector('#exportAllButton');
+    if (!button) return;
+    const performanceList = document.querySelector('#recordingsList');
+    if (!performanceList) return;
+    button.hidden = true;
+    button.setAttribute('aria-hidden', 'true');
+    button.tabIndex = -1;
+    button.dataset.retiredByPerformancePack = 'true';
+  }
+
+  function initializeFinalUiConsistency() {
+    const input = document.querySelector('#a4Reference');
+    if (input) {
+      input.addEventListener('input', syncA4);
+      input.addEventListener('change', syncA4);
+    }
+    document.addEventListener('ney:screenchange', syncA4);
+    document.addEventListener('ney:performance-pack-updated', retireLegacyBulkExport);
+    syncA4();
+    retireLegacyBulkExport();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeFinalUiConsistency, { once: true });
+  else initializeFinalUiConsistency();
+})();
