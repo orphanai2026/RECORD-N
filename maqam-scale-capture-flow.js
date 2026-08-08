@@ -269,9 +269,9 @@
 if (!document.querySelector('link[data-ney-fingering-guide]')) {
   const fingeringStyles = document.createElement('link');
   fingeringStyles.rel = 'stylesheet';
-  fingeringStyles.href = './ney-fingering-guide.css?v=2026-08-08-1124';
+  fingeringStyles.href = './ney-fingering-guide.css?v=2026-08-08-1130';
   fingeringStyles.dataset.neyFingeringGuide = 'true';
   document.head.append(fingeringStyles);
 }
-import('./ney-fingering-guide.js?v=2026-08-08-1117')
+import('./ney-fingering-guide.js?v=2026-08-08-1130')
   .catch(error => console.error('Ney fingering guide load failed', error));
