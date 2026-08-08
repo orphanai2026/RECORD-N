@@ -125,8 +125,9 @@
     const helpDialog = $('#helpDialog');
     const aboutDialog = $('#aboutDialog');
     const advancedDialog = $('#advancedDialog');
+    const advancedForm = $('#advancedSettingsForm');
 
-    if (!app || !header || !topGrid || !quickControls || !bottomGrid || !recording || !recordings || !metronome) return;
+    if (!app || !header || !topGrid || !quickControls || !bottomGrid || !recording || !recordings || !metronome || !advancedForm) return;
 
     document.body.classList.add('ney-app-shell-active');
 
@@ -139,7 +140,7 @@
     tunerScreen.append(topGrid);
 
     const recordingScreen = makeScreen('recording');
-    const recordingHeader = screenHeading('التسجيل', 'Ney Auto-Capture والجلسة والقيم الزمنية مع مترونوم إرشادي مصغر.', icon('<rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M6 10a6 6 0 0 0 12 0M12 16v5"></path>'));
+    const recordingHeader = screenHeading('التسجيل', 'Ney Auto-Capture والجلسة مع مترونوم إرشادي مصغر.', icon('<rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M6 10a6 6 0 0 0 12 0M12 16v5"></path>'));
     const status = document.createElement('div');
     status.className = 'ney-screen-status';
     status.innerHTML = `
@@ -156,7 +157,6 @@
     const recordingSide = document.createElement('aside');
     recordingSide.className = 'ney-recording-side';
     recordingMain.append(recording);
-    recordingSide.append(quickControls);
     recordingLayout.append(recordingMain, recordingSide);
     recordingScreen.append(recordingLayout);
 
@@ -168,21 +168,64 @@
     metronomeScreen.append(screenHeading('المترونوم', 'تدريب إيقاعي كامل بالصوت والإضاءة والموازين البسيطة والمركبة وغير المنتظمة.', icon('<path d="M8 20h8l2-14H6l2 14Z"></path><path d="m12 7 2 9"></path>')));
     metronomeScreen.append(metronome);
 
+    const settingsScreen = makeScreen('settings');
+    const settingsHeading = screenHeading('الإعدادات', 'التحكم السريع والمعايرة وجودة التسجيل والتصدير في شاشة مستقلة.', icon('<circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.5 1a7 7 0 0 0-1.7-1L14.5 3h-5L9 6a7 7 0 0 0-1.7 1L4.8 6 2.8 9.5 4.9 11a7 7 0 0 0 0 2l-2.1 1.5 2 3.5 2.5-1a7 7 0 0 0 1.7 1l.5 3h5l.5-3a7 7 0 0 0 1.7-1l2.5 1 2-3.5-2.1-1.5c.1-.3.1-.7.1-1Z"></path>'));
+    const settingsBack = document.createElement('button');
+    settingsBack.type = 'button';
+    settingsBack.className = 'ney-settings-back';
+    settingsBack.innerHTML = `${icon('<path d="m9 18 6-6-6-6"></path>')}<span>العودة</span>`;
+    settingsHeading.append(settingsBack);
+    settingsScreen.append(settingsHeading);
+
+    quickControls.classList.add('settings-quick-controls');
+    const quickDescription = $('.quick-controls__header p', quickControls);
+    if (quickDescription) quickDescription.textContent = 'إعدادات العزف الأساسية التي تضبط قبل بدء التسجيل.';
+    if (advancedButton) {
+      advancedButton.hidden = true;
+      advancedButton.setAttribute('aria-hidden', 'true');
+      advancedButton.tabIndex = -1;
+    }
+    settingsScreen.append(quickControls);
+
+    advancedForm.classList.add('ney-settings-technical');
+    advancedForm.removeAttribute('method');
+    const oldClose = $('header .icon-button', advancedForm);
+    if (oldClose) {
+      oldClose.type = 'button';
+      oldClose.removeAttribute('value');
+      oldClose.hidden = true;
+      oldClose.setAttribute('aria-hidden', 'true');
+      oldClose.tabIndex = -1;
+    }
+    const saveAdvancedButton = $('#saveAdvancedButton', advancedForm);
+    if (saveAdvancedButton) {
+      saveAdvancedButton.type = 'button';
+      saveAdvancedButton.removeAttribute('value');
+    }
+    settingsScreen.append(advancedForm);
+
+    if (advancedDialog) {
+      advancedDialog.hidden = true;
+      advancedDialog.setAttribute('aria-hidden', 'true');
+    }
+
     const moreScreen = makeScreen('more');
     moreScreen.append(screenHeading('المزيد', 'الإعدادات وطريقة الاستخدام ومعلومات المشروع.', icon('<circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle>')));
     const moreGrid = document.createElement('div');
     moreGrid.className = 'ney-more-grid';
+
+    let router = null;
     moreGrid.append(
-      createMoreCard('الإعدادات', 'الصوت والمعايرة والجودة والتخزين والتصدير.', icon('<circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.5 1a7 7 0 0 0-1.7-1L14.5 3h-5L9 6a7 7 0 0 0-1.7 1L4.8 6 2.8 9.5 4.9 11a7 7 0 0 0 0 2l-2.1 1.5 2 3.5 2.5-1a7 7 0 0 0 1.7 1l.5 3h5l.5-3a7 7 0 0 0 1.7-1l2.5 1 2-3.5-2.1-1.5c.1-.3.1-.7.1-1Z"></path>'), () => advancedButton?.click()),
+      createMoreCard('الإعدادات', 'التحكم السريع والصوت والمعايرة والجودة والتخزين والتصدير.', icon('<circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.5 1a7 7 0 0 0-1.7-1L14.5 3h-5L9 6a7 7 0 0 0-1.7 1L4.8 6 2.8 9.5 4.9 11a7 7 0 0 0 0 2l-2.1 1.5 2 3.5 2.5-1a7 7 0 0 0 1.7 1l.5 3h5l.5-3a7 7 0 0 0 1.7-1l2.5 1 2-3.5-2.1-1.5c.1-.3.1-.7.1-1Z"></path>'), () => router?.show('settings')),
       createMoreCard('طريقة الاستخدام', 'شرح سريع للمعيار والتسجيل والحفظ والتدريب.', icon('<circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a3 3 0 1 1 5.4 1.8c-1.3 1-2.5 1.5-2.5 3.2"></path><path d="M12 18h.01"></path>'), () => helpButton?.click()),
       createMoreCard('من نحن', 'تعريف بالمشروع والإصدار والحقوق.', icon('<circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7h.01"></path>'), () => aboutButton?.click())
     );
     moreScreen.append(moreGrid);
 
-    moveNodes(host, [tunerScreen, recordingScreen, recordingsScreen, metronomeScreen, moreScreen]);
+    moveNodes(host, [tunerScreen, recordingScreen, recordingsScreen, metronomeScreen, settingsScreen, moreScreen]);
     bottomGrid.hidden = true;
 
-    const screens = { tuner: tunerScreen, recording: recordingScreen, recordings: recordingsScreen, metronome: metronomeScreen, more: moreScreen };
+    const screens = { tuner: tunerScreen, recording: recordingScreen, recordings: recordingsScreen, metronome: metronomeScreen, settings: settingsScreen, more: moreScreen };
     const nav = document.createElement('nav');
     nav.className = 'ney-shell-nav';
     nav.setAttribute('aria-label', 'التنقل الرئيسي');
@@ -204,28 +247,33 @@
     navButton('more', 'المزيد', icon('<circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle>'));
     document.body.append(nav);
 
-    const router = {
+    router = {
       current: null,
+      previous: 'tuner',
       show(name, { updateHash = true } = {}) {
-        const next = screens[name] || screens.tuner;
+        const resolvedName = screens[name] ? name : 'tuner';
+        const next = screens[resolvedName];
+        if (this.current && this.current !== resolvedName) this.previous = this.current;
         Object.entries(screens).forEach(([key, screen]) => {
           const active = screen === next;
           screen.hidden = !active;
           screen.setAttribute('aria-hidden', String(!active));
         });
         $$('.ney-shell-nav__item', nav).forEach(button => {
-          const active = button.dataset.screenTarget === (screens[name] ? name : 'tuner');
-          if (active) button.setAttribute('aria-current', 'page');
+          const directActive = button.dataset.screenTarget === resolvedName;
+          const moreOwnsSettings = resolvedName === 'settings' && button.dataset.screenTarget === 'more';
+          if (directActive || moreOwnsSettings) button.setAttribute('aria-current', 'page');
           else button.removeAttribute('aria-current');
         });
-        this.current = screens[name] ? name : 'tuner';
-        if (updateHash && history.replaceState) history.replaceState(null, '', `#${this.current}`);
+        this.current = resolvedName;
+        if (updateHash && history.replaceState) history.replaceState(null, '', `#${resolvedName}`);
         window.scrollTo({ top: 0, behavior: 'auto' });
-        window.dispatchEvent(new CustomEvent('ney:screenchange', { detail: { screen: this.current } }));
+        window.dispatchEvent(new CustomEvent('ney:screenchange', { detail: { screen: resolvedName } }));
       }
     };
 
     $$('.ney-shell-nav__item', nav).forEach(button => button.addEventListener('click', () => router.show(button.dataset.screenTarget)));
+    settingsBack.addEventListener('click', () => router.show(router.previous === 'settings' ? 'more' : (router.previous || 'more')));
 
     const mini = createMiniMetronome(router);
     recordingSide.append(mini);
@@ -243,11 +291,8 @@
     if (brandReference) new MutationObserver(syncRecordingHeader).observe(brandReference, { childList: true, subtree: true, characterData: true });
     divisionControl?.addEventListener('click', () => queueMicrotask(syncRecordingHeader));
 
-    // Keep original header informational buttons functional through the More screen, but remove the duplicate header row.
     $('.header-tabs')?.classList.add('ney-shell-legacy-hidden');
-
-    // Dialogs remain intact in Stage 1 to avoid changing their form logic. They are now launched from the More screen.
-    [helpDialog, aboutDialog, advancedDialog].filter(Boolean).forEach(dialog => dialog.dataset.shellManaged = 'true');
+    [helpDialog, aboutDialog].filter(Boolean).forEach(dialog => dialog.dataset.shellManaged = 'true');
 
     const requested = location.hash.replace('#', '');
     router.show(screens[requested] ? requested : 'tuner', { updateHash: false });
