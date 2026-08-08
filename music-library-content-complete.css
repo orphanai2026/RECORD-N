@@ -1,0 +1,185 @@
+/* Content-completion layer for the approved compact Music Information library. */
+.ney-screen--music-library .ney-content-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.ney-screen--music-library .ney-content-fact {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(226,191,107,.12);
+  border-radius: 11px;
+  background: rgba(255,255,255,.014);
+}
+
+.ney-screen--music-library .ney-content-fact strong,
+.ney-screen--music-library .ney-content-fact span {
+  display: block;
+}
+
+.ney-screen--music-library .ney-content-fact strong {
+  color: #f0e8d6;
+  font-size: .72rem;
+}
+
+.ney-screen--music-library .ney-content-fact span {
+  margin-top: 3px;
+  color: #9fb3af;
+  font-size: .64rem;
+  line-height: 1.45;
+}
+
+.ney-screen--music-library .ney-content-fact--accent strong {
+  color: #6bddd3;
+}
+
+.ney-screen--music-library .ney-note-chip__cents {
+  margin-top: 3px !important;
+  color: #d8bf78 !important;
+  font-size: .6rem !important;
+  direction: ltr;
+}
+
+.ney-screen--music-library .ney-note-grid--24 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.ney-screen--music-library .ney-meter-card__detail {
+  display: block;
+  margin-top: 4px;
+  color: #9fb2ae;
+  font-size: .61rem;
+  line-height: 1.35;
+}
+
+.ney-screen--music-library .ney-maqam-reference {
+  margin-top: 8px;
+}
+
+.ney-screen--music-library .ney-maqam-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ney-screen--music-library .ney-maqam-detail-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(226,191,107,.13);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(85,216,205,.035), transparent 32%),
+    rgba(255,255,255,.012);
+}
+
+.ney-screen--music-library .ney-maqam-detail-card h5 {
+  margin: 0 0 6px;
+  color: #efd58f;
+  font-size: .77rem;
+}
+
+.ney-screen--music-library .ney-maqam-detail-card dl {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.ney-screen--music-library .ney-maqam-detail-card dt {
+  color: #6eddd4;
+  font-size: .6rem;
+}
+
+.ney-screen--music-library .ney-maqam-detail-card dd {
+  margin: 1px 0 0;
+  color: #aebdb9;
+  font-size: .62rem;
+  line-height: 1.43;
+}
+
+.ney-screen--music-library .ney-term-grid--complete {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ney-screen--music-library .ney-term-card--defined {
+  min-height: 96px;
+}
+
+.ney-screen--music-library .ney-term-card--defined p {
+  margin: 5px 0 0;
+  color: #9fb2ae;
+  font-size: .62rem;
+  line-height: 1.45;
+}
+
+.ney-screen--music-library .ney-term-card--defined > span[dir="ltr"] {
+  color: #65d9d0;
+  font-size: .64rem;
+}
+
+.ney-screen--music-library .ney-content-source-note {
+  margin-top: 7px;
+  color: #829894;
+  font-size: .61rem;
+  line-height: 1.5;
+}
+
+.ney-screen--music-library .ney-layer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.ney-screen--music-library .ney-layer-chip {
+  padding: 8px;
+  border: 1px solid rgba(85,216,205,.1);
+  border-radius: 10px;
+  background: rgba(85,216,205,.025);
+  text-align: center;
+}
+
+.ney-screen--music-library .ney-layer-chip strong,
+.ney-screen--music-library .ney-layer-chip span {
+  display: block;
+}
+
+.ney-screen--music-library .ney-layer-chip strong {
+  color: #e9d58e;
+  font-size: .69rem;
+}
+
+.ney-screen--music-library .ney-layer-chip span {
+  margin-top: 3px;
+  color: #9fb3af;
+  font-size: .59rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 1180px) {
+  .ney-screen--music-library .ney-note-grid--24,
+  .ney-screen--music-library .ney-maqam-detail-grid,
+  .ney-screen--music-library .ney-term-grid--complete {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 899px) {
+  .ney-screen--music-library .ney-content-facts,
+  .ney-screen--music-library .ney-maqam-detail-grid,
+  .ney-screen--music-library .ney-term-grid--complete,
+  .ney-screen--music-library .ney-layer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .ney-screen--music-library .ney-note-grid--24,
+  .ney-screen--music-library .ney-content-facts,
+  .ney-screen--music-library .ney-maqam-detail-grid,
+  .ney-screen--music-library .ney-term-grid--complete,
+  .ney-screen--music-library .ney-layer-grid {
+    grid-template-columns: 1fr;
+  }
+}
