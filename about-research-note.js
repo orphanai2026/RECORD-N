@@ -40,3 +40,15 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installResearchNote, { once: true });
   else installResearchNote();
 })();
+
+/* Tuner-only learning reference: frequency table reuses the current A4, division,
+   and analysis range without introducing another settings source. */
+if (!document.querySelector('link[data-frequency-reference]')) {
+  const frequencyReferenceStyles = document.createElement('link');
+  frequencyReferenceStyles.rel = 'stylesheet';
+  frequencyReferenceStyles.href = './frequency-reference.css?v=2026-08-08-1843';
+  frequencyReferenceStyles.dataset.frequencyReference = 'true';
+  document.head.append(frequencyReferenceStyles);
+}
+import('./frequency-reference.js?v=2026-08-08-1843')
+  .catch(error => console.error('Frequency reference load failed', error));
