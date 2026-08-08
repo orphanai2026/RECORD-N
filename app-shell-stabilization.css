@@ -168,6 +168,125 @@ body.ney-app-shell-active {
   overflow: visible !important;
 }
 
+/* Advanced quality + microphone cards: one repeatable control anatomy.
+   Label/value are separated from the slider, while the same live inputs/outputs remain untouched. */
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-setting,
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .range-setting,
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .setting-row--range {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 9px !important;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(216, 184, 106, .12);
+  border-radius: 12px;
+  background: rgba(0, 18, 21, .25);
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-setting > span,
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .range-setting > span {
+  display: flex !important;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  color: #e7ebe7;
+  font-size: .78rem;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-setting output,
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .range-setting output {
+  flex: 0 0 auto;
+  min-width: 56px;
+  direction: ltr;
+  unicode-bidi: isolate;
+  color: #f3d793;
+  text-align: left;
+  font-size: .8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-setting input[type="range"],
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .range-setting input[type="range"] {
+  display: block;
+  width: 100% !important;
+  min-width: 0;
+  margin: 0 !important;
+  direction: ltr;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .setting-row--range > span:first-child {
+  display: grid !important;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .setting-row--range > span:first-child strong {
+  color: #e7ebe7;
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .setting-row--range > span:first-child small {
+  color: #8fa6a2;
+  font-size: .68rem;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-field {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 58px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  direction: ltr;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-field input[type="range"] {
+  width: 100% !important;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-field output {
+  min-width: 58px;
+  color: #f3d793;
+  text-align: center;
+  font-size: .82rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .inline-settings {
+  margin-top: 2px;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .inline-settings > label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title title" "input unit";
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .inline-settings > label > input {
+  grid-area: input;
+  direction: ltr;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .inline-settings > label > small {
+  grid-area: unit;
+  color: #c9ae70;
+  direction: ltr;
+  font-size: .68rem;
+}
+
 /* Storage/export: approved compact two-column arrangement without changing live controls. */
 .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(3) .ney-settings-card__body {
   display: grid !important;
@@ -258,6 +377,22 @@ body.ney-app-shell-active {
   .ney-screen-status {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-setting,
+  .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .range-setting,
+  .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .setting-row--range {
+    padding: 9px 10px;
+  }
+
+  .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-setting > span,
+  .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(2) .range-setting > span {
+    gap: 8px;
+    font-size: .75rem;
+  }
+
+  .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(1) .range-field {
+    grid-template-columns: minmax(0, 1fr) 52px;
   }
 
   .ney-screen--settings .advanced-settings-grid > .ney-settings-card:nth-of-type(3) .ney-settings-card__body {
