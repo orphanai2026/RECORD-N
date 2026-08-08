@@ -84,6 +84,16 @@
   window.setInterval(checkForBuildUpdate, 60000);
 })();
 
+/* Final pre-test stabilization: this bootstrap is always loaded with a timestamp,
+   so dedicated settings styling can be refreshed safely without changing app logic. */
+if (!document.querySelector('link[data-app-shell-settings]')) {
+  const settingsStyles = document.createElement('link');
+  settingsStyles.rel = 'stylesheet';
+  settingsStyles.href = './app-shell-settings.css?v=2026-08-08-1306';
+  settingsStyles.dataset.appShellSettings = 'true';
+  document.head.append(settingsStyles);
+}
+
 function showAutoCaptureLoadFailure(error) {
   console.error('Ney Auto-Capture load failed', error);
   const install = () => {
@@ -119,8 +129,8 @@ const devBuildResetReady = import('./dev-build-recordings-reset.js?v=2026-08-08-
 const recordingFoundationReady = devBuildResetReady
   .then(() => import('./maqam-library.js?v=2026-08-07-1614'))
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
-  .then(() => import('./performance-pack-store.js?v=2026-08-08-0050'))
-  .then(() => import('./performance-pack-records-ui.js?v=2026-08-07-1742'))
+  .then(() => import('./performance-pack-store.js?v=2026-08-08-1306'))
+  .then(() => import('./performance-pack-records-ui.js?v=2026-08-08-1306'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 if (!document.querySelector('link[data-ney-auto-capture]')) {
@@ -183,7 +193,7 @@ const maqamSelectorReady = Promise.all([
 
 Promise.all([autoCaptureReady, maqamSelectorReady])
   .then(() => import('./maqam-capture-acceptance-guard.js?v=2026-08-07-2206'))
-  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-08-0120'))
+  .then(() => import('./maqam-scale-capture-flow.js?v=2026-08-08-1306'))
   .catch(error => console.error('Recording maqam capture flow load failed', error));
 
 if (!document.querySelector('link[data-educational-duration]')) {
@@ -210,7 +220,7 @@ import('./about-research-note.js?v=2026-08-07-2236')
 if (!document.querySelector('link[data-recording-modernization]')) {
   const modernizationStyles = document.createElement('link');
   modernizationStyles.rel = 'stylesheet';
-  modernizationStyles.href = './recording-modernization.css?v=2026-08-07-1734';
+  modernizationStyles.href = './recording-modernization.css?v=2026-08-08-1306';
   modernizationStyles.dataset.recordingModernization = 'true';
   document.head.append(modernizationStyles);
 }
