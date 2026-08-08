@@ -59,3 +59,6 @@
     start();
   }
 })();
+
+import('./app-shell-settings.js?v=2026-08-08-1530')
+  .catch(error => console.error('Settings enhancement load failed', error));
