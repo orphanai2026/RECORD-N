@@ -4,74 +4,76 @@
   display: grid;
   grid-template-columns: auto minmax(0,1fr) auto;
   align-items: center;
-  gap: 14px;
-  margin-top: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(216,184,106,.3);
-  border-radius: 16px;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(216,184,106,.28);
+  border-radius: 15px;
   color: #eadfc8;
   background:
-    linear-gradient(135deg, rgba(11,61,61,.94), rgba(3,31,34,.97)),
-    radial-gradient(circle at 18% 50%, rgba(216,184,106,.08), transparent 42%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    radial-gradient(circle at 14% 50%, rgba(216,184,106,.07), transparent 34%),
+    linear-gradient(135deg, rgba(10,57,58,.93), rgba(3,29,32,.97));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
   font: inherit;
   text-align: right;
   cursor: pointer;
   transition: border-color .18s ease, transform .18s ease, background .18s ease;
 }
 .ney-fingering-trigger[hidden] { display: none !important; }
-.ney-fingering-trigger:hover { border-color: rgba(216,184,106,.58); transform: translateY(-1px); }
+.ney-fingering-trigger:hover { border-color: rgba(216,184,106,.55); transform: translateY(-1px); }
 .ney-fingering-trigger:active { transform: translateY(0); }
 .ney-fingering-trigger__visual {
-  width: 52px;
-  height: 66px;
+  width: 48px;
+  height: 58px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
-  background: rgba(216,184,106,.075);
-  border: 1px solid rgba(216,184,106,.14);
+  border-radius: 13px;
+  background: rgba(216,184,106,.06);
+  border: 1px solid rgba(216,184,106,.12);
 }
-.ney-fingering-trigger strong { display: block; color: #f4d78f; font-size: .95rem; letter-spacing: .01em; }
-.ney-fingering-trigger small { display: block; margin-top: 3px; color: #a9bab7; font-size: .72rem; }
-.ney-fingering-trigger > b { color: #d8b86a; font-size: 1.35rem; opacity: .9; }
+.ney-fingering-trigger strong { display: block; color: #f3d58e; font-size: .93rem; }
+.ney-fingering-trigger small { display: block; margin-top: 2px; color: #9eb2ae; font-size: .69rem; }
+.ney-fingering-trigger > b { color: #d8b86a; font-size: 1.2rem; opacity: .88; }
 .ney-fingering-trigger.is-unverified { border-style: dashed; }
 
+/* Degree cards: a quiet icon action, text stays available through aria-label/title. */
 .ney-degree-fingering-button {
+  width: 30px;
+  height: 30px;
   min-height: 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 7px;
-  padding: 5px 9px;
-  border: 1px solid rgba(216,184,106,.18);
-  border-radius: 999px;
-  color: #dfc995;
-  background: rgba(6,38,40,.72);
+  display: inline-grid;
+  place-items: center;
+  margin-top: 6px;
+  padding: 0;
+  border: 1px solid rgba(216,184,106,.2);
+  border-radius: 50%;
+  color: #dec78e;
+  background: rgba(6,38,40,.66);
   font: inherit;
-  font-size: .66rem;
+  font-size: .78rem;
   cursor: pointer;
-  transition: border-color .16s ease, background .16s ease;
+  transition: border-color .16s ease, background .16s ease, transform .16s ease;
 }
-.ney-degree-fingering-button:hover { border-color: rgba(216,184,106,.45); background: rgba(14,55,55,.82); }
+.ney-degree-fingering-button span:last-child { display: none; }
+.ney-degree-fingering-button:hover { border-color: rgba(216,184,106,.46); background: rgba(14,55,55,.82); transform: translateY(-1px); }
 .ney-degree-fingering-button[data-reference-state="C"],
-.ney-degree-fingering-button[data-reference-state="missing"] { border-style: dashed; opacity: .86; }
+.ney-degree-fingering-button[data-reference-state="missing"] { border-style: dashed; opacity: .84; }
 
 .ney-fingering-dialog {
   width: min(760px, calc(100% - 32px));
   max-width: 760px;
-  max-height: min(88dvh, 820px);
+  max-height: min(82dvh, 690px);
   padding: 0;
-  border: 1px solid rgba(216,184,106,.45);
-  border-radius: 26px;
+  border: 1px solid rgba(216,184,106,.42);
+  border-radius: 24px;
   color: #f2eee5;
   background: #061f22;
-  box-shadow: 0 34px 110px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.035);
+  box-shadow: 0 34px 110px rgba(0,0,0,.68), inset 0 1px 0 rgba(255,255,255,.03);
   overflow: hidden;
 }
 .ney-fingering-dialog::backdrop {
-  background: rgba(0,10,12,.74);
-  backdrop-filter: blur(7px) saturate(.82);
+  background: rgba(0,10,12,.76);
+  backdrop-filter: blur(7px) saturate(.8);
 }
 
 .ney-fingering-sheet { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
@@ -79,81 +81,110 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 20px 24px 17px;
-  border-bottom: 1px solid rgba(216,184,106,.14);
+  gap: 14px;
+  padding: 15px 19px 13px;
+  border-bottom: 1px solid rgba(216,184,106,.13);
   background:
-    linear-gradient(140deg, rgba(12,63,63,.96), rgba(4,31,34,.98)),
-    radial-gradient(circle at 88% 20%, rgba(216,184,106,.08), transparent 36%);
+    radial-gradient(circle at 88% 20%, rgba(216,184,106,.07), transparent 33%),
+    linear-gradient(140deg, rgba(11,58,59,.95), rgba(4,30,33,.98));
 }
 .ney-fingering-sheet__eyebrow {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
-  padding-inline: 9px;
-  border: 1px solid rgba(216,184,106,.15);
+  min-height: 22px;
+  padding-inline: 8px;
+  border: 1px solid rgba(216,184,106,.13);
   border-radius: 999px;
-  color: #b9c6c3;
-  background: rgba(216,184,106,.035);
-  font-size: .67rem;
+  color: #b7c4c1;
+  background: rgba(216,184,106,.03);
+  font-size: .64rem;
 }
-.ney-fingering-sheet__header h3 { margin: 8px 0 0; color: #f4d78f; font-size: 1.42rem; font-weight: 800; }
-.ney-fingering-sheet__header p { margin: 5px 0 0; color: #a9bab7; font-size: .75rem; }
+.ney-fingering-sheet__header h3 { margin: 6px 0 0; color: #f4d78f; font-size: 1.26rem; font-weight: 800; }
+.ney-fingering-sheet__header p { margin: 3px 0 0; color: #9fb2ae; font-size: .7rem; }
 .ney-fingering-sheet__close {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(216,184,106,.22);
-  border-radius: 13px;
+  border: 1px solid rgba(216,184,106,.2);
+  border-radius: 12px;
   color: #f1d59b;
-  background: rgba(0,20,23,.5);
-  font-size: 1.35rem;
+  background: rgba(0,20,23,.48);
+  font-size: 1.2rem;
   cursor: pointer;
 }
 .ney-fingering-sheet__close:hover { background: rgba(216,184,106,.08); }
-.ney-fingering-sheet__body { overflow: auto; padding: 20px 24px 24px; }
+.ney-fingering-sheet__body { overflow: auto; padding: 14px 18px 16px; }
 
 .ney-fingering-note-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-  padding: 15px 17px;
-  border: 1px solid rgba(216,184,106,.18);
-  border-radius: 17px;
-  background: linear-gradient(135deg, rgba(6,45,47,.8), rgba(2,31,34,.66));
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 11px 13px;
+  border: 1px solid rgba(216,184,106,.15);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(6,45,47,.7), rgba(2,31,34,.58));
 }
-.ney-fingering-note-head strong { display: block; color: #f5f0e7; font-size: 1.08rem; }
-.ney-fingering-note-head span { display: block; margin-top: 3px; color: #96aaa6; font-size: .75rem; }
+.ney-fingering-note-head strong { display: block; color: #f5f0e7; font-size: 1rem; }
+.ney-fingering-note-head span { display: block; margin-top: 2px; color: #91a6a2; font-size: .69rem; }
 .ney-fingering-note-head bdi {
-  padding: 7px 10px;
-  border: 1px solid rgba(216,184,106,.14);
+  padding: 6px 9px;
+  border: 1px solid rgba(216,184,106,.12);
   border-radius: 999px;
   color: #f1d59b;
-  background: rgba(216,184,106,.045);
-  font-size: .82rem;
+  background: rgba(216,184,106,.04);
+  font-size: .78rem;
   font-weight: 800;
 }
 
 .ney-fingering-layout {
   display: grid;
-  grid-template-columns: minmax(230px, .9fr) minmax(0, 1.1fr);
-  gap: 24px;
+  grid-template-columns: minmax(218px, .82fr) minmax(0, 1.18fr);
+  gap: 18px;
   align-items: stretch;
 }
 .ney-fingering-visual {
+  position: relative;
+  isolation: isolate;
   display: grid;
   place-items: center;
-  min-height: 350px;
-  padding: 18px;
-  border: 1px solid rgba(216,184,106,.13);
-  border-radius: 20px;
+  min-height: 292px;
+  padding: 12px;
+  border: 1px solid rgba(216,184,106,.11);
+  border-radius: 18px;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 50% 38%, rgba(216,184,106,.07), transparent 52%),
-    rgba(3,30,32,.58);
+    radial-gradient(circle at 50% 44%, rgba(216,184,106,.07), transparent 48%),
+    rgba(3,30,32,.5);
+}
+/* Reed body behind the fingering marks: warm cane with eight visible node bands. */
+.ney-fingering-visual::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 264px;
+  transform: translate(-50%,-50%);
+  border: 1px solid rgba(236,193,107,.5);
+  border-radius: 16px 16px 13px 13px;
+  background:
+    repeating-linear-gradient(to bottom,
+      transparent 0 29px,
+      rgba(233,187,96,.32) 29px 31px,
+      rgba(74,45,20,.32) 31px 33px,
+      transparent 33px 36px),
+    linear-gradient(90deg,
+      rgba(71,43,20,.72) 0%,
+      rgba(163,112,48,.72) 18%,
+      rgba(219,171,83,.68) 46%,
+      rgba(137,88,38,.72) 76%,
+      rgba(65,39,19,.78) 100%);
+  box-shadow: inset 8px 0 12px rgba(255,221,151,.06), inset -8px 0 12px rgba(0,0,0,.2), 0 14px 28px rgba(0,0,0,.2);
 }
 .ney-fingering-copy {
   display: flex;
@@ -161,57 +192,53 @@
   justify-content: center;
   min-width: 0;
 }
-.ney-fingering-copy h4 {
-  margin: 0 0 12px;
-  color: #f1d59b;
-  font-size: 1rem;
-  font-weight: 800;
-}
+.ney-fingering-copy h4 { margin: 0 0 9px; color: #f1d59b; font-size: .94rem; font-weight: 800; }
 .ney-fingering-instruction {
   margin: 0;
-  padding: 13px 14px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   color: #eee4d2;
-  background: rgba(216,184,106,.045);
-  border: 1px solid rgba(216,184,106,.1);
-  line-height: 1.9;
-  font-size: .88rem;
+  background: rgba(216,184,106,.04);
+  border: 1px solid rgba(216,184,106,.085);
+  line-height: 1.75;
+  font-size: .82rem;
 }
 .ney-fingering-performance-note {
-  margin-top: 14px;
-  padding: 11px 13px;
-  border-inline-start: 3px solid rgba(67,222,212,.52);
-  border-radius: 11px;
-  color: #b9c7c4;
-  background: rgba(67,222,212,.045);
-  font-size: .75rem;
-  line-height: 1.75;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-inline-start: 3px solid rgba(67,222,212,.5);
+  border-radius: 10px;
+  color: #b6c5c2;
+  background: rgba(67,222,212,.04);
+  font-size: .7rem;
+  line-height: 1.65;
 }
 
 .ney-fingering-legend {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 8px;
-  margin-top: 14px;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 6px;
+  margin-top: 10px;
 }
 .ney-fingering-legend span {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 7px 9px;
-  border: 1px solid rgba(216,184,106,.08);
-  border-radius: 10px;
+  justify-content: center;
+  gap: 6px;
+  min-height: 31px;
+  padding: 5px 6px;
+  border: 1px solid rgba(216,184,106,.07);
+  border-radius: 9px;
   color: #adbfbb;
-  background: rgba(255,255,255,.018);
-  font-size: .69rem;
+  background: rgba(255,255,255,.014);
+  font-size: .63rem;
 }
 .ney-fingering-legend i {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   flex: 0 0 auto;
   display: inline-block;
-  border: 1.6px solid #d8b86a;
+  border: 1.5px solid #d8b86a;
   border-radius: 50%;
   background: #061f22;
 }
@@ -220,8 +247,8 @@
 .ney-fingering-legend i.is-optional { background: #071f22; box-shadow: inset 0 0 0 3px #071f22; position: relative; }
 .ney-fingering-legend i.is-optional::after {
   content: '';
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
   background: #9fb2ae;
   position: absolute;
@@ -229,46 +256,43 @@
   transform: translate(-50%,-50%);
 }
 
+/* One-line reference strip to keep the sheet short and readable. */
 .ney-fingering-source {
   display: grid;
-  grid-template-columns: minmax(0,1fr) auto;
+  grid-template-columns: minmax(0,1fr) auto auto;
   align-items: center;
-  gap: 5px 14px;
-  margin-top: 20px;
-  padding: 12px 14px;
-  border: 1px solid rgba(216,184,106,.1);
-  border-radius: 14px;
+  gap: 8px 12px;
+  margin-top: 11px;
+  padding: 8px 10px;
+  border: 1px solid rgba(216,184,106,.08);
+  border-radius: 11px;
   color: #aebfbc;
-  background: rgba(1,23,25,.52);
-  font-size: .69rem;
+  background: rgba(1,23,25,.44);
+  font-size: .64rem;
 }
-.ney-fingering-source span { min-width: 0; }
+.ney-fingering-source span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ney-fingering-source strong {
-  grid-row: span 2;
-  padding: 6px 9px;
-  border: 1px solid rgba(216,184,106,.16);
+  padding: 4px 8px;
+  border: 1px solid rgba(216,184,106,.14);
   border-radius: 999px;
   color: #f1d59b;
-  background: rgba(216,184,106,.045);
-  font-size: .69rem;
+  background: rgba(216,184,106,.035);
+  font-size: .62rem;
   white-space: nowrap;
 }
-.ney-fingering-source small { color: #78918c; }
+.ney-fingering-source small { color: #78918c; white-space: nowrap; }
 
 .ney-fingering-unavailable {
-  padding: 17px;
-  border: 1px dashed rgba(216,184,106,.3);
-  border-radius: 16px;
-  background: rgba(216,184,106,.035);
+  padding: 14px;
+  border: 1px dashed rgba(216,184,106,.28);
+  border-radius: 14px;
+  background: rgba(216,184,106,.03);
 }
 .ney-fingering-unavailable strong { color: #f1d59b; }
-.ney-fingering-unavailable p { margin: 8px 0 0; color: #aebfbc; line-height: 1.8; }
+.ney-fingering-unavailable p { margin: 7px 0 0; color: #aebfbc; line-height: 1.72; }
 
-.ney-fingering-body {
-  fill: rgba(185,132,58,.22);
-  stroke: rgba(239,198,116,.56);
-  stroke-width: 1.5;
-}
+/* The SVG now becomes the fingering overlay; the reed texture is supplied by the visual panel. */
+.ney-fingering-body { fill: rgba(216,184,106,.035); stroke: rgba(239,198,116,.38); stroke-width: 1.2; }
 .ney-fingering-hole { stroke: #d8b86a; stroke-width: 2; }
 .ney-fingering-hole--closed { fill: #d8b86a; }
 .ney-fingering-hole--open { fill: #062124; }
@@ -276,37 +300,77 @@
 .ney-fingering-hole--unknown { fill: #061f22; stroke-dasharray: 3 2; }
 .ney-fingering-half-fill { fill: #d8b86a; }
 .ney-fingering-optional-dot { fill: #c9d1cf; }
-.ney-fingering-hole-label { fill: #ead19a; font-size: 13px; font-weight: 800; }
-.ney-fingering-ney { width: 176px; height: auto; max-width: 100%; filter: drop-shadow(0 12px 24px rgba(0,0,0,.24)); }
-.ney-fingering-ney.is-compact { width: 36px; height: 54px; filter: none; }
+.ney-fingering-hole-label {
+  fill: #f0d79d;
+  stroke: rgba(3,30,32,.95);
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  font-size: 12px;
+  font-weight: 800;
+}
+.ney-fingering-ney { width: 166px; height: auto; max-width: 100%; filter: drop-shadow(0 10px 22px rgba(0,0,0,.2)); }
+.ney-fingering-ney.is-compact { width: 34px; height: 50px; filter: none; }
+/* Move rear-hole number away from the reed; front-hole numbers stay outside its right edge. */
+.ney-fingering-ney:not(.is-compact) g:nth-of-type(1) .ney-fingering-hole-label { transform: translateX(-38px); }
+.ney-fingering-ney:not(.is-compact) g:nth-of-type(n+2) .ney-fingering-hole-label { transform: translateX(2px); }
 
 @media (max-width: 800px) {
   .ney-fingering-dialog { width: min(700px, calc(100% - 24px)); }
-  .ney-fingering-layout { grid-template-columns: minmax(180px,.8fr) minmax(0,1.2fr); gap: 18px; }
-  .ney-fingering-visual { min-height: 320px; }
+  .ney-fingering-layout { grid-template-columns: minmax(190px,.78fr) minmax(0,1.22fr); gap: 14px; }
+  .ney-fingering-visual { min-height: 276px; }
+  .ney-fingering-visual::before { height: 250px; width: 44px; }
+  .ney-fingering-source small { display: none; }
+}
+
+/* Landscape tablets/phones: stay above the persistent app nav and keep all key content visible. */
+@media (max-height: 760px) and (min-width: 641px) {
+  .ney-fingering-dialog { max-height: calc(100dvh - 118px); width: min(760px, calc(100% - 44px)); }
+  .ney-fingering-sheet__header { padding: 10px 15px 9px; }
+  .ney-fingering-sheet__eyebrow { min-height: 20px; font-size: .6rem; }
+  .ney-fingering-sheet__header h3 { margin-top: 4px; font-size: 1.08rem; }
+  .ney-fingering-sheet__header p { margin-top: 2px; font-size: .64rem; }
+  .ney-fingering-sheet__close { width: 32px; height: 32px; }
+  .ney-fingering-sheet__body { padding: 9px 14px 10px; }
+  .ney-fingering-note-head { margin-bottom: 8px; padding: 8px 11px; }
+  .ney-fingering-note-head strong { font-size: .91rem; }
+  .ney-fingering-layout { grid-template-columns: minmax(205px,.8fr) minmax(0,1.2fr); gap: 12px; }
+  .ney-fingering-visual { min-height: 232px; padding: 8px; }
+  .ney-fingering-visual::before { height: 216px; width: 40px; }
+  .ney-fingering-ney { width: 140px; }
+  .ney-fingering-copy h4 { margin-bottom: 6px; font-size: .84rem; }
+  .ney-fingering-instruction { padding: 8px 10px; font-size: .73rem; line-height: 1.58; }
+  .ney-fingering-legend { margin-top: 7px; gap: 5px; }
+  .ney-fingering-legend span { min-height: 27px; font-size: .58rem; }
+  .ney-fingering-performance-note { margin-top: 7px; padding: 7px 9px; font-size: .62rem; line-height: 1.5; }
+  .ney-fingering-source { margin-top: 7px; padding: 6px 8px; font-size: .58rem; }
+  .ney-fingering-source strong { font-size: .57rem; padding: 3px 6px; }
+  .ney-fingering-source small { display: none; }
 }
 
 @media (max-width: 640px) {
   .ney-fingering-dialog {
     width: 100%;
     max-width: none;
-    max-height: 86dvh;
+    max-height: 84dvh;
     margin: auto 0 0;
-    border-radius: 24px 24px 0 0;
+    border-radius: 22px 22px 0 0;
     border-inline: 0;
     border-bottom: 0;
   }
-  .ney-fingering-sheet__header { padding: 17px 16px 14px; }
-  .ney-fingering-sheet__header h3 { font-size: 1.22rem; }
-  .ney-fingering-sheet__body { padding: 15px 14px 24px; }
-  .ney-fingering-layout { grid-template-columns: 1fr; gap: 12px; }
-  .ney-fingering-visual { min-height: 245px; padding: 12px; }
-  .ney-fingering-ney { width: 132px; }
-  .ney-fingering-note-head { align-items: flex-start; margin-bottom: 13px; padding: 12px 13px; }
-  .ney-fingering-note-head bdi { font-size: .72rem; }
-  .ney-fingering-legend { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .ney-fingering-source { grid-template-columns: 1fr; }
-  .ney-fingering-source strong { grid-row: auto; justify-self: start; white-space: normal; }
-  .ney-fingering-trigger { gap: 10px; padding: 10px 11px; }
-  .ney-fingering-trigger__visual { width: 46px; height: 60px; }
+  .ney-fingering-sheet__header { padding: 14px 14px 11px; }
+  .ney-fingering-sheet__header h3 { font-size: 1.13rem; }
+  .ney-fingering-sheet__body { padding: 12px 12px 18px; }
+  .ney-fingering-layout { grid-template-columns: 1fr; gap: 9px; }
+  .ney-fingering-visual { min-height: 212px; padding: 8px; }
+  .ney-fingering-visual::before { height: 196px; width: 38px; }
+  .ney-fingering-ney { width: 116px; }
+  .ney-fingering-note-head { align-items: flex-start; margin-bottom: 9px; padding: 9px 10px; }
+  .ney-fingering-note-head bdi { font-size: .68rem; }
+  .ney-fingering-legend { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .ney-fingering-legend span { min-height: 28px; padding: 4px; font-size: .58rem; }
+  .ney-fingering-source { grid-template-columns: 1fr auto; }
+  .ney-fingering-source small { display: none; }
+  .ney-fingering-source strong { white-space: normal; text-align: center; }
+  .ney-fingering-trigger { gap: 9px; padding: 9px 10px; }
+  .ney-fingering-trigger__visual { width: 42px; height: 54px; }
 }
