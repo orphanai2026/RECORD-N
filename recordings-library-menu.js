@@ -4,10 +4,14 @@
   const $ = (selector, scope = document) => scope.querySelector(selector);
 
   function ensureStyles() {
-    if (document.querySelector('link[data-recordings-library-menu]')) return;
+    const existing = document.querySelector('link[data-recordings-library-menu]');
+    if (existing) {
+      existing.href = './recordings-library-menu.css?v=2026-08-08-1703';
+      return;
+    }
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './recordings-library-menu.css?v=2026-08-08-1654';
+    link.href = './recordings-library-menu.css?v=2026-08-08-1703';
     link.dataset.recordingsLibraryMenu = 'true';
     document.head.append(link);
   }
