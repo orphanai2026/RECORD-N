@@ -1,0 +1,12 @@
+/* Tuner screen bottom safe area — keeps final readings clear of the fixed bottom navigation. */
+.ney-screen--tuner:not([hidden]) {
+  padding-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
+  scroll-padding-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 760px) {
+  .ney-screen--tuner:not([hidden]) {
+    padding-block-end: calc(112px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-block-end: calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+}
