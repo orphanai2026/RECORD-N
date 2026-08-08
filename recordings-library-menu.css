@@ -30,6 +30,82 @@
   color: #f5d88e;
 }
 
+/* Recording library containment fix: outer panel owns the outer boundary;
+   Performance Pack cards remain inset and never share the same edge. */
+.ney-screen--recordings .recordings-panel {
+  box-sizing: border-box;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 12px 14px 22px !important;
+  overflow: visible !important;
+}
+
+.ney-screen--recordings .recordings-header {
+  margin: 0;
+  padding-inline: 2px;
+  padding-bottom: 12px;
+}
+
+.ney-screen--recordings .recordings-list {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  max-height: none !important;
+  margin: 0;
+  padding: 12px 2px 20px !important;
+  gap: 14px !important;
+  overflow: visible !important;
+  scrollbar-gutter: auto;
+}
+
+.ney-screen--recordings .performance-note-card,
+.ney-screen--recordings .performance-maqam-group {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid rgba(224, 185, 92, .34) !important;
+  border-inline-start-width: 1px !important;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(0, 29, 32, .62);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.015), 0 6px 18px rgba(0,0,0,.10);
+}
+
+.ney-screen--recordings .performance-note-card.is-expanded,
+.ney-screen--recordings .performance-maqam-group.is-expanded {
+  border-color: rgba(224, 185, 92, .48) !important;
+}
+
+.ney-screen--recordings .performance-maqam-group__toggle,
+.ney-screen--recordings .performance-maqam-group__exports,
+.ney-screen--recordings .performance-maqam-group__degrees,
+.ney-screen--recordings .performance-maqam-degree,
+.ney-screen--recordings .performance-note-sample {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ney-screen--recordings .performance-maqam-group__degrees {
+  overflow: hidden;
+}
+
+.ney-screen--recordings .performance-maqam-degree {
+  border-inline: 0 !important;
+}
+
+.ney-screen--recordings .performance-maqam-group__exports {
+  margin: 0;
+  padding-inline: 14px;
+}
+
+.ney-screen--recordings .performance-note-sample:last-child,
+.ney-screen--recordings .performance-maqam-degree:last-child {
+  border-bottom: 0;
+}
+
 .ney-library-menu {
   position: fixed;
   z-index: 1200;
@@ -99,6 +175,20 @@
     height: 40px;
     min-width: 40px;
     flex-basis: 40px;
+  }
+
+  .ney-screen--recordings .recordings-panel {
+    padding: 10px 10px 18px !important;
+  }
+
+  .ney-screen--recordings .recordings-list {
+    padding: 10px 0 18px !important;
+    gap: 12px !important;
+  }
+
+  .ney-screen--recordings .performance-note-card,
+  .ney-screen--recordings .performance-maqam-group {
+    border-radius: 14px;
   }
 
   .ney-library-menu {
