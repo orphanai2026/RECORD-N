@@ -77,13 +77,20 @@ import('./settings-restore-toast-guard.js?v=2026-08-08-1958')
 if (!document.querySelector('link[data-music-library-premium]')) {
   const premiumStyles = document.createElement('link');
   premiumStyles.rel = 'stylesheet';
-  premiumStyles.href = './music-library-premium.css?v=2026-08-08-2155';
+  premiumStyles.href = './music-library-premium.css?v=2026-08-08-2201';
   premiumStyles.dataset.musicLibraryPremium = 'true';
   document.head.append(premiumStyles);
 }
-import('./music-library.js?v=2026-08-08-2155')
+if (!document.querySelector('link[data-music-library-compact]')) {
+  const compactStyles = document.createElement('link');
+  compactStyles.rel = 'stylesheet';
+  compactStyles.href = './music-library-compact.css?v=2026-08-08-2201';
+  compactStyles.dataset.musicLibraryCompact = 'true';
+  document.head.append(compactStyles);
+}
+import('./music-library.js?v=2026-08-08-2201')
   .catch(error => console.error('Music library load failed', error));
-import('./music-library-navigation-guard.js?v=2026-08-08-2155')
+import('./music-library-navigation-guard.js?v=2026-08-08-2201')
   .catch(error => console.error('Music library navigation guard load failed', error));
-import('./music-library-quartertones.js?v=2026-08-08-2155')
+import('./music-library-quartertones.js?v=2026-08-08-2201')
   .catch(error => console.error('Music library quarter-tone accidentals load failed', error));
