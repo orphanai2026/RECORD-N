@@ -137,6 +137,26 @@ body.ney-app-shell-active {
   overflow-wrap: anywhere;
 }
 
+/* Settings save action must remain part of document flow and never overlay content. */
+.ney-screen--settings .ney-settings-technical .advanced-footer {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  transform: none !important;
+  margin: 18px 0 0 !important;
+  padding: 16px 0 0 !important;
+  border-top: 1px solid rgba(216, 184, 106, .16) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
 @media (max-width: 760px) {
   :root {
     --ney-shell-safe-bottom: calc(var(--ney-shell-nav-height, 70px) + env(safe-area-inset-bottom, 0px) + 42px);
@@ -157,6 +177,10 @@ body.ney-app-shell-active {
   .ney-screen-status {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .ney-screen--settings .ney-settings-technical .advanced-footer {
+    padding-bottom: 0 !important;
   }
 }
 
