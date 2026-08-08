@@ -36,7 +36,6 @@
 .ney-fingering-trigger > b { color: #d8b86a; font-size: 1.2rem; opacity: .88; }
 .ney-fingering-trigger.is-unverified { border-style: dashed; }
 
-/* Degree cards: a quiet icon action, text stays available through aria-label/title. */
 .ney-degree-fingering-button {
   width: 30px;
   height: 30px;
@@ -71,227 +70,49 @@
   box-shadow: 0 34px 110px rgba(0,0,0,.68), inset 0 1px 0 rgba(255,255,255,.03);
   overflow: hidden;
 }
-.ney-fingering-dialog::backdrop {
-  background: rgba(0,10,12,.76);
-  backdrop-filter: blur(7px) saturate(.8);
-}
-
+.ney-fingering-dialog::backdrop { background: rgba(0,10,12,.76); backdrop-filter: blur(7px) saturate(.8); }
 .ney-fingering-sheet { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
 .ney-fingering-sheet__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 15px 19px 13px;
-  border-bottom: 1px solid rgba(216,184,106,.13);
-  background:
-    radial-gradient(circle at 88% 20%, rgba(216,184,106,.07), transparent 33%),
-    linear-gradient(140deg, rgba(11,58,59,.95), rgba(4,30,33,.98));
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+  padding: 15px 19px 13px; border-bottom: 1px solid rgba(216,184,106,.13);
+  background: radial-gradient(circle at 88% 20%, rgba(216,184,106,.07), transparent 33%), linear-gradient(140deg, rgba(11,58,59,.95), rgba(4,30,33,.98));
 }
-.ney-fingering-sheet__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  min-height: 22px;
-  padding-inline: 8px;
-  border: 1px solid rgba(216,184,106,.13);
-  border-radius: 999px;
-  color: #b7c4c1;
-  background: rgba(216,184,106,.03);
-  font-size: .64rem;
-}
+.ney-fingering-sheet__eyebrow { display: inline-flex; align-items: center; min-height: 22px; padding-inline: 8px; border: 1px solid rgba(216,184,106,.13); border-radius: 999px; color: #b7c4c1; background: rgba(216,184,106,.03); font-size: .64rem; }
 .ney-fingering-sheet__header h3 { margin: 6px 0 0; color: #f4d78f; font-size: 1.26rem; font-weight: 800; }
 .ney-fingering-sheet__header p { margin: 3px 0 0; color: #9fb2ae; font-size: .7rem; }
-.ney-fingering-sheet__close {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(216,184,106,.2);
-  border-radius: 12px;
-  color: #f1d59b;
-  background: rgba(0,20,23,.48);
-  font-size: 1.2rem;
-  cursor: pointer;
-}
+.ney-fingering-sheet__close { width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgba(216,184,106,.2); border-radius: 12px; color: #f1d59b; background: rgba(0,20,23,.48); font-size: 1.2rem; cursor: pointer; }
 .ney-fingering-sheet__close:hover { background: rgba(216,184,106,.08); }
 .ney-fingering-sheet__body { overflow: auto; padding: 14px 18px 16px; }
-
-.ney-fingering-note-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 12px;
-  padding: 11px 13px;
-  border: 1px solid rgba(216,184,106,.15);
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(6,45,47,.7), rgba(2,31,34,.58));
-}
+.ney-fingering-note-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; padding: 11px 13px; border: 1px solid rgba(216,184,106,.15); border-radius: 14px; background: linear-gradient(135deg, rgba(6,45,47,.7), rgba(2,31,34,.58)); }
 .ney-fingering-note-head strong { display: block; color: #f5f0e7; font-size: 1rem; }
 .ney-fingering-note-head span { display: block; margin-top: 2px; color: #91a6a2; font-size: .69rem; }
-.ney-fingering-note-head bdi {
-  padding: 6px 9px;
-  border: 1px solid rgba(216,184,106,.12);
-  border-radius: 999px;
-  color: #f1d59b;
-  background: rgba(216,184,106,.04);
-  font-size: .78rem;
-  font-weight: 800;
-}
-
-.ney-fingering-layout {
-  display: grid;
-  grid-template-columns: minmax(218px, .82fr) minmax(0, 1.18fr);
-  gap: 18px;
-  align-items: stretch;
-}
-.ney-fingering-visual {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  place-items: center;
-  min-height: 292px;
-  padding: 12px;
-  border: 1px solid rgba(216,184,106,.11);
-  border-radius: 18px;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 44%, rgba(216,184,106,.07), transparent 48%),
-    rgba(3,30,32,.5);
-}
-/* Reed body behind the fingering marks: warm cane with eight visible node bands. */
+.ney-fingering-note-head bdi { padding: 6px 9px; border: 1px solid rgba(216,184,106,.12); border-radius: 999px; color: #f1d59b; background: rgba(216,184,106,.04); font-size: .78rem; font-weight: 800; }
+.ney-fingering-layout { display: grid; grid-template-columns: minmax(218px, .82fr) minmax(0, 1.18fr); gap: 18px; align-items: stretch; }
+.ney-fingering-visual { position: relative; isolation: isolate; display: grid; place-items: center; min-height: 292px; padding: 12px; border: 1px solid rgba(216,184,106,.11); border-radius: 18px; overflow: hidden; background: radial-gradient(circle at 50% 44%, rgba(216,184,106,.07), transparent 48%), rgba(3,30,32,.5); }
 .ney-fingering-visual::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  left: 50%;
-  top: 50%;
-  width: 46px;
-  height: 264px;
-  transform: translate(-50%,-50%);
-  border: 1px solid rgba(236,193,107,.5);
-  border-radius: 16px 16px 13px 13px;
-  background:
-    repeating-linear-gradient(to bottom,
-      transparent 0 29px,
-      rgba(233,187,96,.32) 29px 31px,
-      rgba(74,45,20,.32) 31px 33px,
-      transparent 33px 36px),
-    linear-gradient(90deg,
-      rgba(71,43,20,.72) 0%,
-      rgba(163,112,48,.72) 18%,
-      rgba(219,171,83,.68) 46%,
-      rgba(137,88,38,.72) 76%,
-      rgba(65,39,19,.78) 100%);
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 50%; width: 46px; height: 264px; transform: translate(-50%,-50%);
+  border: 1px solid rgba(236,193,107,.5); border-radius: 16px 16px 13px 13px;
+  background: repeating-linear-gradient(to bottom, transparent 0 29px, rgba(233,187,96,.32) 29px 31px, rgba(74,45,20,.32) 31px 33px, transparent 33px 36px), linear-gradient(90deg, rgba(71,43,20,.72) 0%, rgba(163,112,48,.72) 18%, rgba(219,171,83,.68) 46%, rgba(137,88,38,.72) 76%, rgba(65,39,19,.78) 100%);
   box-shadow: inset 8px 0 12px rgba(255,221,151,.06), inset -8px 0 12px rgba(0,0,0,.2), 0 14px 28px rgba(0,0,0,.2);
 }
-.ney-fingering-copy {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-}
+.ney-fingering-copy { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
 .ney-fingering-copy h4 { margin: 0 0 9px; color: #f1d59b; font-size: .94rem; font-weight: 800; }
-.ney-fingering-instruction {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  color: #eee4d2;
-  background: rgba(216,184,106,.04);
-  border: 1px solid rgba(216,184,106,.085);
-  line-height: 1.75;
-  font-size: .82rem;
-}
-.ney-fingering-performance-note {
-  margin-top: 10px;
-  padding: 9px 11px;
-  border-inline-start: 3px solid rgba(67,222,212,.5);
-  border-radius: 10px;
-  color: #b6c5c2;
-  background: rgba(67,222,212,.04);
-  font-size: .7rem;
-  line-height: 1.65;
-}
-
-.ney-fingering-legend {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap: 6px;
-  margin-top: 10px;
-}
-.ney-fingering-legend span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 31px;
-  padding: 5px 6px;
-  border: 1px solid rgba(216,184,106,.07);
-  border-radius: 9px;
-  color: #adbfbb;
-  background: rgba(255,255,255,.014);
-  font-size: .63rem;
-}
-.ney-fingering-legend i {
-  width: 12px;
-  height: 12px;
-  flex: 0 0 auto;
-  display: inline-block;
-  border: 1.5px solid #d8b86a;
-  border-radius: 50%;
-  background: #061f22;
-}
+.ney-fingering-instruction { margin: 0; padding: 10px 12px; border-radius: 12px; color: #eee4d2; background: rgba(216,184,106,.04); border: 1px solid rgba(216,184,106,.085); line-height: 1.75; font-size: .82rem; }
+.ney-fingering-performance-note { margin-top: 10px; padding: 9px 11px; border-inline-start: 3px solid rgba(67,222,212,.5); border-radius: 10px; color: #b6c5c2; background: rgba(67,222,212,.04); font-size: .7rem; line-height: 1.65; }
+.ney-fingering-legend { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; margin-top: 10px; }
+.ney-fingering-legend span { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 31px; padding: 5px 6px; border: 1px solid rgba(216,184,106,.07); border-radius: 9px; color: #adbfbb; background: rgba(255,255,255,.014); font-size: .63rem; }
+.ney-fingering-legend i { width: 12px; height: 12px; flex: 0 0 auto; display: inline-block; border: 1.5px solid #d8b86a; border-radius: 50%; background: #061f22; }
 .ney-fingering-legend i.is-closed { background: #d8b86a; }
 .ney-fingering-legend i.is-half { background: linear-gradient(90deg, #d8b86a 0 50%, #061f22 50%); }
 .ney-fingering-legend i.is-optional { background: #071f22; box-shadow: inset 0 0 0 3px #071f22; position: relative; }
-.ney-fingering-legend i.is-optional::after {
-  content: '';
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #9fb2ae;
-  position: absolute;
-  inset: 50% auto auto 50%;
-  transform: translate(-50%,-50%);
-}
-
-/* One-line reference strip to keep the sheet short and readable. */
-.ney-fingering-source {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) auto auto;
-  align-items: center;
-  gap: 8px 12px;
-  margin-top: 11px;
-  padding: 8px 10px;
-  border: 1px solid rgba(216,184,106,.08);
-  border-radius: 11px;
-  color: #aebfbc;
-  background: rgba(1,23,25,.44);
-  font-size: .64rem;
-}
+.ney-fingering-legend i.is-optional::after { content: ''; width: 3px; height: 3px; border-radius: 50%; background: #9fb2ae; position: absolute; inset: 50% auto auto 50%; transform: translate(-50%,-50%); }
+.ney-fingering-source { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 8px 12px; margin-top: 11px; padding: 8px 10px; border: 1px solid rgba(216,184,106,.08); border-radius: 11px; color: #aebfbc; background: rgba(1,23,25,.44); font-size: .64rem; }
 .ney-fingering-source span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ney-fingering-source strong {
-  padding: 4px 8px;
-  border: 1px solid rgba(216,184,106,.14);
-  border-radius: 999px;
-  color: #f1d59b;
-  background: rgba(216,184,106,.035);
-  font-size: .62rem;
-  white-space: nowrap;
-}
+.ney-fingering-source strong { padding: 4px 8px; border: 1px solid rgba(216,184,106,.14); border-radius: 999px; color: #f1d59b; background: rgba(216,184,106,.035); font-size: .62rem; white-space: nowrap; }
 .ney-fingering-source small { color: #78918c; white-space: nowrap; }
-
-.ney-fingering-unavailable {
-  padding: 14px;
-  border: 1px dashed rgba(216,184,106,.28);
-  border-radius: 14px;
-  background: rgba(216,184,106,.03);
-}
+.ney-fingering-unavailable { padding: 14px; border: 1px dashed rgba(216,184,106,.28); border-radius: 14px; background: rgba(216,184,106,.03); }
 .ney-fingering-unavailable strong { color: #f1d59b; }
 .ney-fingering-unavailable p { margin: 7px 0 0; color: #aebfbc; line-height: 1.72; }
-
-/* The SVG now becomes the fingering overlay; the reed texture is supplied by the visual panel. */
 .ney-fingering-body { fill: rgba(216,184,106,.035); stroke: rgba(239,198,116,.38); stroke-width: 1.2; }
 .ney-fingering-hole { stroke: #d8b86a; stroke-width: 2; }
 .ney-fingering-hole--closed { fill: #d8b86a; }
@@ -300,19 +121,31 @@
 .ney-fingering-hole--unknown { fill: #061f22; stroke-dasharray: 3 2; }
 .ney-fingering-half-fill { fill: #d8b86a; }
 .ney-fingering-optional-dot { fill: #c9d1cf; }
-.ney-fingering-hole-label {
-  fill: #f0d79d;
-  stroke: rgba(3,30,32,.95);
-  stroke-width: 3px;
-  paint-order: stroke fill;
-  font-size: 12px;
-  font-weight: 800;
-}
+.ney-fingering-hole-label { fill: #f0d79d; stroke: rgba(3,30,32,.95); stroke-width: 3px; paint-order: stroke fill; font-size: 12px; font-weight: 800; }
 .ney-fingering-ney { width: 166px; height: auto; max-width: 100%; filter: drop-shadow(0 10px 22px rgba(0,0,0,.2)); }
 .ney-fingering-ney.is-compact { width: 34px; height: 50px; filter: none; }
-/* Move rear-hole number away from the reed; front-hole numbers stay outside its right edge. */
 .ney-fingering-ney:not(.is-compact) g:nth-of-type(1) .ney-fingering-hole-label { transform: translateX(-38px); }
 .ney-fingering-ney:not(.is-compact) g:nth-of-type(n+2) .ney-fingering-hole-label { transform: translateX(2px); }
+
+/* Recording view: guidance lives only beside each note, never as a separate large card. */
+.ney-screen--recording .ney-fingering-trigger { display: none !important; }
+.ney-screen--recording .recording-maqam-degree { min-height: 60px; padding: 8px 9px; }
+.ney-screen--recording .recording-maqam-degree__copy { position: relative; padding-inline-end: 30px; gap: 1px; }
+.ney-screen--recording .ney-degree-fingering-button {
+  grid-area: copy; align-self: start; justify-self: end; width: 24px; height: 24px; min-height: 24px; margin: -1px 0 0; padding: 0;
+  border: 1px solid rgba(216,184,106,.22); border-radius: 8px; color: rgba(222,199,142,.82); background: rgba(5,36,38,.72); box-shadow: none; position: relative; overflow: visible;
+}
+.ney-screen--recording .ney-degree-fingering-button span { display: none !important; }
+.ney-screen--recording .ney-degree-fingering-button::before {
+  content: ''; width: 8px; height: 15px; display: block; border: 1px solid currentColor; border-radius: 5px; opacity: .92;
+  background: radial-gradient(circle at 50% 24%, currentColor 0 1px, transparent 1.2px), radial-gradient(circle at 50% 48%, currentColor 0 1px, transparent 1.2px), radial-gradient(circle at 50% 72%, currentColor 0 1px, transparent 1.2px);
+}
+.ney-screen--recording .ney-degree-fingering-button::after { content: ''; position: absolute; inset-inline-start: -3px; top: 50%; width: 5px; height: 5px; border: 1px solid currentColor; border-radius: 50%; background: #062124; transform: translateY(-50%); }
+.ney-screen--recording .ney-degree-fingering-button:hover { border-color: rgba(216,184,106,.5); color: #efd18a; background: rgba(14,55,55,.82); transform: none; }
+.ney-screen--recording .recording-maqam-degree.is-current .ney-degree-fingering-button { border-color: rgba(114,232,219,.7); color: #72e8db; background: rgba(38,141,134,.2); box-shadow: 0 0 0 3px rgba(114,232,219,.055); }
+.ney-screen--recording .recording-maqam-degree.is-current .ney-degree-fingering-button::after { background: #72e8db; border-color: #72e8db; box-shadow: 0 0 6px rgba(114,232,219,.45); }
+.ney-screen--recording .ney-degree-fingering-button[data-reference-state="C"],
+.ney-screen--recording .ney-degree-fingering-button[data-reference-state="missing"] { border-style: dashed; opacity: .72; }
 
 @media (max-width: 800px) {
   .ney-fingering-dialog { width: min(700px, calc(100% - 24px)); }
@@ -321,8 +154,6 @@
   .ney-fingering-visual::before { height: 250px; width: 44px; }
   .ney-fingering-source small { display: none; }
 }
-
-/* Landscape tablets/phones: stay above the persistent app nav and keep all key content visible. */
 @media (max-height: 760px) and (min-width: 641px) {
   .ney-fingering-dialog { max-height: calc(100dvh - 118px); width: min(760px, calc(100% - 44px)); }
   .ney-fingering-sheet__header { padding: 10px 15px 9px; }
@@ -346,17 +177,8 @@
   .ney-fingering-source strong { font-size: .57rem; padding: 3px 6px; }
   .ney-fingering-source small { display: none; }
 }
-
 @media (max-width: 640px) {
-  .ney-fingering-dialog {
-    width: 100%;
-    max-width: none;
-    max-height: 84dvh;
-    margin: auto 0 0;
-    border-radius: 22px 22px 0 0;
-    border-inline: 0;
-    border-bottom: 0;
-  }
+  .ney-fingering-dialog { width: 100%; max-width: none; max-height: 84dvh; margin: auto 0 0; border-radius: 22px 22px 0 0; border-inline: 0; border-bottom: 0; }
   .ney-fingering-sheet__header { padding: 14px 14px 11px; }
   .ney-fingering-sheet__header h3 { font-size: 1.13rem; }
   .ney-fingering-sheet__body { padding: 12px 12px 18px; }
@@ -371,6 +193,7 @@
   .ney-fingering-source { grid-template-columns: 1fr auto; }
   .ney-fingering-source small { display: none; }
   .ney-fingering-source strong { white-space: normal; text-align: center; }
-  .ney-fingering-trigger { gap: 9px; padding: 9px 10px; }
-  .ney-fingering-trigger__visual { width: 42px; height: 54px; }
+  .ney-screen--recording .recording-maqam-degree { min-height: 58px; }
+  .ney-screen--recording .recording-maqam-degree__copy { padding-inline-end: 28px; }
+  .ney-screen--recording .ney-degree-fingering-button { width: 23px; height: 23px; min-height: 23px; }
 }
