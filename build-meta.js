@@ -117,12 +117,12 @@ function showAutoCaptureLoadFailure(error) {
 
 import('./metronome-reset.js?v=2026-08-07-1449').catch(error => console.error('Metronome reset load failed', error));
 
-/* During development, clear the test recording library once for every new build
-   before IndexedDB is opened by the recording foundation. */
-const devBuildResetReady = import('./dev-build-recordings-reset.js?v=2026-08-08-0050')
+/* Preserve successful Performance Pack recordings across development builds so
+   the same accepted session can be reused for export/playback verification. */
+const devBuildResetReady = import('./dev-build-recordings-reset.js?v=2026-08-08-1418')
   .then(() => window.NeyDevBuildResetReady)
   .catch(error => {
-    console.error('Development recording reset loader failed', error);
+    console.error('Development recording preservation loader failed', error);
     return null;
   });
 
@@ -130,7 +130,7 @@ const recordingFoundationReady = devBuildResetReady
   .then(() => import('./maqam-library.js?v=2026-08-07-1614'))
   .then(() => import('./recording-generator.js?v=2026-08-07-1614'))
   .then(() => import('./performance-pack-store.js?v=2026-08-08-1306'))
-  .then(() => import('./performance-pack-records-ui.js?v=2026-08-08-1306'))
+  .then(() => import('./performance-pack-records-ui.js?v=2026-08-08-1418'))
   .catch(error => console.error('Stage 6 recording foundation load failed', error));
 
 if (!document.querySelector('link[data-ney-auto-capture]')) {
@@ -220,7 +220,7 @@ import('./about-research-note.js?v=2026-08-07-2236')
 if (!document.querySelector('link[data-recording-modernization]')) {
   const modernizationStyles = document.createElement('link');
   modernizationStyles.rel = 'stylesheet';
-  modernizationStyles.href = './recording-modernization.css?v=2026-08-08-1306';
+  modernizationStyles.href = './recording-modernization.css?v=2026-08-08-1418';
   modernizationStyles.dataset.recordingModernization = 'true';
   document.head.append(modernizationStyles);
 }
