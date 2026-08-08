@@ -10,7 +10,8 @@
     audio: null,
     url: null,
     badge: null,
-    expanded: new Set()
+    expanded: new Set(),
+    maqamSessions: new Map()
   };
 
   const ORDER = { whole: 1, half: 2, quarter: 3, eighth: 4, sixteenth: 5 };
@@ -20,6 +21,15 @@
     node.textContent = String(value ?? '');
     return node.innerHTML;
   };
+
+  function notify(message) {
+    const toast = document.querySelector('#toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    clearTimeout(notify.timer);
+    notify.timer = setTimeout(() => toast.classList.remove('is-visible'), 3000);
+  }
 
   function ensureBadge() {
     if (state.badge?.isConnected) return state.badge;
@@ -99,6 +109,11 @@
     return ['maqam-scale', c.maqamId || 'maqam', tonicKey(c.tonic), c.variantId || 'default', c.maqamDirection || 'ascending'].join('|');
   }
 
+  function maqamSessionKey(value) {
+    const c = value?.context || value || {};
+    return [c.maqamId || 'maqam', tonicKey(c.tonic), c.variantId || 'default'].join('|');
+  }
+
   function isMaqamScale(pack) {
     return pack?.context?.mode === 'maqam-scale' && Boolean(pack?.context?.maqamId);
   }
@@ -134,6 +149,17 @@
     }).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
   }
 
+  function indexMaqamSessions(groups) {
+    const sessions = new Map();
+    groups.forEach(group => {
+      const key = maqamSessionKey(group);
+      if (!sessions.has(key)) sessions.set(key, { key, ascending: null, descending: null });
+      sessions.get(key)[group.direction] = group;
+    });
+    state.maqamSessions = sessions;
+    return sessions;
+  }
+
   function stopPlayback(refresh = true) {
     try { state.audio?.pause(); } catch (_) {}
     if (state.url) URL.revokeObjectURL(state.url);
@@ -160,19 +186,241 @@
     try { await state.audio.play(); } catch (error) { console.error('Performance Pack playback failed', error); stopPlayback(); }
   }
 
-  async function download(pack, item) {
-    const record = await store()?.getAudio?.(item.sample.audioId);
-    if (!record?.blob) return;
-    const url = URL.createObjectURL(record.blob);
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const direction = pack?.context?.maqamDirection ? `-${pack.context.maqamDirection}` : '';
-    const suffix = item.type === 'clean' ? 'reference' : `${item.sample.durationName || item.sample.durationId}-${item.sample.bpm || ''}`;
     link.href = url;
-    link.download = `ney-${englishLabel(pack).replace(/[^a-zA-Z0-9_-]+/g, '-')}${direction}-${suffix}.wav`;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 1800);
+  }
+
+  async function download(pack, item) {
+    const record = await store()?.getAudio?.(item.sample.audioId);
+    if (!record?.blob) return;
+    const direction = pack?.context?.maqamDirection ? `-${pack.context.maqamDirection}` : '';
+    const suffix = item.type === 'clean' ? 'reference' : `${item.sample.durationName || item.sample.durationId}-${item.sample.bpm || ''}`;
+    triggerDownload(record.blob, `ney-${englishLabel(pack).replace(/[^a-zA-Z0-9_-]+/g, '-')}${direction}-${suffix}.wav`);
+  }
+
+  function currentExportFormat() {
+    const value = document.querySelector('#exportFormat')?.value || document.querySelector('#defaultExportFormat')?.value || 'wav';
+    return ['wav', 'mp3', 'json'].includes(value) ? value : 'wav';
+  }
+
+  function educationalItems(pack) {
+    return Object.entries(pack?.samples?.educational || {})
+      .filter(([, sample]) => sample?.audioId)
+      .map(([durationKey, sample]) => ({ type: 'educational', durationKey, sample }));
+  }
+
+  function commonEducationalKey(packs) {
+    if (!packs.length) return null;
+    const counts = new Map();
+    packs.forEach(pack => {
+      const keys = new Set(educationalItems(pack).map(item => item.durationKey));
+      keys.forEach(key => counts.set(key, (counts.get(key) || 0) + 1));
+    });
+    const complete = [...counts.entries()].filter(([, count]) => count === packs.length);
+    if (!complete.length) return null;
+    complete.sort((a, b) => {
+      const aSample = packs[0]?.samples?.educational?.[a[0]];
+      const bSample = packs[0]?.samples?.educational?.[b[0]];
+      const ao = ORDER[aSample?.durationId] || 99;
+      const bo = ORDER[bSample?.durationId] || 99;
+      return ao - bo || Number(aSample?.bpm || 0) - Number(bSample?.bpm || 0);
+    });
+    return complete[0][0];
+  }
+
+  function preferredItem(pack, preferredDurationKey = null) {
+    if (preferredDurationKey) {
+      const sample = pack?.samples?.educational?.[preferredDurationKey];
+      if (sample?.audioId) return { type: 'educational', durationKey: preferredDurationKey, sample };
+    }
+    const educational = educationalItems(pack).sort((a, b) => {
+      const as = Number(a.sample?.score ?? 0);
+      const bs = Number(b.sample?.score ?? 0);
+      return bs - as || String(b.sample?.updatedAt || '').localeCompare(String(a.sample?.updatedAt || ''));
+    });
+    if (educational.length) return educational[0];
+    if (pack?.samples?.clean?.audioId) return { type: 'clean', durationKey: '', sample: pack.samples.clean };
+    return null;
+  }
+
+  async function recordPcm(record) {
+    if (record?.pcm?.length && Number(record.sampleRate) > 0) {
+      return { pcm: record.pcm instanceof Float32Array ? record.pcm : new Float32Array(record.pcm), sampleRate: Number(record.sampleRate) };
+    }
+    if (!record?.blob) return null;
+    const Context = window.AudioContext || window.webkitAudioContext;
+    if (!Context) return null;
+    const context = new Context();
+    try {
+      const decoded = await context.decodeAudioData(await record.blob.arrayBuffer());
+      const source = decoded.getChannelData(0);
+      return { pcm: new Float32Array(source), sampleRate: decoded.sampleRate };
+    } finally {
+      try { await context.close(); } catch (_) {}
+    }
+  }
+
+  function resample(pcm, sourceRate, targetRate) {
+    if (sourceRate === targetRate) return pcm;
+    const length = Math.max(1, Math.round(pcm.length * targetRate / sourceRate));
+    const output = new Float32Array(length);
+    const ratio = sourceRate / targetRate;
+    for (let index = 0; index < length; index += 1) {
+      const position = index * ratio;
+      const left = Math.floor(position);
+      const right = Math.min(pcm.length - 1, left + 1);
+      const fraction = position - left;
+      output[index] = pcm[left] * (1 - fraction) + pcm[right] * fraction;
+    }
+    return output;
+  }
+
+  function joinPcm(parts) {
+    const total = parts.reduce((sum, part) => sum + part.length, 0);
+    const output = new Float32Array(total);
+    let offset = 0;
+    parts.forEach(part => { output.set(part, offset); offset += part.length; });
+    return output;
+  }
+
+  function writeAscii(view, offset, text) {
+    for (let index = 0; index < text.length; index += 1) view.setUint8(offset + index, text.charCodeAt(index));
+  }
+
+  function encodeWav24(pcm, sampleRate) {
+    const bytes = 3;
+    const dataSize = pcm.length * bytes;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+    writeAscii(view, 0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeAscii(view, 8, 'WAVE');
+    writeAscii(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * bytes, true);
+    view.setUint16(32, bytes, true);
+    view.setUint16(34, 24, true);
+    writeAscii(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+    let offset = 44;
+    for (const input of pcm) {
+      const value = Math.min(1, Math.max(-1, input));
+      let sample = value < 0 ? Math.round(value * 0x800000) : Math.round(value * 0x7fffff);
+      if (sample < 0) sample += 0x1000000;
+      view.setUint8(offset, sample & 0xff);
+      view.setUint8(offset + 1, sample >> 8 & 0xff);
+      view.setUint8(offset + 2, sample >> 16 & 0xff);
+      offset += 3;
+    }
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  function encodeMp3(pcm, sampleRate) {
+    if (!window.lamejs?.Mp3Encoder) throw new Error('MP3 encoder unavailable');
+    const bitrate = Number(document.querySelector('#mp3Bitrate')?.value || 192);
+    const encoder = new window.lamejs.Mp3Encoder(1, sampleRate, bitrate);
+    const int16 = new Int16Array(pcm.length);
+    for (let i = 0; i < pcm.length; i += 1) int16[i] = Math.round(Math.min(1, Math.max(-1, pcm[i])) * 32767);
+    const chunks = [];
+    for (let offset = 0; offset < int16.length; offset += 1152) {
+      const encoded = encoder.encodeBuffer(int16.subarray(offset, offset + 1152));
+      if (encoded.length) chunks.push(new Int8Array(encoded));
+    }
+    const flushed = encoder.flush();
+    if (flushed.length) chunks.push(new Int8Array(flushed));
+    return new Blob(chunks, { type: 'audio/mpeg' });
+  }
+
+  function exportMetadata(groups, scope) {
+    const directions = groups.filter(Boolean).map(group => ({
+      direction: group.direction,
+      directionAr: directionLabel(group.direction),
+      degrees: group.packs.map(pack => ({
+        degree: Number(pack.context?.maqamDegree || 0),
+        arabic: noteLabel(pack),
+        english: englishLabel(pack),
+        targetFrequency: frequency(pack),
+        context: pack.context
+      }))
+    }));
+    const first = groups.find(Boolean);
+    return {
+      schemaVersion: 1,
+      type: 'ney-maqam-scale-export',
+      scope,
+      maqamId: first?.maqamId || null,
+      maqamAr: first?.maqamAr || null,
+      tonic: first?.tonic || null,
+      variantId: first?.variantId || null,
+      exportedAt: new Date().toISOString(),
+      directions
+    };
+  }
+
+  async function buildAudio(groups) {
+    const packs = groups.filter(Boolean).flatMap(group => group.packs);
+    if (!packs.length) throw new Error('No maqam degrees to export');
+    const commonKey = commonEducationalKey(packs);
+    const entries = [];
+    for (const group of groups.filter(Boolean)) {
+      for (const pack of group.packs) {
+        const item = preferredItem(pack, commonKey);
+        if (!item?.sample?.audioId) throw new Error(`Missing audio for degree ${pack.context?.maqamDegree || '?'}`);
+        const record = await store()?.getAudio?.(item.sample.audioId);
+        const audio = await recordPcm(record);
+        if (!audio?.pcm?.length) throw new Error(`Unreadable audio for degree ${pack.context?.maqamDegree || '?'}`);
+        entries.push({ group, pack, item, ...audio });
+      }
+    }
+    const targetRate = Number(document.querySelector('#exportSampleRate')?.value || entries[0]?.sampleRate || 48000);
+    const parts = entries.map(entry => resample(entry.pcm, entry.sampleRate, targetRate));
+    return { pcm: joinPcm(parts), sampleRate: targetRate, entries, commonDurationKey: commonKey };
+  }
+
+  function safeName(value) {
+    return String(value || 'maqam').trim().replace(/\s+/g, '-').replace(/[^\p{L}\p{N}_-]+/gu, '-');
+  }
+
+  async function exportMaqam(groups, scope, button = null) {
+    const validGroups = groups.filter(Boolean);
+    if (!validGroups.length) return;
+    const format = currentExportFormat();
+    const first = validGroups[0];
+    const maqamName = safeName(first.maqamAr || first.maqamId || 'maqam');
+    const suffix = scope === 'full' ? 'صعود-وهبوط' : (first.direction === 'descending' ? 'هبوط' : 'صعود');
+    const filenameBase = `مقام-${maqamName}-${suffix}`;
+    const original = button?.textContent;
+    if (button) { button.disabled = true; button.textContent = 'جارٍ التجهيز…'; }
+    try {
+      if (scope === 'full' && (!groups[0] || !groups[1])) {
+        notify('يلزم وجود الصعود والهبوط لتصدير المقام كاملًا.');
+        return;
+      }
+      if (format === 'json') {
+        triggerDownload(new Blob([JSON.stringify(exportMetadata(validGroups, scope), null, 2)], { type: 'application/json' }), `${filenameBase}.json`);
+        notify(`تم تصدير ${scope === 'full' ? 'المقام كاملًا' : directionLabel(first.direction)} بصيغة JSON.`);
+        return;
+      }
+      const audio = await buildAudio(validGroups);
+      const blob = format === 'mp3' ? encodeMp3(audio.pcm, audio.sampleRate) : encodeWav24(audio.pcm, audio.sampleRate);
+      triggerDownload(blob, `${filenameBase}.${format}`);
+      notify(`تم تصدير ${scope === 'full' ? 'المقام كاملًا صعودًا وهبوطًا' : directionLabel(first.direction)} بصيغة ${format.toUpperCase()}.`);
+    } catch (error) {
+      console.error('Maqam export failed', error);
+      notify('تعذر تجهيز المقام كاملًا. التسجيلات الأصلية بقيت محفوظة دون تغيير.');
+    } finally {
+      if (button) { button.disabled = false; button.textContent = original || 'تصدير'; }
+    }
   }
 
   function createSample(pack, item) {
@@ -190,7 +438,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>
           <span data-action-label>${state.playingKey === key ? 'إيقاف' : 'سماع'}</span>
         </button>
-        <button type="button" class="performance-sample-download" aria-label="تنزيل WAV" title="تنزيل WAV">
+        <button type="button" class="performance-sample-download" aria-label="تصدير هذه النغمة WAV" title="تصدير النغمة منفردة WAV">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
         </button>
       </div>`;
@@ -221,6 +469,8 @@
   function createMaqamGroup(group) {
     const expanded = state.expanded.has(group.key);
     const totalSamples = group.packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0);
+    const session = state.maqamSessions.get(maqamSessionKey(group));
+    const complete = Boolean(session?.ascending && session?.descending);
     const card = document.createElement('article');
     card.className = `performance-maqam-group${expanded ? ' is-expanded' : ''}`;
     card.dataset.performancePackKey = group.key;
@@ -235,6 +485,11 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
         </span>
       </button>
+      <div class="performance-maqam-group__exports">
+        <button type="button" data-export-direction>تصدير ${group.direction === 'descending' ? 'الهبوط' : 'الصعود'}</button>
+        <button type="button" data-export-full ${complete ? '' : 'disabled'} title="${complete ? 'تصدير ملف واحد: الصعود ثم الهبوط' : 'يكتمل بعد توفر الصعود والهبوط'}">تصدير المقام كاملًا</button>
+        <small>الصيغة الحالية: <bdi dir="ltr">${currentExportFormat().toUpperCase()}</bdi></small>
+      </div>
       <div class="performance-maqam-group__degrees" ${expanded ? '' : 'hidden'}></div>`;
     const holder = card.querySelector('.performance-maqam-group__degrees');
     group.packs.forEach(pack => holder.appendChild(createDegreeBlock(pack)));
@@ -244,6 +499,11 @@
       card.classList.toggle('is-expanded', open);
       holder.hidden = !open;
       event.currentTarget.setAttribute('aria-expanded', String(open));
+    });
+    card.querySelector('[data-export-direction]').addEventListener('click', event => exportMaqam([group], 'direction', event.currentTarget));
+    card.querySelector('[data-export-full]').addEventListener('click', event => {
+      const latest = state.maqamSessions.get(maqamSessionKey(group));
+      exportMaqam([latest?.ascending, latest?.descending], 'full', event.currentTarget);
     });
     return card;
   }
@@ -310,6 +570,7 @@
         .filter(pack => samplesFor(pack).length)
         .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
       const maqamGroups = buildMaqamGroups(packs);
+      indexMaqamSessions(maqamGroups);
       const regularPacks = packs.filter(pack => !isMaqamScale(pack));
       const sampleCount = packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0);
 
@@ -346,13 +607,19 @@
     scheduleSync(0);
     ['ney:performance-pack-updated', 'ney:auto-capture-saved', 'ney:educational-duration-saved']
       .forEach(name => document.addEventListener(name, () => scheduleSync(0)));
+    document.querySelector('#exportFormat')?.addEventListener('change', () => scheduleSync(0));
     window.addEventListener('beforeunload', () => stopPlayback(false), { once: true });
-    window.NeyPerformancePackRecordsUI = Object.freeze({ refresh: sync, stopPlayback, count: async () => {
-      const packs = (await store()?.listPacks?.() || []).filter(pack => samplesFor(pack).length);
-      const groups = buildMaqamGroups(packs);
-      const regular = packs.filter(pack => !isMaqamScale(pack));
-      return { notes: groups.length + regular.length, samples: packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0) };
-    }});
+    window.NeyPerformancePackRecordsUI = Object.freeze({
+      refresh: sync,
+      stopPlayback,
+      exportMaqam,
+      count: async () => {
+        const packs = (await store()?.listPacks?.() || []).filter(pack => samplesFor(pack).length);
+        const groups = buildMaqamGroups(packs);
+        const regular = packs.filter(pack => !isMaqamScale(pack));
+        return { notes: groups.length + regular.length, samples: packs.reduce((sum, pack) => sum + samplesFor(pack).length, 0) };
+      }
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
